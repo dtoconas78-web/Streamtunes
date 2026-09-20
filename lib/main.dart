@@ -113,6 +113,19 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, color: colorAcento),
+            onPressed: (){
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context)=> const PantallaC()),
+              );
+            }
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -133,17 +146,23 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
               offset: const Offset(0, -50),
               child: Column(
                 children: [
-                  Container(
+                  AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: colorFondo, width: 4),
+                     shape: BoxShape.circle,
+                    border: Border.all(
+                    color: siguiendo ? colorAcento : colorFondo,
+                    width: siguiendo ? 6 : 4,
                     ),
-                    child: const CircleAvatar(
-                      radius: 45,
-                      backgroundColor: colorTarjeta,
-                      child: Icon(Icons.person, size: 45, color: colorAcento),
                     ),
-                  ),
+                  child: const CircleAvatar(
+                    radius: 45,
+                    backgroundColor: colorTarjeta,
+                  child: Icon(Icons.person, size: 45, color: colorAcento),
+                    ),
+                    ),
+
                   const SizedBox(height: 10),
                   const Text(
                     'Mateo Cabral',
@@ -156,7 +175,18 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                   ),
                   const SizedBox(height: 12),
                   // Botón "Seguir" con estado: cambia al tocarlo.
-                  ElevatedButton(
+                  //Bloque 2 AnimatedContainer 
+                  AnimatedContainer(
+                    duration: const Duration(seconds: 2),
+                    curve: Curves.easeInOut,
+                    decoration: BoxDecoration(
+                      color: siguiendo ? colorTarjeta : colorAcento,
+                      borderRadius: BorderRadius.circular(20),
+                      border: siguiendo
+                        ? Border.all(color: colorAcento)
+                        : null,
+                    ),
+                    child : ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: siguiendo ? colorTarjeta : colorAcento,
                       foregroundColor: siguiendo ? Colors.white : Colors.black,
@@ -175,6 +205,8 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                     },
                     child: Text(siguiendo ? 'Siguiendo' : 'Seguir'),
                   ),
+                  ),
+
                 ],
               ),
             ),
@@ -440,4 +472,101 @@ class _FilaEstadistica extends StatelessWidget {
       ],
     );
   }
+}
+//Pantalla C: Editar Perfil(solo visual)
+class PantallaC extends StatelessWidget{
+  const PantallaC({super.key});
+  
+  @override
+  Widget build(BuildContext context){
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Editar Perfil '),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Stack(
+                children: [
+                  const CircleAvatar(
+                    radius: 50,
+                    backgroundColor: colorTarjeta,
+                    child: Icon(Icons.person, size: 50, color: colorAcento),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: colorAcento,
+                        shape: BoxShape.circle,
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.camera_alt, size: 18, color: Colors.black),
+                        onPressed: (){
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Cambiar foto')),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Text('Nombre', style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 6),
+            TextField(
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: colorTarjeta,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              controller: TextEditingController(text: 'Mateo Cabral',
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text('Sobre mi', style: TextStyle(color: Colors.grey)),
+            const SizedBox(height: 6),
+            TextField(
+              maxLines: 4,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: colorTarjeta,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none
+                ),
+              ),
+              controller: TextEditingController(
+                text: 'Descripcion del Artista',
+              )
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorAcento,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                minimumSize: const Size(double.infinity,0),
+              ),
+              onPressed: (){
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Perfil Guardado con Exito')),
+                );
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 }
