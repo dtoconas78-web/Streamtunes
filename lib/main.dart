@@ -276,9 +276,14 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                   // Tab 3: Sobre mí (placeholder visual).
                   const Padding(
                     padding: EdgeInsets.all(24),
-                    child: Text(
-                      'Artista independiente de Mendoza. Hace música desde 2019, mezclando rock alternativo con sonidos electrónicos.',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Chip(label: Text('Pop')),
+                        Chip(label: Text('Classic')),
+                        Chip(label: Text('Balada')),
+                      ],
                     ),
                   ),
                 ],
