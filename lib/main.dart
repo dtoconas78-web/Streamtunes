@@ -172,6 +172,17 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                       setState(() {
                         siguiendo = !siguiendo;
                       });
+                      // SnackBar: confirma la acción sin interrumpir al usuario.
+                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            siguiendo
+                                ? 'Ahora seguís a Mateo Cabral'
+                                : 'Dejaste de seguir a Mateo Cabral',
+                          ),
+                        ),
+                      );
                     },
                     child: Text(siguiendo ? 'Siguiendo' : 'Seguir'),
                   ),
@@ -222,11 +233,15 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                     itemCount: canciones.length,
                     itemBuilder: (context, index) {
                       final cancion = canciones[index];
-                      return Container(
+                      // Card: agrupa cada canción con esquinas redondeadas.
+                      return Card(
+                        color: colorTarjeta,
+                        elevation: 0,
                         margin: const EdgeInsets.only(bottom: 10),
-                        decoration: BoxDecoration(
-                          color: colorTarjeta,
+                        clipBehavior: Clip.antiAlias,
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: colorAcento.withValues(alpha: 0.35)),
                         ),
                         child: ListTile(
                           leading: Container(
@@ -287,10 +302,17 @@ class PantallaB extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Estadísticas'),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Icon(Icons.share, color: colorAcento),
+        actions: [
+          // IconButton: acción secundaria (compartir) sin tanto peso visual.
+          IconButton(
+            icon: const Icon(Icons.share, color: colorAcento),
+            tooltip: 'Compartir',
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Compartiendo "${cancion.titulo}"...')),
+              );
+            },
           ),
         ],
       ),
@@ -300,13 +322,17 @@ class PantallaB extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Tarjeta con la canción.
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorTarjeta,
+            Card(
+              color: colorTarjeta,
+              elevation: 0,
+              margin: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: colorAcento.withValues(alpha: 0.35)),
               ),
-              child: Row(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
                 children: [
                   Container(
                     width: 56,
@@ -333,6 +359,7 @@ class PantallaB extends StatelessWidget {
                     ],
                   ),
                 ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -403,21 +430,26 @@ class _TarjetaMetrica extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colorTarjeta,
+    return Card(
+      color: colorTarjeta,
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: colorAcento.withValues(alpha: 0.35)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icono, color: colorAcento, size: 22),
-          const SizedBox(height: 8),
-          Text(valor, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Text(etiqueta, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icono, color: colorAcento, size: 22),
+            const SizedBox(height: 8),
+            Text(valor, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(etiqueta, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+          ],
+        ),
       ),
     );
   }
