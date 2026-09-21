@@ -275,17 +275,30 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                   ),
                   // Tab 3: Sobre mí (placeholder visual).
                   const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        Chip(label: Text('Pop')),
-                        Chip(label: Text('Classic')),
-                        Chip(label: Text('Balada')),
-                      ],
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 1. El texto descriptivo
+                          const Text(
+                            'Artista independiente de Mendoza, Argentina. Hago música desde 2019, mezclando rock alternativo con sonidos electrónicos.',
+                            style: TextStyle(color: Colors.grey, fontSize: 14),
+                          ),
+                          const SizedBox(height: 16), // Espacio de separación entre el texto y los chips
+                          
+                          // 2. Los chips organizados en Wrap
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: const [
+                              Chip(label: Text('Rock')),
+                              Chip(label: Text('Rock alternativo')),
+                              Chip(label: Text('Electrónica')),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
