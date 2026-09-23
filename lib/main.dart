@@ -3,6 +3,7 @@
 // Pantalla B: estadísticas de la canción con grid de métricas y progreso.
 
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 void main() => runApp(const MiApp());
 
@@ -292,10 +293,35 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
 }
 
 // Pantalla B: estadísticas de la canción seleccionada.
-class PantallaB extends StatelessWidget {
+class PantallaB extends StatefulWidget {
   final Cancion cancion;
 
   const PantallaB({super.key, required this.cancion});
+
+  @override 
+  State<PantallaB> createState() => _PantallaBState();
+}
+
+class _PantallaBState extends State<PantallaB> {
+  late int reproduccionesLive;
+  late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    reproduccionesLive = int.parse(widget.cancion.reproducciones.replaceAll('.', ''));
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      setState(() {
+        reproduccionesLive += 7; // simulado
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -348,7 +374,7 @@ class PantallaB extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        cancion.titulo,
+                        reproduccionesLive.toString(),
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
