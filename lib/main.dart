@@ -374,7 +374,7 @@ class _PantallaBState extends State<PantallaB> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        reproduccionesLive.toString(),
+                        cancion.titulo,
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
@@ -395,7 +395,7 @@ class _PantallaBState extends State<PantallaB> {
             ),
             const SizedBox(height: 4),
             Text(
-              cancion.reproducciones,
+              reproduccionesLive.toString(),
               style: const TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
