@@ -325,6 +325,7 @@ class _PantallaBState extends State<PantallaB> {
 
   @override
   Widget build(BuildContext context) {
+    final cancion = widget.cancion;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Estadísticas'),
