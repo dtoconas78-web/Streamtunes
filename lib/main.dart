@@ -144,9 +144,7 @@ class _PantallaAState extends State<PantallaA>
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const PantallaC(),
-                ),
+                MaterialPageRoute(builder: (context) => const PantallaC()),
               );
             },
           ),
@@ -220,10 +218,7 @@ class _PantallaAState extends State<PantallaA>
                       const SizedBox(height: 2),
                       const Text(
                         '8.4K seguidores',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 13, color: Colors.grey),
                       ),
                       const SizedBox(height: 12),
 
@@ -240,10 +235,12 @@ class _PantallaAState extends State<PantallaA>
                         ),
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                siguiendo ? colorTarjeta : colorAcento,
-                            foregroundColor:
-                                siguiendo ? Colors.white : Colors.black,
+                            backgroundColor: siguiendo
+                                ? colorTarjeta
+                                : colorAcento,
+                            foregroundColor: siguiendo
+                                ? Colors.white
+                                : Colors.black,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
                               side: siguiendo
@@ -272,9 +269,7 @@ class _PantallaAState extends State<PantallaA>
                               ),
                             );
                           },
-                          child: Text(
-                            siguiendo ? 'Siguiendo' : 'Seguir',
-                          ),
+                          child: Text(siguiendo ? 'Siguiendo' : 'Seguir'),
                         ),
                       ),
                     ],
@@ -294,10 +289,7 @@ class _PantallaAState extends State<PantallaA>
                       decoration: InputDecoration(
                         hintText: 'Buscar canciones...',
                         hintStyle: TextStyle(color: Colors.grey),
-                        prefixIcon: Icon(
-                          Icons.search,
-                          color: Colors.grey,
-                        ),
+                        prefixIcon: Icon(Icons.search, color: Colors.grey),
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -444,8 +436,9 @@ class _PantallaBState extends State<PantallaB> {
   @override
   void initState() {
     super.initState();
-    reproduccionesLive =
-        int.parse(widget.cancion.reproducciones.replaceAll('.', ''));
+    reproduccionesLive = int.parse(
+      widget.cancion.reproducciones.replaceAll('.', ''),
+    );
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       setState(() {
         reproduccionesLive += 7; // simulado
@@ -468,19 +461,12 @@ class _PantallaBState extends State<PantallaB> {
         actions: [
           // IconButton: acción secundaria (compartir) sin tanto peso visual.
           IconButton(
-            icon: const Icon(
-              Icons.share,
-              color: colorAcento,
-            ),
+            icon: const Icon(Icons.share, color: colorAcento),
             tooltip: 'Compartir',
             onPressed: () {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Compartiendo "${cancion.titulo}"...',
-                  ),
-                ),
+                SnackBar(content: Text('Compartiendo "${cancion.titulo}"...')),
               );
             },
           ),
@@ -498,9 +484,7 @@ class _PantallaBState extends State<PantallaB> {
               margin: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(
-                  color: colorAcento.withValues(alpha: 0.35),
-                ),
+                side: BorderSide(color: colorAcento.withValues(alpha: 0.35)),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -513,10 +497,7 @@ class _PantallaBState extends State<PantallaB> {
                         color: cancion.colorPortada,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
-                        Icons.music_note,
-                        color: Colors.black,
-                      ),
+                      child: const Icon(Icons.music_note, color: Colors.black),
                     ),
                     const SizedBox(width: 16),
                     Column(
@@ -532,10 +513,7 @@ class _PantallaBState extends State<PantallaB> {
                         const SizedBox(height: 4),
                         const Text(
                           'Mateo Cabral',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -548,10 +526,7 @@ class _PantallaBState extends State<PantallaB> {
 
             const Text(
               'Reproducciones',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 4),
 
@@ -573,7 +548,7 @@ class _PantallaBState extends State<PantallaB> {
                 Expanded(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(10),
-                    child: LinearProgressIndicator(
+                    child: const LinearProgressIndicator(
                       value: 0.68,
                       backgroundColor: colorTarjeta,
                       color: colorAcento,
@@ -584,10 +559,7 @@ class _PantallaBState extends State<PantallaB> {
                 const SizedBox(width: 10),
                 Text(
                   cancion.tendencia,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),
@@ -664,9 +636,7 @@ class _TarjetaMetrica extends StatelessWidget {
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: BorderSide(
-          color: colorAcento.withValues(alpha: 0.35),
-        ),
+        side: BorderSide(color: colorAcento.withValues(alpha: 0.35)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -674,25 +644,15 @@ class _TarjetaMetrica extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icono,
-              color: colorAcento,
-              size: 22,
-            ),
+            Icon(icono, color: colorAcento, size: 22),
             const SizedBox(height: 8),
             Text(
               valor,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
               etiqueta,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
             ),
           ],
         ),
@@ -706,27 +666,15 @@ class _FilaEstadistica extends StatelessWidget {
   final IconData icono;
   final String texto;
 
-  const _FilaEstadistica({
-    required this.icono,
-    required this.texto,
-  });
+  const _FilaEstadistica({required this.icono, required this.texto});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(
-          icono,
-          color: colorAcento,
-          size: 20,
-        ),
+        Icon(icono, color: colorAcento, size: 20),
         const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            texto,
-            style: const TextStyle(fontSize: 15),
-          ),
-        ),
+        Expanded(child: Text(texto, style: const TextStyle(fontSize: 15))),
       ],
     );
   }
@@ -739,9 +687,7 @@ class PantallaC extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Editar Perfil'),
-      ),
+      appBar: AppBar(title: const Text('Editar Perfil')),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -753,11 +699,7 @@ class PantallaC extends StatelessWidget {
                   const CircleAvatar(
                     radius: 50,
                     backgroundColor: colorTarjeta,
-                    child: Icon(
-                      Icons.person,
-                      size: 50,
-                      color: colorAcento,
-                    ),
+                    child: Icon(Icons.person, size: 50, color: colorAcento),
                   ),
                   Positioned(
                     bottom: 0,
@@ -775,9 +717,7 @@ class PantallaC extends StatelessWidget {
                         ),
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Cambiar foto'),
-                            ),
+                            const SnackBar(content: Text('Cambiar foto')),
                           );
                         },
                       ),
@@ -789,10 +729,7 @@ class PantallaC extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            const Text(
-              'Nombre',
-              style: TextStyle(color: Colors.grey),
-            ),
+            const Text('Nombre', style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 6),
 
             TextField(
@@ -804,17 +741,12 @@ class PantallaC extends StatelessWidget {
                   borderSide: BorderSide.none,
                 ),
               ),
-              controller: TextEditingController(
-                text: 'Mateo Cabral',
-              ),
+              controller: TextEditingController(text: 'Mateo Cabral'),
             ),
 
             const SizedBox(height: 20),
 
-            const Text(
-              'Sobre mí',
-              style: TextStyle(color: Colors.grey),
-            ),
+            const Text('Sobre mí', style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 6),
 
             TextField(
@@ -843,9 +775,7 @@ class PantallaC extends StatelessWidget {
               ),
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Perfil Guardado con Éxito'),
-                  ),
+                  const SnackBar(content: Text('Perfil Guardado con Éxito')),
                 );
               },
               child: const Text('Guardar'),

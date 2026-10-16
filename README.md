@@ -1,17 +1,60 @@
-# streamtunes_demo
+# StreamTunes
 
-A new Flutter project.
+Demo de una app para artistas independientes: perfil del artista,
+estadísticas de cada canción y edición de perfil. Por ahora es solo
+front, sin lógica real ni conexión a un servidor.
 
-## Getting Started
+## Cómo correrla
 
-This project is a starting point for a Flutter application.
+```
+flutter pub get
+flutter run
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Cómo correr las pruebas
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```
+flutter test
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Organización
+
+Por ahora todo el código está en `lib/main.dart`. Pantallas:
+
+- Perfil del artista (banner, botón Seguir, tabs y lista de canciones)
+- Estadísticas de la canción (métricas y reproducciones en vivo)
+- Editar perfil
+
+El logotipo está en `assets/images/`.
+
+## Convenciones
+
+**Idioma:** español para el dominio (Cancion, reproducciones, seguir) e
+inglés para lo que viene de Flutter (build, Widget, Screen).
+
+**Nombres de las piezas de cada pantalla:**
+
+- Pantallas: `<Funcionalidad>Screen` (ej.: `PerfilArtistaScreen`)
+- ViewModels: `<Funcionalidad>ViewModel`
+- Repositorios: `<Dato>Repository`
+- Archivos: `snake_case`, uno por clase (ej.: `perfil_artista_screen.dart`)
+
+(Se aplican de ahora en adelante; las pantallas actuales todavía se llaman
+`PantallaA`, `PantallaB` y `PantallaC`.)
+
+**Verbos para las acciones comunes:**
+
+- `cargar`: traer datos (cargarCanciones)
+- `guardar`: guardar cambios (guardarPerfil)
+- `seguir` / `dejarDeSeguir`: seguir a un artista
+- `compartir`: compartir una canción
+
+**Booleanos:** en positivo y como pregunta (`estaSiguiendo`, `tieneCanciones`).
+
+**Antes de cada entrega:**
+
+```
+dart format .
+flutter analyze
+flutter test
+```
