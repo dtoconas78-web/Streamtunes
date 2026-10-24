@@ -18,6 +18,32 @@ class MiApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navegadorKey,
+      navigatorObservers: [ObservadorReproductor()],
+      // builder envuelve TODAS las pantallas: el mini-player queda abajo siempre.
+      builder: (context, child) {
+        return Column(
+          children: [
+            Expanded(
+              child: ListenableBuilder(
+                listenable: reproductor,
+                builder: (context, _) {
+                  final miniVisible = reproductor.hayCancion &&
+                      !reproductor.pantallaCompletaAbierta;
+                  // Si el mini-player está visible, las pantallas no deben
+                  // dejar margen inferior (ya lo ocupa el mini-player).
+                  return MediaQuery.removePadding(
+                    context: context,
+                    removeBottom: miniVisible,
+                    child: child!,
+                  );
+                },
+              ),
+            ),
+            const MiniReproductor(),
+          ],
+        );
+      },
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: colorFondo,
         appBarTheme: const AppBarTheme(
@@ -86,6 +112,37 @@ const List<Cancion> canciones = [
   ),
 ];
 
+// Modelo simple para representar un álbum.
+// "indices" son las posiciones de sus canciones en la lista `canciones`.
+class Album {
+  final String titulo;
+  final String anio;
+  final Color colorPortada;
+  final List<int> indices;
+
+  const Album({
+    required this.titulo,
+    required this.anio,
+    required this.colorPortada,
+    required this.indices,
+  });
+}
+
+// Álbumes del artista (datos de ejemplo).
+const List<Album> albumes = [
+  Album(
+    titulo: 'Postales',
+    anio: '2024',
+    colorPortada: Color(0xFFFF5500),
+    indices: [0, 1],
+  ),
+  Album(
+    titulo: 'Sin Señal EP',
+    anio: '2023',
+    colorPortada: Color(0xFF00BFA5),
+    indices: [2, 3],
+  ),
+];
 // Pantalla A: perfil del artista + tabs + lista de canciones.
 // Es Stateful porque el botón "Seguir" cambia de estado al tocarlo.
 class PantallaA extends StatefulWidget {
@@ -271,8 +328,48 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                     },
                   ),
                   // Tab 2: Álbumes (placeholder visual).
-                  const Center(
-                    child: Text('Todavía no hay álbumes', style: TextStyle(color: Colors.grey)),
+                  // Tab 2: lista de álbumes.
+                  ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: albumes.length,
+                    itemBuilder: (context, index) {
+                      final album = albumes[index];
+                      return Card(
+                        color: colorTarjeta,
+                        elevation: 0,
+                        margin: const EdgeInsets.only(bottom: 10),
+                        clipBehavior: Clip.antiAlias,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: colorAcento.withValues(alpha: 0.35)),
+                        ),
+                        child: ListTile(
+                          leading: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: album.colorPortada,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.album, color: Colors.black),
+                          ),
+                          title: Text(album.titulo),
+                          subtitle: Text(
+                            '${album.indices.length} canciones, ${album.anio}',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PantallaAlbum(album: album),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
                   ),
                   // Tab 3: Sobre mí (placeholder visual).
                   const Padding(
@@ -497,6 +594,544 @@ class _FilaEstadistica extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(child: Text(texto, style: const TextStyle(fontSize: 15))),
       ],
+    );
+  }
+}
+
+// Convierte "3:24" en segundos (204).
+int _aSegundos(String duracion) {
+  final partes = duracion.split(':');
+  return int.parse(partes[0]) * 60 + int.parse(partes[1]);
+}
+
+// Convierte segundos en "m:ss" (204 -> "3:24").
+String _formatoTiempo(int segundos) {
+  final minutos = segundos ~/ 60;
+  final resto = (segundos % 60).toString().padLeft(2, '0');
+  return '$minutos:$resto';
+}
+
+// ---------------------------------------------------------------------------
+// ESTADO GLOBAL DE LA REPRODUCCIÓN
+// ---------------------------------------------------------------------------
+
+// Controlador de reproducción: guarda qué suena, en qué segundo y si está en pausa.
+// Vive fuera de las pantallas, por eso la música sigue al navegar.
+// Cuando se conecte audio real (just_audio), solo hay que tocar esta clase.
+class ControladorReproduccion extends ChangeNotifier {
+  int? indiceActual; // null = todavía no se eligió ninguna canción
+  int posicion = 0; // segundos reproducidos de la canción actual
+  bool reproduciendo = false;
+  bool pantallaCompletaAbierta = false; // true cuando está abierto el reproductor grande
+  final Set<int> meGustas = {}; // índices de canciones guardadas
+  Timer? _timer;
+
+  bool get hayCancion => indiceActual != null;
+  Cancion? get cancion => indiceActual == null ? null : canciones[indiceActual!];
+  int get total => cancion == null ? 0 : _aSegundos(cancion!.duracion);
+  bool get leGusta => indiceActual != null && meGustas.contains(indiceActual);
+
+  // Pone a sonar una canción. Si ya era la actual, sigue desde donde estaba.
+  void reproducir(int indice) {
+    if (indiceActual != indice) {
+      indiceActual = indice;
+      posicion = 0;
+    }
+    reproduciendo = true;
+    // El reloj se crea una sola vez y avanza cada segundo mientras suena.
+    _timer ??= Timer.periodic(const Duration(seconds: 1), (_) => _avanzar());
+    notifyListeners();
+  }
+
+  void _avanzar() {
+    if (!reproduciendo || !hayCancion) return;
+    posicion++;
+    // Al terminar la canción, pasa a la siguiente.
+    if (posicion >= total) {
+      _irA((indiceActual! + 1) % canciones.length);
+    }
+    notifyListeners();
+  }
+
+  void _irA(int nuevoIndice) {
+    indiceActual = nuevoIndice;
+    posicion = 0;
+  }
+
+  void alternarPausa() {
+    if (!hayCancion) return;
+    reproduciendo = !reproduciendo;
+    notifyListeners();
+  }
+
+  void siguiente() {
+    if (!hayCancion) return;
+    _irA((indiceActual! + 1) % canciones.length);
+    notifyListeners();
+  }
+
+  // Si ya pasaron más de 3 segundos, "anterior" vuelve al inicio de la misma
+  // canción; si no, va a la anterior (como en la mayoría de los reproductores).
+  void anterior() {
+    if (!hayCancion) return;
+    if (posicion > 3) {
+      posicion = 0;
+    } else {
+      _irA((indiceActual! - 1 + canciones.length) % canciones.length);
+    }
+    notifyListeners();
+  }
+
+  void saltarA(int segundos) {
+    posicion = segundos;
+    notifyListeners();
+  }
+
+  void alternarMeGusta() {
+    if (!hayCancion) return;
+    if (!meGustas.remove(indiceActual)) meGustas.add(indiceActual!);
+    notifyListeners();
+  }
+
+  // Lo llama el observador de navegación para ocultar el mini-player
+  // mientras está abierto el reproductor grande.
+  void marcarPantallaCompleta(bool abierta) {
+    if (pantallaCompletaAbierta == abierta) return;
+    pantallaCompletaAbierta = abierta;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+}
+
+// Una única instancia compartida por toda la app.
+final ControladorReproduccion reproductor = ControladorReproduccion();
+
+// Llave del Navigator: permite abrir pantallas desde el mini-player,
+// que está por encima del Navigator y no tiene su propio contexto de navegación.
+final GlobalKey<NavigatorState> navegadorKey = GlobalKey<NavigatorState>();
+
+// Abre el reproductor grande.
+void abrirReproductor() {
+  navegadorKey.currentState?.push(
+    MaterialPageRoute(
+      settings: const RouteSettings(name: '/reproductor'),
+      builder: (context) => const PantallaReproductor(),
+    ),
+  );
+}
+
+// Avisa al controlador cuando el reproductor grande se abre o se cierra.
+class ObservadorReproductor extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    reproductor.marcarPantallaCompleta(route.settings.name == '/reproductor');
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    reproductor.marcarPantallaCompleta(previousRoute?.settings.name == '/reproductor');
+  }
+}
+
+// ---------------------------------------------------------------------------
+// MINI-PLAYER
+// ---------------------------------------------------------------------------
+
+// Barra chica que acompaña en todas las pantallas mientras haya una canción
+// elegida. Tocarla abre el reproductor grande.
+class MiniReproductor extends StatelessWidget {
+  const MiniReproductor({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: reproductor,
+      builder: (context, _) {
+        final cancion = reproductor.cancion;
+        // Se oculta si no hay canción o si ya está abierto el reproductor grande.
+        if (cancion == null || reproductor.pantallaCompletaAbierta) {
+          return const SizedBox.shrink();
+        }
+        final progreso =
+        reproductor.total == 0 ? 0.0 : reproductor.posicion / reproductor.total;
+
+        return Material(
+          color: colorTarjeta,
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Línea fina de progreso arriba del mini-player.
+                LinearProgressIndicator(
+                  value: progreso.clamp(0.0, 1.0),
+                  minHeight: 2,
+                  backgroundColor: colorFondo,
+                  color: colorAcento,
+                ),
+                InkWell(
+                  onTap: abrirReproductor,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: cancion.colorPortada,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.music_note, color: Colors.black),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                cancion.titulo,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const Text(
+                                'Mateo Cabral',
+                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            reproductor.reproduciendo ? Icons.pause : Icons.play_arrow,
+                            color: colorAcento,
+                            size: 30,
+                          ),
+                          tooltip: reproductor.reproduciendo ? 'Pausar' : 'Reproducir',
+                          onPressed: reproductor.alternarPausa,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.skip_next, size: 28),
+                          tooltip: 'Siguiente',
+                          onPressed: reproductor.siguiente,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// REPRODUCTOR GRANDE
+// ---------------------------------------------------------------------------
+
+// Pantalla Reproductor: portada, controles y barra de progreso.
+// No guarda estado propio: lee_todo del controlador global.
+class PantallaReproductor extends StatelessWidget {
+  const PantallaReproductor({super.key});
+
+  void _avisar(BuildContext context, String mensaje) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: reproductor,
+      builder: (context, _) {
+        final cancion = reproductor.cancion;
+        if (cancion == null) return const Scaffold();
+        final total = reproductor.total;
+        final posicion = reproductor.posicion;
+        final leGusta = reproductor.leGusta;
+
+        return Scaffold(
+          appBar: AppBar(
+            // Flecha hacia abajo: cierra el reproductor y vuelve a donde estabas.
+            // La música sigue sonando en el mini-player.
+            leading: IconButton(
+              icon: const Icon(Icons.keyboard_arrow_down, size: 30),
+              tooltip: 'Cerrar',
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: const Text('Reproduciendo'),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.share, color: colorAcento),
+                tooltip: 'Compartir',
+                onPressed: () => _avisar(context, 'Compartiendo "${cancion.titulo}"...'),
+              ),
+            ],
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+              child: Column(
+                children: [
+                  // Portada grande: es lo más importante de la pantalla.
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 320),
+                      child: AspectRatio(
+                        aspectRatio: 1,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: cancion.colorPortada,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(Icons.music_note, size: 96, color: Colors.black),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  // Título, artista y botón de "me gusta".
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              cancion.titulo,
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Mateo Cabral',
+                              style: TextStyle(fontSize: 14, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          leGusta ? Icons.favorite : Icons.favorite_border,
+                          color: colorAcento,
+                          size: 28,
+                        ),
+                        tooltip: leGusta ? 'Quitar de guardados' : 'Guardar',
+                        onPressed: reproductor.alternarMeGusta,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Barra de progreso: se puede arrastrar para saltar a otro momento.
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: colorAcento,
+                      inactiveTrackColor: colorTarjeta,
+                      thumbColor: colorAcento,
+                      overlayColor: colorAcento.withValues(alpha: 0.2),
+                      trackHeight: 4,
+                    ),
+                    child: Slider(
+                      min: 0,
+                      max: total.toDouble(),
+                      value: posicion.clamp(0, total).toDouble(),
+                      onChanged: (valor) => reproductor.saltarA(valor.round()),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(_formatoTiempo(posicion),
+                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text(_formatoTiempo(total),
+                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Controles: anterior, play/pausa, siguiente.
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        iconSize: 40,
+                        icon: const Icon(Icons.skip_previous),
+                        tooltip: 'Anterior',
+                        onPressed: reproductor.anterior,
+                      ),
+                      const SizedBox(width: 20),
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: colorAcento,
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          iconSize: 44,
+                          padding: const EdgeInsets.all(14),
+                          color: Colors.black,
+                          icon: Icon(reproductor.reproduciendo ? Icons.pause : Icons.play_arrow),
+                          tooltip: reproductor.reproduciendo ? 'Pausar' : 'Reproducir',
+                          onPressed: reproductor.alternarPausa,
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      IconButton(
+                        iconSize: 40,
+                        icon: const Icon(Icons.skip_next),
+                        tooltip: 'Siguiente',
+                        onPressed: reproductor.siguiente,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  // Apoyo directo al artista (el pago real se conecta en la fase 2).
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colorAcento,
+                        side: const BorderSide(color: colorAcento),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      icon: const Icon(Icons.volunteer_activism),
+                      label: const Text('Apoyar a Mateo Cabral'),
+                      onPressed: () => _avisar(context, 'Las donaciones llegan pronto'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// Pantalla Detalle de álbum: portada, datos y lista de canciones.
+class PantallaAlbum extends StatelessWidget {
+  final Album album;
+
+  const PantallaAlbum({super.key, required this.album});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(album.titulo)),
+      // ListenableBuilder: resalta la canción que está sonando.
+      body: ListenableBuilder(
+        listenable: reproductor,
+        builder: (context, _) {
+          return ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              Center(
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    color: album.colorPortada,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(Icons.album, size: 72, color: Colors.black),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                album.titulo,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Mateo Cabral',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${album.anio}, ${album.indices.length} canciones',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+              const SizedBox(height: 16),
+              // Botón que reproduce el álbum desde la primera canción.
+              Center(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorAcento,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  icon: const Icon(Icons.play_arrow),
+                  label: const Text('Reproducir'),
+                  onPressed: () => reproductor.reproducir(album.indices.first),
+                ),
+              ),
+              const SizedBox(height: 16),
+              for (int i = 0; i < album.indices.length; i++)
+                _FilaCancionAlbum(numero: i + 1, indice: album.indices[i]),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Una fila de la lista de canciones del álbum.
+class _FilaCancionAlbum extends StatelessWidget {
+  final int numero;
+  final int indice; // posición en la lista `canciones`
+
+  const _FilaCancionAlbum({required this.numero, required this.indice});
+
+  @override
+  Widget build(BuildContext context) {
+    final cancion = canciones[indice];
+    final sonando = reproductor.indiceActual == indice;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: SizedBox(
+        width: 28,
+        child: Center(
+          child: Text(
+            '$numero',
+            style: TextStyle(color: sonando ? colorAcento : Colors.grey),
+          ),
+        ),
+      ),
+      title: Text(
+        cancion.titulo,
+        style: TextStyle(
+          color: sonando ? colorAcento : Colors.white,
+          fontWeight: sonando ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      trailing: sonando
+          ? const Icon(Icons.graphic_eq, color: colorAcento)
+          : Text(cancion.duracion, style: const TextStyle(color: Colors.grey)),
+      // Reproduce y se queda en la pantalla: aparece el mini-player abajo.
+      onTap: () => reproductor.reproducir(indice),
     );
   }
 }
