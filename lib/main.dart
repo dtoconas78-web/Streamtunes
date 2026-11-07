@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:math';
 
 void main() => runApp(const MiApp());
 
@@ -28,8 +29,10 @@ class MiApp extends StatelessWidget {
               child: ListenableBuilder(
                 listenable: reproductor,
                 builder: (context, _) {
+                  final tecladoAbierto = MediaQuery.of(context).viewInsets.bottom > 0;
                   final miniVisible = reproductor.hayCancion &&
-                      !reproductor.pantallaCompletaAbierta;
+                      !reproductor.pantallaCompletaAbierta &&
+                      !tecladoAbierto;
                   // Si el mini-player está visible, las pantallas no deben
                   // dejar margen inferior (ya lo ocupa el mini-player).
                   return MediaQuery.removePadding(
@@ -64,6 +67,9 @@ class Cancion {
   final String tendencia;
   final String lugar;
   final Color colorPortada;
+  final String genero;
+  final String descripcion;
+  final bool publica;
 
   const Cancion({
     required this.titulo,
@@ -72,12 +78,15 @@ class Cancion {
     required this.tendencia,
     required this.lugar,
     required this.colorPortada,
+    this.genero = '',
+    this.descripcion = '',
+    this.publica = true,
   });
 }
 
 // Lista de canciones del artista (datos de ejemplo, realistas).
 // Cada una con un color de "portada" distinto para simular variedad visual.
-const List<Cancion> canciones = [
+final List<Cancion> canciones = [
   Cancion(
     titulo: 'Luces de la Ciudad',
     duracion: '3:24',
@@ -129,7 +138,7 @@ class Album {
 }
 
 // Álbumes del artista (datos de ejemplo).
-const List<Album> albumes = [
+final List<Album> albumes = [
   Album(
     titulo: 'Postales',
     anio: '2024',
@@ -171,6 +180,20 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: colorAcento,
+        foregroundColor: Colors.black,
+        icon: const Icon(Icons.upload),
+        label: const Text('Subir música'),
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const PantallaSubirMusica()),
+          );
+          // Al volver, refresca las listas por si se publicó algo nuevo.
+          if (mounted) setState(() {});
+        },
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -203,14 +226,32 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    'Mateo Cabral',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    '8.4K seguidores',
-                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  // Se actualiza solo cuando se edita el perfil.
+                  ListenableBuilder(
+                    listenable: perfil,
+                    builder: (context, _) => Column(
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              perfil.nombre,
+                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                            ),
+                            // La insignia aparece solo si el perfil está verificado.
+                            if (perfil.esVerificado) ...[
+                              const SizedBox(width: 6),
+                              const Icon(Icons.verified, color: colorVerificado, size: 20),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${perfil.pais}, 8.4K seguidores',
+                          style: const TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 12),
                   // Botón "Seguir" con estado: cambia al tocarlo.
@@ -243,6 +284,44 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                       );
                     },
                     child: Text(siguiendo ? 'Siguiendo' : 'Seguir'),
+                  ),
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    children: [
+                      TextButton.icon(
+                        style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PantallaEditarPerfil(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.edit, size: 16, color: colorAcento),
+                        label: const Text('Editar perfil',
+                            style: TextStyle(color: colorAcento)),
+                      ),
+                      // El texto, ícono y color cambian según el estado.
+                      ListenableBuilder(
+                        listenable: perfil,
+                        builder: (context, _) => TextButton.icon(
+                          style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PantallaVerificacion(),
+                              ),
+                            );
+                          },
+                          icon: Icon(perfil.iconoVerificacion,
+                              size: 16, color: perfil.colorVerificacion),
+                          label: Text(perfil.etiquetaVerificacion,
+                              style: TextStyle(color: perfil.colorVerificacion)),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -287,7 +366,7 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                 children: [
                   // Tab 1: lista de canciones.
                   ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
                     itemCount: canciones.length,
                     itemBuilder: (context, index) {
                       final cancion = canciones[index];
@@ -312,8 +391,12 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                             child: const Icon(Icons.music_note, color: Colors.black),
                           ),
                           title: Text(cancion.titulo),
-                          subtitle: Text(cancion.duracion,
-                              style: const TextStyle(color: Colors.grey)),
+                          subtitle: Text(
+                            cancion.publica
+                                ? cancion.duracion
+                                : '${cancion.duracion}, privada',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
                           trailing: const Icon(Icons.bar_chart, color: colorAcento),
                           onTap: () {
                             Navigator.push(
@@ -330,7 +413,7 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                   // Tab 2: Álbumes (placeholder visual).
                   // Tab 2: lista de álbumes.
                   ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
                     itemCount: albumes.length,
                     itemBuilder: (context, index) {
                       final album = albumes[index];
@@ -372,11 +455,14 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                     },
                   ),
                   // Tab 3: Sobre mí (placeholder visual).
-                  const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text(
-                      'Artista independiente de Mendoza. Hace música desde 2019, mezclando rock alternativo con sonidos electrónicos.',
-                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: ListenableBuilder(
+                      listenable: perfil,
+                      builder: (context, _) => Text(
+                        perfil.bio,
+                        style: const TextStyle(color: Colors.grey, fontSize: 14),
+                      ),
                     ),
                   ),
                 ],
@@ -754,7 +840,8 @@ class MiniReproductor extends StatelessWidget {
       builder: (context, _) {
         final cancion = reproductor.cancion;
         // Se oculta si no hay canción o si ya está abierto el reproductor grande.
-        if (cancion == null || reproductor.pantallaCompletaAbierta) {
+        final tecladoAbierto = MediaQuery.of(context).viewInsets.bottom > 0;
+        if (cancion == null || reproductor.pantallaCompletaAbierta || tecladoAbierto) {
           return const SizedBox.shrink();
         }
         final progreso =
@@ -1132,6 +1219,1222 @@ class _FilaCancionAlbum extends StatelessWidget {
           : Text(cancion.duracion, style: const TextStyle(color: Colors.grey)),
       // Reproduce y se queda en la pantalla: aparece el mini-player abajo.
       onTap: () => reproductor.reproducir(indice),
+    );
+  }
+}
+// Estados por los que pasa una solicitud de verificación.
+enum EstadoVerificacion { noSolicitada, pendiente, verificada, rechazada }
+
+// Color de la insignia de verificado.
+const Color colorVerificado = Color(0xFF00BFA5);
+
+class PerfilUsuario extends ChangeNotifier {
+  String nombre = 'Mateo Cabral';
+  String pais = 'Argentina';
+  String bio =
+      'Artista independiente de Mendoza. Hace música desde 2019, mezclando rock alternativo con sonidos electrónicos.';
+
+  void guardar({required String nombre, required String pais, required String bio}) {
+    this.nombre = nombre;
+    this.pais = pais;
+    this.bio = bio;
+    notifyListeners();
+  }
+
+  EstadoVerificacion estadoVerificacion = EstadoVerificacion.noSolicitada;
+  String motivoRechazo = '';
+
+  bool get esVerificado => estadoVerificacion == EstadoVerificacion.verificada;
+
+  // Texto, ícono y color del botón de verificación en el perfil.
+  String get etiquetaVerificacion => switch (estadoVerificacion) {
+    EstadoVerificacion.noSolicitada => 'Verificar perfil',
+    EstadoVerificacion.pendiente => 'En revisión',
+    EstadoVerificacion.verificada => 'Verificado',
+    EstadoVerificacion.rechazada => 'Verificación rechazada',
+  };
+
+  IconData get iconoVerificacion => switch (estadoVerificacion) {
+    EstadoVerificacion.noSolicitada => Icons.verified_outlined,
+    EstadoVerificacion.pendiente => Icons.hourglass_top,
+    EstadoVerificacion.verificada => Icons.verified,
+    EstadoVerificacion.rechazada => Icons.error_outline,
+  };
+
+  Color get colorVerificacion => switch (estadoVerificacion) {
+    EstadoVerificacion.noSolicitada => colorAcento,
+    EstadoVerificacion.pendiente => Colors.amber,
+    EstadoVerificacion.verificada => colorVerificado,
+    EstadoVerificacion.rechazada => Colors.redAccent,
+  };
+
+  // Se llama al enviar el formulario. Los datos del formulario NO se guardan
+  // acá a propósito: documento y cuenta de cobro son sensibles y tienen que ir
+  // directo al backend (o al proveedor de pagos), nunca quedarse en la app.
+  void enviarSolicitud() {
+    estadoVerificacion = EstadoVerificacion.pendiente;
+    motivoRechazo = '';
+    notifyListeners();
+  }
+
+  // SOLO PARA PRUEBAS: simula la respuesta del equipo que revisa.
+  // Cuando haya backend, esto se reemplaza por la respuesta real.
+  void simularResultado({required bool aprobada, String motivo = ''}) {
+    estadoVerificacion =
+    aprobada ? EstadoVerificacion.verificada : EstadoVerificacion.rechazada;
+    motivoRechazo = motivo;
+    notifyListeners();
+  }
+
+
+}
+
+final PerfilUsuario perfil = PerfilUsuario();
+
+const List<String> paises = [
+  'Argentina',
+  'Chile',
+  'Uruguay',
+  'Paraguay',
+  'Bolivia',
+  'Brasil',
+  'Colombia',
+  'México',
+  'España',
+  'Otro',
+];
+
+// Pantalla Editar perfil: foto, nombre, país y "sobre mí".
+class PantallaEditarPerfil extends StatefulWidget {
+  const PantallaEditarPerfil({super.key});
+
+  @override
+  State<PantallaEditarPerfil> createState() => _PantallaEditarPerfilState();
+}
+
+class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nombreCtrl =
+  TextEditingController(text: perfil.nombre);
+  late final TextEditingController _bioCtrl =
+  TextEditingController(text: perfil.bio);
+  late String _pais = perfil.pais;
+
+  @override
+  void dispose() {
+    _nombreCtrl.dispose();
+    _bioCtrl.dispose();
+    super.dispose();
+  }
+
+  // Estilo común de los campos del formulario.
+  InputDecoration _decoracion(String etiqueta) {
+    return InputDecoration(
+      labelText: etiqueta,
+      filled: true,
+      fillColor: colorTarjeta,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  void _cambiarFoto() {
+    // Elegir una foto real necesita el paquete image_picker.
+    // Por ahora solo avisa.
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Cambiar la foto se conecta más adelante')),
+    );
+  }
+
+  void _guardar() {
+    // Si algún campo no cumple las reglas, muestra el error y no guarda.
+    if (!_formKey.currentState!.validate()) return;
+
+    perfil.guardar(
+      nombre: _nombreCtrl.text.trim(),
+      pais: _pais,
+      bio: _bioCtrl.text.trim(),
+    );
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Perfil actualizado')),
+    );
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Editar perfil')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                // Avatar con ícono de cámara para cambiar la foto.
+                GestureDetector(
+                  onTap: _cambiarFoto,
+                  child: Stack(
+                    children: [
+                      const CircleAvatar(
+                        radius: 50,
+                        backgroundColor: colorTarjeta,
+                        child: Icon(Icons.person, size: 50, color: colorAcento),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: colorAcento,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: colorFondo, width: 3),
+                          ),
+                          child: const Icon(Icons.camera_alt, size: 16, color: Colors.black),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+                TextFormField(
+                  controller: _nombreCtrl,
+                  maxLength: 40,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: _decoracion('Nombre'),
+                  validator: (valor) {
+                    if (valor == null || valor.trim().isEmpty) {
+                      return 'Escribí tu nombre';
+                    }
+                    if (valor.trim().length < 2) {
+                      return 'Tiene que tener al menos 2 letras';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  value: paises.contains(_pais) ? _pais : null,
+                  dropdownColor: colorTarjeta,
+                  decoration: _decoracion('País'),
+                  items: [
+                    for (final pais in paises)
+                      DropdownMenuItem(value: pais, child: Text(pais)),
+                  ],
+                  onChanged: (valor) {
+                    if (valor != null) setState(() => _pais = valor);
+                  },
+                ),
+                const SizedBox(height: 24),
+                TextFormField(
+                  controller: _bioCtrl,
+                  maxLength: 200,
+                  maxLines: 4,
+                  decoration: _decoracion('Sobre mí'),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorAcento,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    onPressed: _guardar,
+                    child: const Text('Guardar cambios'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Estilo común para los campos de los formularios.
+InputDecoration decoracionFormulario(String etiqueta) {
+  return InputDecoration(
+    labelText: etiqueta,
+    filled: true,
+    fillColor: colorTarjeta,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    ),
+  );
+}
+
+// Pantalla Verificación: muestra una vista distinta según el estado.
+class PantallaVerificacion extends StatelessWidget {
+  const PantallaVerificacion({super.key});
+
+  void _abrirFormulario(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PantallaSolicitudVerificacion()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Verificación')),
+      body: SafeArea(
+        child: ListenableBuilder(
+          listenable: perfil,
+          builder: (context, _) {
+            switch (perfil.estadoVerificacion) {
+              case EstadoVerificacion.noSolicitada:
+                return _VistaEstado(
+                  icono: perfil.iconoVerificacion,
+                  color: perfil.colorVerificacion,
+                  titulo: 'Verificá tu perfil',
+                  mensaje:
+                  'Para publicar conciertos y cobrar entradas necesitamos confirmar tu identidad y dónde vas a cobrar. Subir música sigue siendo libre.',
+                  hijos: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colorTarjeta,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _Paso(numero: 1, texto: 'Tus datos y tu documento'),
+                          _Paso(numero: 2, texto: 'Tu cuenta de cobro'),
+                          _Paso(numero: 3, texto: 'Revisión de nuestro equipo'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _BotonPrincipal(
+                      texto: 'Empezar verificación',
+                      onPressed: () => _abrirFormulario(context),
+                    ),
+                  ],
+                );
+
+              case EstadoVerificacion.pendiente:
+                return _VistaEstado(
+                  icono: perfil.iconoVerificacion,
+                  color: perfil.colorVerificacion,
+                  titulo: 'Solicitud en revisión',
+                  mensaje:
+                  'Recibimos tus datos. Te vamos a avisar cuando haya una respuesta.',
+                  hijos: [
+                    // Caja de pruebas: se borra cuando exista el backend.
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.withValues(alpha: 0.4)),
+                      ),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Solo para pruebas',
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Todavía no hay backend: simulá la respuesta del equipo.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () =>
+                                      perfil.simularResultado(aprobada: true),
+                                  child: const Text('Aprobar'),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => perfil.simularResultado(
+                                    aprobada: false,
+                                    motivo:
+                                    'La foto del documento no se ve con claridad.',
+                                  ),
+                                  child: const Text('Rechazar'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+
+              case EstadoVerificacion.rechazada:
+                return _VistaEstado(
+                  icono: perfil.iconoVerificacion,
+                  color: perfil.colorVerificacion,
+                  titulo: 'Solicitud rechazada',
+                  mensaje: 'Motivo: ${perfil.motivoRechazo}',
+                  hijos: [
+                    _BotonPrincipal(
+                      texto: 'Volver a intentar',
+                      onPressed: () => _abrirFormulario(context),
+                    ),
+                  ],
+                );
+
+              case EstadoVerificacion.verificada:
+                return _VistaEstado(
+                  icono: perfil.iconoVerificacion,
+                  color: perfil.colorVerificacion,
+                  titulo: 'Perfil verificado',
+                  mensaje:
+                  'Tu perfil tiene la insignia de verificado. Vas a poder publicar conciertos y cobrar entradas cuando esa sección esté disponible.',
+                );
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// Diseño común de todas las vistas de estado: ícono, título, mensaje y extras.
+class _VistaEstado extends StatelessWidget {
+  final IconData icono;
+  final Color color;
+  final String titulo;
+  final String mensaje;
+  final List<Widget> hijos;
+
+  const _VistaEstado({
+    required this.icono,
+    required this.color,
+    required this.titulo,
+    required this.mensaje,
+    this.hijos = const [],
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icono, size: 56, color: color),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            titulo,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            mensaje,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+          const SizedBox(height: 24),
+          ...hijos,
+        ],
+      ),
+    );
+  }
+}
+
+// Un paso numerado de la lista "cómo funciona".
+class _Paso extends StatelessWidget {
+  final int numero;
+  final String texto;
+
+  const _Paso({required this.numero, required this.texto});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 12,
+            backgroundColor: colorAcento,
+            child: Text('$numero',
+                style: const TextStyle(fontSize: 12, color: Colors.black)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(texto)),
+        ],
+      ),
+    );
+  }
+}
+
+// Botón naranja de ancho completo, igual al de Editar perfil.
+class _BotonPrincipal extends StatelessWidget {
+  final String texto;
+  final VoidCallback onPressed;
+
+  const _BotonPrincipal({required this.texto, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colorAcento,
+          foregroundColor: Colors.black,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        ),
+        onPressed: onPressed,
+        child: Text(texto),
+      ),
+    );
+  }
+}
+
+// Pantalla Solicitar verificación: datos, documento y cuenta de cobro.
+class PantallaSolicitudVerificacion extends StatefulWidget {
+  const PantallaSolicitudVerificacion({super.key});
+
+  @override
+  State<PantallaSolicitudVerificacion> createState() =>
+      _PantallaSolicitudVerificacionState();
+}
+
+class _PantallaSolicitudVerificacionState
+    extends State<PantallaSolicitudVerificacion> {
+  final _formKey = GlobalKey<FormState>();
+  final _nombreCtrl = TextEditingController();
+  final _numeroDocCtrl = TextEditingController();
+  final _cuentaCtrl = TextEditingController();
+  final _linkCtrl = TextEditingController();
+  String _tipoDoc = 'DNI';
+
+  @override
+  void dispose() {
+    _nombreCtrl.dispose();
+    _numeroDocCtrl.dispose();
+    _cuentaCtrl.dispose();
+    _linkCtrl.dispose();
+    super.dispose();
+  }
+
+  void _enviar() {
+    if (!_formKey.currentState!.validate()) return;
+
+    perfil.enviarSolicitud();
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Solicitud enviada')),
+    );
+    // Vuelve a la pantalla de Verificación, que ahora muestra "en revisión".
+    Navigator.pop(context);
+  }
+
+  // Texto de error en rojo para los campos personalizados (documento y términos).
+  Widget _error(String texto) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 12, top: 6),
+      child: Text(
+        texto,
+        style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.error),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Solicitar verificación')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Tus datos',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _nombreCtrl,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: decoracionFormulario('Nombre completo (como en el documento)'),
+                  validator: (valor) {
+                    if (valor == null || valor.trim().length < 3) {
+                      return 'Escribí tu nombre completo';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 150,
+                      child: DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        value: _tipoDoc,
+                        dropdownColor: colorTarjeta,
+                        decoration: decoracionFormulario('Tipo'),
+                        items: const [
+                          DropdownMenuItem(value: 'DNI', child: Text('DNI')),
+                          DropdownMenuItem(value: 'Pasaporte', child: Text('Pasaporte')),
+                          DropdownMenuItem(value: 'Otro', child: Text('Otro')),
+                        ],
+                        onChanged: (valor) {
+                          if (valor != null) setState(() => _tipoDoc = valor);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _numeroDocCtrl,
+                        decoration: decoracionFormulario('Número'),
+                        validator: (valor) {
+                          final texto = (valor ?? '').trim();
+                          if (texto.length < 6 || texto.length > 15) {
+                            return 'Entre 6 y 15 caracteres';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Foto del documento (simulada: adjuntar una real necesita image_picker).
+                FormField<bool>(
+                  initialValue: false,
+                  validator: (valor) =>
+                  valor == true ? null : 'Adjuntá una foto de tu documento',
+                  builder: (campo) {
+                    final adjunta = campo.value == true;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: adjunta ? colorVerificado : colorAcento,
+                              side: BorderSide(
+                                  color: adjunta ? colorVerificado : colorAcento),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            icon: Icon(adjunta ? Icons.check_circle : Icons.upload_file),
+                            label: Text(adjunta
+                                ? 'Foto adjuntada (simulado)'
+                                : 'Adjuntar foto del documento'),
+                            onPressed: () => campo.didChange(!adjunta),
+                          ),
+                        ),
+                        if (campo.hasError) _error(campo.errorText!),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 28),
+                const Text('Dónde vas a cobrar',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _cuentaCtrl,
+                  decoration: decoracionFormulario('CBU, CVU o alias'),
+                  validator: (valor) {
+                    final texto = (valor ?? '').trim();
+                    if (texto.isEmpty) return 'Ingresá tu CBU, CVU o alias';
+                    final soloNumeros = RegExp(r'^\d+$').hasMatch(texto);
+                    if (soloNumeros) {
+                      return texto.length == 22
+                          ? null
+                          : 'El CBU o CVU tiene 22 números';
+                    }
+                    if (texto.length < 6 || texto.length > 20) {
+                      return 'El alias tiene entre 6 y 20 caracteres';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 28),
+                const Text('Tu música',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _linkCtrl,
+                  keyboardType: TextInputType.url,
+                  decoration: decoracionFormulario('Link a tu música o redes (opcional)'),
+                ),
+                const SizedBox(height: 20),
+                // Aceptación obligatoria.
+                FormField<bool>(
+                  initialValue: false,
+                  validator: (valor) =>
+                  valor == true ? null : 'Tenés que aceptar para continuar',
+                  builder: (campo) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        activeColor: colorAcento,
+                        checkColor: Colors.black,
+                        value: campo.value ?? false,
+                        onChanged: (valor) => campo.didChange(valor),
+                        title: const Text(
+                          'Confirmo que los datos son verdaderos y que soy titular de la cuenta de cobro.',
+                          style: TextStyle(fontSize: 13),
+                        ),
+                      ),
+                      if (campo.hasError) _error(campo.errorText!),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _BotonPrincipal(texto: 'Enviar solicitud', onPressed: _enviar),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Límites sugeridos para contener el costo de almacenamiento y ancho de banda.
+// Por ahora solo se muestran como texto. Con un selector de archivos real,
+// se validan al elegir cada audio.
+const int maxMbPorArchivo = 50;
+const int maxMinutosPorCancion = 10;
+
+const List<String> generos = [
+  'Rock',
+  'Pop',
+  'Electrónica',
+  'Hip hop',
+  'Folklore',
+  'Indie',
+  'Otro',
+];
+
+// Colores entre los que se elige la portada (la imagen real se conecta después).
+const List<Color> coloresPortada = [
+  Color(0xFFFF5500),
+  Color(0xFF3D5AFE),
+  Color(0xFF00BFA5),
+  Color(0xFFD500F9),
+  Color(0xFFFFC107),
+  Color(0xFFE91E63),
+];
+
+// Un audio elegido que todavía no se publicó. Los datos del archivo son
+// simulados hasta conectar un selector de archivos real.
+class _PistaBorrador {
+  final String archivo;
+  final int segundos;
+  final double mb;
+  final TextEditingController titulo = TextEditingController();
+
+  _PistaBorrador({required this.archivo, required this.segundos, required this.mb});
+}
+
+// Pantalla Subir música: una canción suelta o un álbum.
+class PantallaSubirMusica extends StatefulWidget {
+  const PantallaSubirMusica({super.key});
+
+  @override
+  State<PantallaSubirMusica> createState() => _PantallaSubirMusicaState();
+}
+
+class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
+  final _formKey = GlobalKey<FormState>();
+  final _tituloCtrl = TextEditingController();
+  final _anioCtrl = TextEditingController(text: DateTime.now().year.toString());
+  final _descripcionCtrl = TextEditingController();
+  final _azar = Random();
+  final List<_PistaBorrador> _pistas = [];
+  int _contadorArchivos = 0;
+
+  bool _esAlbum = false;
+  Color _colorPortada = coloresPortada.first;
+  String _genero = generos.first;
+  bool _publica = true;
+  bool _errorAudio = false; // muestra el error si falta audio
+  bool _subiendo = false;
+  double _progreso = 0;
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _tituloCtrl.dispose();
+    _anioCtrl.dispose();
+    _descripcionCtrl.dispose();
+    for (final pista in _pistas) {
+      pista.titulo.dispose();
+    }
+    super.dispose();
+  }
+
+  // Libera el controlador después del próximo frame, cuando el campo
+  // de texto ya salió de pantalla.
+  void _descartar(_PistaBorrador pista) {
+    WidgetsBinding.instance.addPostFrameCallback((_) => pista.titulo.dispose());
+  }
+
+  void _cambiarModo(bool esAlbum) {
+    if (esAlbum == _esAlbum) return;
+    final descartadas = List<_PistaBorrador>.from(_pistas);
+    setState(() {
+      _esAlbum = esAlbum;
+      // Al cambiar de modo se vacía la lista de audios para no mezclarlos.
+      _pistas.clear();
+      _errorAudio = false;
+    });
+    for (final pista in descartadas) {
+      _descartar(pista);
+    }
+  }
+
+  // SIMULADO: crea un archivo falso con duración y peso al azar.
+  // Con el paquete file_picker, acá se abre el selector de archivos de audio
+  // y se validan el peso y la duración máximos.
+  void _agregarPista() {
+    _contadorArchivos++;
+    setState(() {
+      _pistas.add(_PistaBorrador(
+        archivo: 'audio_$_contadorArchivos.mp3',
+        segundos: 120 + _azar.nextInt(181),
+        mb: 3 + _azar.nextDouble() * 6,
+      ));
+      _errorAudio = false;
+    });
+  }
+
+  void _quitarPista(int indice) {
+    final pista = _pistas[indice];
+    setState(() => _pistas.removeAt(indice));
+    _descartar(pista);
+  }
+
+  void _publicar() {
+    final formularioOk = _formKey.currentState!.validate();
+    final audioOk = _esAlbum ? _pistas.length >= 2 : _pistas.length == 1;
+    setState(() => _errorAudio = !audioOk);
+    if (!formularioOk || !audioOk) return;
+
+    // Simula la subida: la barra avanza hasta completarse.
+    setState(() {
+      _subiendo = true;
+      _progreso = 0;
+    });
+    _timer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
+      setState(() => _progreso = min(1.0, _progreso + 0.05));
+      if (_progreso >= 1) {
+        timer.cancel();
+        _terminar();
+      }
+    });
+  }
+
+  // Agrega lo subido a las listas de la app y vuelve al perfil.
+  void _terminar() {
+    final titulo = _tituloCtrl.text.trim();
+    final descripcion = _descripcionCtrl.text.trim();
+
+    final nuevas = [
+      for (final pista in _pistas)
+        Cancion(
+          titulo: _esAlbum ? pista.titulo.text.trim() : titulo,
+          duracion: _formatoTiempo(pista.segundos),
+          reproducciones: '0',
+          tendencia: 'Recién publicada',
+          lugar: 'Sin datos todavía',
+          colorPortada: _colorPortada,
+          genero: _genero,
+          descripcion: descripcion,
+          publica: _publica,
+        ),
+    ];
+
+    final primero = canciones.length; // posición de la primera canción nueva
+    canciones.addAll(nuevas);
+    if (_esAlbum) {
+      albumes.add(Album(
+        titulo: titulo,
+        anio: _anioCtrl.text.trim(),
+        colorPortada: _colorPortada,
+        indices: [for (int i = 0; i < nuevas.length; i++) primero + i],
+      ));
+    }
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_esAlbum ? 'Álbum "$titulo" publicado' : '"$titulo" publicada'),
+      ),
+    );
+    Navigator.pop(context);
+  }
+
+  Widget _tituloSeccion(String texto) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(texto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+    );
+  }
+
+  // Nombre del archivo, duración y peso.
+  Widget _infoArchivo(_PistaBorrador pista) {
+    return Row(
+      children: [
+        const Icon(Icons.audio_file, color: colorAcento, size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            '${pista.archivo}, ${_formatoTiempo(pista.segundos)}, ${pista.mb.toStringAsFixed(1)} MB',
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _error(String texto) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 12, top: 6),
+      child: Text(
+        texto,
+        style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.error),
+      ),
+    );
+  }
+
+  // Sección de audio cuando se sube una sola canción.
+  Widget _audioCancion() {
+    if (_pistas.isEmpty) {
+      return SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: colorAcento,
+            side: const BorderSide(color: colorAcento),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+          ),
+          icon: const Icon(Icons.upload_file),
+          label: const Text('Seleccionar audio'),
+          onPressed: _agregarPista,
+        ),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+      decoration: BoxDecoration(
+        color: colorTarjeta,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _infoArchivo(_pistas.first)),
+          IconButton(
+            icon: const Icon(Icons.close),
+            tooltip: 'Quitar audio',
+            onPressed: () => _quitarPista(0),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Sección de audio cuando se sube un álbum: una tarjeta por canción.
+  Widget _audioAlbum() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (int i = 0; i < _pistas.length; i++)
+          Container(
+            key: ObjectKey(_pistas[i]),
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 14),
+                      child: CircleAvatar(
+                        radius: 12,
+                        backgroundColor: colorAcento,
+                        child: Text('${i + 1}',
+                            style: const TextStyle(fontSize: 12, color: Colors.black)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _pistas[i].titulo,
+                        textCapitalization: TextCapitalization.sentences,
+                        decoration: decoracionFormulario('Título de la canción'),
+                        validator: (valor) => (valor == null || valor.trim().isEmpty)
+                            ? 'Escribí el título'
+                            : null,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: 'Quitar canción',
+                      onPressed: () => _quitarPista(i),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                _infoArchivo(_pistas[i]),
+              ],
+            ),
+          ),
+        if (_pistas.length < 20)
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colorAcento,
+                side: const BorderSide(color: colorAcento),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              icon: const Icon(Icons.add),
+              label: const Text('Agregar canción'),
+              onPressed: _agregarPista,
+            ),
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // No deja salir de la pantalla mientras se está subiendo.
+    return PopScope(
+      canPop: !_subiendo,
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Subir música')),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            // Mientras sube, no se puede tocar nada del formulario.
+            child: AbsorbPointer(
+              absorbing: _subiendo,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: SegmentedButton<bool>(
+                        segments: const [
+                          ButtonSegment(
+                              value: false,
+                              label: Text('Canción'),
+                              icon: Icon(Icons.music_note)),
+                          ButtonSegment(
+                              value: true,
+                              label: Text('Álbum'),
+                              icon: Icon(Icons.album)),
+                        ],
+                        selected: {_esAlbum},
+                        onSelectionChanged: (seleccion) => _cambiarModo(seleccion.first),
+                        style: SegmentedButton.styleFrom(
+                          selectedBackgroundColor: colorAcento,
+                          selectedForegroundColor: Colors.black,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    _tituloSeccion(_esAlbum ? 'Canciones del álbum' : 'Audio'),
+                    _esAlbum ? _audioAlbum() : _audioCancion(),
+                    if (_errorAudio)
+                      _error(_esAlbum
+                          ? 'Sumá al menos 2 canciones'
+                          : 'Seleccioná el archivo de audio'),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: Text(
+                        'MP3, WAV o FLAC. Hasta $maxMbPorArchivo MB y $maxMinutosPorCancion minutos por canción.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    _tituloSeccion('Portada'),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [
+                        for (final color in coloresPortada)
+                          GestureDetector(
+                            onTap: () => setState(() => _colorPortada = color),
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: color,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: _colorPortada == color
+                                      ? Colors.white
+                                      : Colors.transparent,
+                                  width: 3,
+                                ),
+                              ),
+                              child: _colorPortada == color
+                                  ? const Icon(Icons.check, color: Colors.black)
+                                  : null,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: Text(
+                        'Por ahora la portada es un color. Subir una imagen se conecta más adelante.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+
+                    _tituloSeccion('Datos'),
+                    TextFormField(
+                      controller: _tituloCtrl,
+                      maxLength: 60,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: decoracionFormulario(
+                          _esAlbum ? 'Título del álbum' : 'Título de la canción'),
+                      validator: (valor) => (valor == null || valor.trim().isEmpty)
+                          ? 'Escribí un título'
+                          : null,
+                    ),
+                    if (_esAlbum) ...[
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _anioCtrl,
+                        maxLength: 4,
+                        keyboardType: TextInputType.number,
+                        decoration:
+                        decoracionFormulario('Año').copyWith(counterText: ''),
+                        validator: (valor) {
+                          final anio = int.tryParse((valor ?? '').trim());
+                          if (anio == null ||
+                              anio < 1950 ||
+                              anio > DateTime.now().year + 1) {
+                            return 'Ingresá un año válido';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      value: _genero,
+                      dropdownColor: colorTarjeta,
+                      decoration: decoracionFormulario('Género'),
+                      items: [
+                        for (final genero in generos)
+                          DropdownMenuItem(value: genero, child: Text(genero)),
+                      ],
+                      onChanged: (valor) {
+                        if (valor != null) setState(() => _genero = valor);
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    TextFormField(
+                      controller: _descripcionCtrl,
+                      maxLength: 300,
+                      maxLines: 3,
+                      decoration: decoracionFormulario('Descripción (opcional)'),
+                    ),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      activeColor: colorAcento,
+                      title: const Text('Pública'),
+                      subtitle: Text(
+                        _publica
+                            ? 'Cualquiera puede escucharla'
+                            : 'Solo vos la vas a ver',
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      value: _publica,
+                      onChanged: (valor) => setState(() => _publica = valor),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Mientras sube muestra el progreso; si no, el botón.
+                    if (_subiendo)
+                      Column(
+                        children: [
+                          LinearProgressIndicator(
+                            value: _progreso,
+                            minHeight: 6,
+                            color: colorAcento,
+                            backgroundColor: colorTarjeta,
+                          ),
+                          const SizedBox(height: 8),
+                          Center(
+                            child: Text(
+                              'Subiendo... ${(_progreso * 100).round()}%',
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      _BotonPrincipal(texto: 'Publicar', onPressed: _publicar),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
