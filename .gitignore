@@ -44,5 +44,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Local configuration (rutas del SDK de cada máquina)
+android/local.properties
+ios/Flutter/ephemeral/
+macos/Flutter/ephemeral/
+
 # Widget Preview related
 .widget_preview/
