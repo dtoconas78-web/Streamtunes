@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
+import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
-import 'package:streamtunes_demo/views/screens/entradas_screen.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
@@ -18,12 +18,7 @@ class ComprarEntradaScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.confirmation_number),
             tooltip: 'Mis entradas',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const EntradasScreen()),
-              );
-            },
+            onPressed: () => irA(context, Rutas.entradas),
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: colorAcento),

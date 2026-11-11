@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
-import 'package:streamtunes_demo/views/screens/registro_screen.dart';
 
 // Diálogo para invitados: cuando toca una función de cuenta, se explica
 // qué falta y se ofrece crear la cuenta gratis (o seguir como invitado).
@@ -25,10 +25,7 @@ Future<void> mostrarDialogoRegistro(BuildContext context, String accion) {
           ),
           onPressed: () {
             Navigator.pop(ctx);
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const RegistroScreen()),
-            );
+            irA(context, Rutas.registro);
           },
           child: const Text('Crear cuenta gratis'),
         ),

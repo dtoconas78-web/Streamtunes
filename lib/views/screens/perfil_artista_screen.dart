@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
+import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
-import 'package:streamtunes_demo/views/screens/album_screen.dart';
-import 'package:streamtunes_demo/views/screens/editar_perfil_screen.dart';
-import 'package:streamtunes_demo/views/screens/estadisticas_cancion_screen.dart';
-import 'package:streamtunes_demo/views/screens/subir_musica_screen.dart';
-import 'package:streamtunes_demo/views/screens/verificacion_screen.dart';
-import 'package:streamtunes_demo/views/screens/ventas_donaciones_screen.dart';
 
 // Pantalla A: perfil del artista + tabs + lista de canciones.
 // Es Stateful porque el botón "Seguir" cambia de estado al tocarlo.
@@ -46,14 +41,7 @@ class _PantallaAState extends State<PantallaA>
           IconButton(
             icon: const Icon(Icons.attach_money),
             tooltip: 'Ventas y donaciones',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const VentasDonacionesScreen(),
-                ),
-              );
-            },
+            onPressed: () => irA(context, Rutas.ventas),
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: colorAcento),
@@ -68,10 +56,7 @@ class _PantallaAState extends State<PantallaA>
         icon: const Icon(Icons.upload),
         label: const Text('Subir música'),
         // Al volver no hace falta setState: el catálogo notifica solo.
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const PantallaSubirMusica()),
-        ),
+        onPressed: () => irA(context, Rutas.subirMusica),
       ),
       body: SafeArea(
         child: Column(
@@ -187,15 +172,7 @@ class _PantallaAState extends State<PantallaA>
                         style: TextButton.styleFrom(
                           visualDensity: VisualDensity.compact,
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const PantallaEditarPerfil(),
-                            ),
-                          );
-                        },
+                        onPressed: () => irA(context, Rutas.editarPerfil),
                         icon: const Icon(
                           Icons.edit,
                           size: 16,
@@ -213,15 +190,7 @@ class _PantallaAState extends State<PantallaA>
                           style: TextButton.styleFrom(
                             visualDensity: VisualDensity.compact,
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const PantallaVerificacion(),
-                              ),
-                            );
-                          },
+                          onPressed: () => irA(context, Rutas.verificacion),
                           icon: Icon(
                             perfil.iconoVerificacion,
                             size: 16,
@@ -320,15 +289,11 @@ class _PantallaAState extends State<PantallaA>
                               Icons.bar_chart,
                               color: colorAcento,
                             ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      PantallaB(cancion: cancion),
-                                ),
-                              );
-                            },
+                            onTap: () => irA(
+                              context,
+                              Rutas.estadisticas,
+                              argumentos: cancion,
+                            ),
                           ),
                         );
                       },
@@ -372,15 +337,8 @@ class _PantallaAState extends State<PantallaA>
                               Icons.chevron_right,
                               color: Colors.grey,
                             ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      PantallaAlbum(album: album),
-                                ),
-                              );
-                            },
+                            onTap: () =>
+                                irA(context, Rutas.album, argumentos: album),
                           ),
                         );
                       },

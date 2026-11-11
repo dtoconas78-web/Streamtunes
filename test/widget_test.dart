@@ -44,4 +44,12 @@ void main() {
     expect(find.text('Registrarse con Google'), findsOneWidget);
     expect(find.text('Crear cuenta gratis'), findsOneWidget);
   });
+
+  testWidgets('navegar a registro por ruta nombrada funciona', (tester) async {
+    await tester.pumpWidget(const MiApp());
+    await tester.pump();
+    await tester.tap(find.text('Crear cuenta gratis', findRichText: true));
+    await tester.pumpAndSettle();
+    expect(find.byType(RegistroScreen), findsOneWidget);
+  });
 }

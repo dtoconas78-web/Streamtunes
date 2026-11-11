@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
+import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
-import 'package:streamtunes_demo/views/screens/registro_screen.dart';
 
 // Home del invitado: solo escuchar gratis. Las funciones de cuenta (guardar,
 // crear listas, comprar entradas, donar, subir música) le piden registrarse.
@@ -66,12 +66,7 @@ class ExplorarScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RegistroScreen(),
-                        ),
-                      ),
+                      onPressed: () => irA(context, Rutas.registro),
                       child: const Text('Crear cuenta gratis'),
                     ),
                   ),

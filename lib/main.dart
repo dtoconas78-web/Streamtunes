@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
+import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
@@ -19,6 +20,7 @@ class MiApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navegadorKey,
       navigatorObservers: [ObservadorReproductor()],
+      onGenerateRoute: generarRuta,
       builder: (context, child) {
         return Column(
           children: [

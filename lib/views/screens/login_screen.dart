@@ -3,7 +3,7 @@ import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
-import 'package:streamtunes_demo/views/screens/registro_screen.dart';
+import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/views/widgets/boton_google.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 import 'package:streamtunes_demo/views/widgets/elegir_rol.dart';
@@ -209,14 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
                   TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RegistroScreen(),
-                        ),
-                      );
-                    },
+                    onPressed: () => irA(context, Rutas.registro),
                     child: RichText(
                       text: const TextSpan(
                         text: '¿No tenés cuenta? ',

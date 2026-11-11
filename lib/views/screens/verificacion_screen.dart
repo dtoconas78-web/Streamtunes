@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
-import 'package:streamtunes_demo/views/screens/solicitud_verificacion_screen.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 
 // Pantalla Verificación: muestra una vista distinta según el estado.
@@ -9,12 +9,7 @@ class PantallaVerificacion extends StatelessWidget {
   const PantallaVerificacion({super.key});
 
   void _abrirFormulario(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const PantallaSolicitudVerificacion(),
-      ),
-    );
+    irA(context, Rutas.solicitudVerificacion);
   }
 
   @override

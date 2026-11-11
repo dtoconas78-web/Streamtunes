@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
-import 'package:streamtunes_demo/views/screens/reproductor_screen.dart';
 
 // Llave del Navigator: permite abrir pantallas desde el mini-player,
 // que está por encima del Navigator y no tiene su propio contexto de navegación.
@@ -14,14 +14,9 @@ void cerrarSesion() {
   navegadorKey.currentState?.popUntil((route) => route.isFirst);
 }
 
-// Abre el reproductor grande.
+// Abre el reproductor grande (ruta nombrada: el observador la reconoce igual).
 void abrirReproductor() {
-  navegadorKey.currentState?.push(
-    MaterialPageRoute(
-      settings: const RouteSettings(name: '/reproductor'),
-      builder: (context) => const PantallaReproductor(),
-    ),
-  );
+  navegadorKey.currentState?.pushNamed(Rutas.reproductor);
 }
 
 // Avisa al controlador cuando el reproductor grande se abre o se cierra.
