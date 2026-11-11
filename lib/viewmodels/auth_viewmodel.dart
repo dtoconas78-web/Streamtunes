@@ -28,11 +28,13 @@ class AuthViewModel extends ChangeNotifier {
     required String password,
     required RolUsuario rol,
   }) async {
-    login(await authService.ingresarConEmail(
-      email: email,
-      password: password,
-      rol: rol,
-    ));
+    login(
+      await authService.ingresarConEmail(
+        email: email,
+        password: password,
+        rol: rol,
+      ),
+    );
   }
 
   Future<void> loginConGoogle({required RolUsuario rol}) async {
@@ -45,12 +47,14 @@ class AuthViewModel extends ChangeNotifier {
     required String password,
     required RolUsuario rol,
   }) async {
-    login(await authService.registrar(
-      nombre: nombre,
-      email: email,
-      password: password,
-      rol: rol,
-    ));
+    login(
+      await authService.registrar(
+        nombre: nombre,
+        email: email,
+        password: password,
+        rol: rol,
+      ),
+    );
   }
 
   Future<void> entrarComoInvitado() async {

@@ -12,7 +12,8 @@ class PantallaReproductor extends StatelessWidget {
 
   void _avisar(BuildContext context, String mensaje) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   @override
@@ -41,7 +42,8 @@ class PantallaReproductor extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.share, color: colorAcento),
                 tooltip: 'Compartir',
-                onPressed: () => _avisar(context, 'Compartiendo "${cancion.titulo}"...'),
+                onPressed: () =>
+                    _avisar(context, 'Compartiendo "${cancion.titulo}"...'),
               ),
             ],
           ),
@@ -61,7 +63,11 @@ class PantallaReproductor extends StatelessWidget {
                             color: cancion.colorPortada,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Icon(Icons.music_note, size: 96, color: Colors.black),
+                          child: const Icon(
+                            Icons.music_note,
+                            size: 96,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                     ),
@@ -76,12 +82,18 @@ class PantallaReproductor extends StatelessWidget {
                           children: [
                             Text(
                               cancion.titulo,
-                              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             const Text(
                               'Mateo Cabral',
-                              style: TextStyle(fontSize: 14, color: Colors.grey),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
                             ),
                           ],
                         ),
@@ -96,7 +108,10 @@ class PantallaReproductor extends StatelessWidget {
                         onPressed: () {
                           // Guardar es solo para cuentas registradas.
                           if (authViewModel.esInvitado) {
-                            mostrarDialogoRegistro(context, 'guardar canciones');
+                            mostrarDialogoRegistro(
+                              context,
+                              'guardar canciones',
+                            );
                           } else {
                             reproductor.alternarMeGusta();
                           }
@@ -126,10 +141,20 @@ class PantallaReproductor extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(formatoTiempo(posicion),
-                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                        Text(formatoTiempo(total),
-                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text(
+                          formatoTiempo(posicion),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Text(
+                          formatoTiempo(total),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -154,8 +179,14 @@ class PantallaReproductor extends StatelessWidget {
                           iconSize: 44,
                           padding: const EdgeInsets.all(14),
                           color: Colors.black,
-                          icon: Icon(reproductor.reproduciendo ? Icons.pause : Icons.play_arrow),
-                          tooltip: reproductor.reproduciendo ? 'Pausar' : 'Reproducir',
+                          icon: Icon(
+                            reproductor.reproduciendo
+                                ? Icons.pause
+                                : Icons.play_arrow,
+                          ),
+                          tooltip: reproductor.reproduciendo
+                              ? 'Pausar'
+                              : 'Reproducir',
                           onPressed: reproductor.alternarPausa,
                         ),
                       ),

@@ -11,7 +11,9 @@ class PantallaVerificacion extends StatelessWidget {
   void _abrirFormulario(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const PantallaSolicitudVerificacion()),
+      MaterialPageRoute(
+        builder: (context) => const PantallaSolicitudVerificacion(),
+      ),
     );
   }
 
@@ -29,8 +31,7 @@ class PantallaVerificacion extends StatelessWidget {
                   icono: perfil.iconoVerificacion,
                   color: perfil.colorVerificacion,
                   titulo: 'Verificá tu perfil',
-                  mensaje:
-                      'Para publicar conciertos y cobrar entradas necesitamos confirmar tu identidad y dónde vas a cobrar. Subir música sigue siendo libre.',
+                  mensaje: 'Para publicar conciertos y cobrar entradas necesitamos confirmar tu identidad y dónde vas a cobrar. Subir música sigue siendo libre.',
                   hijos: [
                     Container(
                       width: double.infinity,
@@ -61,24 +62,26 @@ class PantallaVerificacion extends StatelessWidget {
                   icono: perfil.iconoVerificacion,
                   color: perfil.colorVerificacion,
                   titulo: 'Solicitud en revisión',
-                  mensaje:
-                      'Recibimos tus datos. Te vamos a avisar cuando haya una respuesta.',
+                  mensaje: 'Recibimos tus datos. Te vamos a avisar cuando haya una respuesta.',
                   hijos: [
                     // Caja de pruebas: se borra cuando exista el backend.
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.withValues(alpha: 0.4)),
+                        border: Border.all(
+                          color: Colors.grey.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: Column(
                         children: [
                           const Text(
                             'Solo para pruebas',
                             style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           const Text(
@@ -101,8 +104,7 @@ class PantallaVerificacion extends StatelessWidget {
                                 child: OutlinedButton(
                                   onPressed: () => perfil.simularResultado(
                                     aprobada: false,
-                                    motivo:
-                                        'La foto del documento no se ve con claridad.',
+                                    motivo: 'La foto del documento no se ve con claridad.',
                                   ),
                                   child: const Text('Rechazar'),
                                 ),
@@ -134,8 +136,7 @@ class PantallaVerificacion extends StatelessWidget {
                   icono: perfil.iconoVerificacion,
                   color: perfil.colorVerificacion,
                   titulo: 'Perfil verificado',
-                  mensaje:
-                      'Tu perfil tiene la insignia de verificado. Vas a poder publicar conciertos y cobrar entradas cuando esa sección esté disponible.',
+                  mensaje: 'Tu perfil tiene la insignia de verificado. Vas a poder publicar conciertos y cobrar entradas cuando esa sección esté disponible.',
                 );
             }
           },
@@ -212,8 +213,10 @@ class _Paso extends StatelessWidget {
           CircleAvatar(
             radius: 12,
             backgroundColor: colorAcento,
-            child: Text('$numero',
-                style: const TextStyle(fontSize: 12, color: Colors.black)),
+            child: Text(
+              '$numero',
+              style: const TextStyle(fontSize: 12, color: Colors.black),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(child: Text(texto)),

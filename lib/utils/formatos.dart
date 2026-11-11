@@ -26,6 +26,19 @@ String formatearPrecio(double valor) {
 
 // Formatea una fecha como "5 dic 2026".
 String formatearFecha(DateTime f) {
-  const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const meses = [
+    'ene',
+    'feb',
+    'mar',
+    'abr',
+    'may',
+    'jun',
+    'jul',
+    'ago',
+    'sep',
+    'oct',
+    'nov',
+    'dic',
+  ];
   return '${f.day} ${meses[f.month - 1]} ${f.year}';
 }

@@ -31,7 +31,11 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
         listenable: ventasViewModel,
         builder: (context, _) {
           final lista = ventasViewModel.movimientos
-              .where((m) => filtro == 'Todos' || m.tipo == (filtro == 'Ventas' ? 'Venta' : 'Donación'))
+              .where(
+                (m) =>
+                    filtro == 'Todos' ||
+                    m.tipo == (filtro == 'Ventas' ? 'Venta' : 'Donación'),
+              )
               .toList()
               .reversed
               .toList();
@@ -78,7 +82,9 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
                           shape: const StadiumBorder(),
                           labelStyle: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: filtro == nombre ? Colors.black : Colors.white,
+                            color: filtro == nombre
+                                ? Colors.black
+                                : Colors.white,
                           ),
                           onSelected: (_) => setState(() => filtro = nombre),
                         ),
@@ -93,12 +99,20 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
                   itemBuilder: (context, index) {
                     final m = lista[index];
                     final esVenta = m.tipo == 'Venta';
-                    final color = esVenta ? const Color(0xFFFF5500) : const Color(0xFFD500F9);
+                    final color = esVenta
+                        ? const Color(0xFFFF5500)
+                        : const Color(0xFFD500F9);
                     return Card(
                       color: const Color(0xFF262626),
                       clipBehavior: Clip.antiAlias,
-                      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      margin: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        bottom: 10,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.all(12),
                         leading: Container(
@@ -109,7 +123,9 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
-                            esVenta ? Icons.confirmation_number : Icons.favorite,
+                            esVenta
+                                ? Icons.confirmation_number
+                                : Icons.favorite,
                             color: Colors.black,
                           ),
                         ),
@@ -118,11 +134,19 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          '${m.tipo} · ${formatearFecha(m.fecha)}',                          style: const TextStyle(color: Colors.grey, fontSize: 12),
+                          '${m.tipo} · ${formatearFecha(m.fecha)}',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
                         ),
                         trailing: Text(
                           '+${formatearPrecio(m.monto)}',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: color,
+                          ),
                         ),
                       ),
                     );
@@ -161,7 +185,11 @@ Widget _tarjetaTotal(String titulo, double monto, Color color, IconData icono) {
         const SizedBox(height: 2),
         Text(
           formatearPrecio(monto),
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
       ],
     ),

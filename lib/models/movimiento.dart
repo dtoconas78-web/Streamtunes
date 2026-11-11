@@ -1,4 +1,3 @@
-
 class Movimiento {
   final String tipo;
   final String detalle;

@@ -4,6 +4,7 @@ import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/models/entrada.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
+
 // Lista de canciones del artista (datos de ejemplo, realistas).
 // Cada una con un color de "portada" distinto para simular variedad visual.
 final List<Cancion> canciones = [
@@ -69,7 +70,7 @@ final List<Entrada> entradas = [
     precio: 15000,
     cantidad: 2,
   ),
-    Entrada(
+  Entrada(
     concierto: 'Luna Roja Tour',
     lugar: 'Arena Maipú, Mendoza',
     fecha: DateTime(2027, 1, 18),
@@ -107,7 +108,7 @@ final List<Concierto> conciertos = [
     precio: 9000,
     disponibles: 200,
   ),
-    Concierto(
+  Concierto(
     nombre: 'Festival Cuyo Sound',
     lugar: 'Estadio Malvinas Argentinas, Mendoza',
     fecha: DateTime(2027, 3, 20),

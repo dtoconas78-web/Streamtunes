@@ -13,10 +13,12 @@ class PantallaEditarPerfil extends StatefulWidget {
 
 class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nombreCtrl =
-      TextEditingController(text: perfil.nombre);
-  late final TextEditingController _bioCtrl =
-      TextEditingController(text: perfil.bio);
+  late final TextEditingController _nombreCtrl = TextEditingController(
+    text: perfil.nombre,
+  );
+  late final TextEditingController _bioCtrl = TextEditingController(
+    text: perfil.bio,
+  );
   late String _pais = perfil.pais;
 
   @override
@@ -58,9 +60,8 @@ class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
       bio: _bioCtrl.text.trim(),
     );
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Perfil actualizado')),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Perfil actualizado')));
     Navigator.pop(context);
   }
 
@@ -95,7 +96,11 @@ class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
                             shape: BoxShape.circle,
                             border: Border.all(color: colorFondo, width: 3),
                           ),
-                          child: const Icon(Icons.camera_alt, size: 16, color: Colors.black),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            size: 16,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                     ],

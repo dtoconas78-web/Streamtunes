@@ -34,7 +34,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _error(String mensaje) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   // Envuelve las llamadas al servicio (simulado hoy, real después) con carga.
@@ -115,7 +116,10 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 16),
           _selectorRol(),
           const SizedBox(height: 20),
-          BotonPrincipal(texto: 'Ingresar con email', onPressed: _ingresarConEmail),
+          BotonPrincipal(
+            texto: 'Ingresar con email',
+            onPressed: _ingresarConEmail,
+          ),
         ],
       ),
     );
@@ -192,7 +196,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   const SizedBox(height: 16),
                   TextButton(
-                    onPressed: () => _ejecutar(authViewModel.entrarComoInvitado),
+                    onPressed: () =>
+                        _ejecutar(authViewModel.entrarComoInvitado),
                     child: const Text(
                       'Entrar como invitado',
                       style: TextStyle(color: Colors.grey),

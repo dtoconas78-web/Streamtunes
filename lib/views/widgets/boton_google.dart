@@ -18,7 +18,9 @@ class BotonGoogle extends StatelessWidget {
           foregroundColor: Colors.white,
           side: const BorderSide(color: Colors.grey),
           padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
         ),
         icon: const CircleAvatar(
           radius: 11,

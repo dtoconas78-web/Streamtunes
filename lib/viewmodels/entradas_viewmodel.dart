@@ -8,7 +8,7 @@ class EntradasViewModel extends ChangeNotifier {
   final List<Entrada> entradasCompradas = List.of(entradas);
   final List<Concierto> conciertosDisponibles = List.of(conciertos);
 
-   bool comprar(Concierto concierto, int cantidad) {
+  bool comprar(Concierto concierto, int cantidad) {
     if (cantidad <= 0 || cantidad > concierto.disponibles) {
       return false;
     }
@@ -22,7 +22,10 @@ class EntradasViewModel extends ChangeNotifier {
       ),
     );
     concierto.disponibles -= cantidad;
-    ventasViewModel.registrarVenta('${concierto.nombre} x$cantidad', concierto.precio * cantidad);
+    ventasViewModel.registrarVenta(
+      '${concierto.nombre} x$cantidad',
+      concierto.precio * cantidad,
+    );
     notifyListeners();
     return true;
   }

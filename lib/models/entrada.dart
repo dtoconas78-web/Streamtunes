@@ -1,4 +1,3 @@
-
 class Entrada {
   final String concierto;
   final String lugar;

@@ -36,9 +36,8 @@ class _PantallaSolicitudVerificacionState
 
     perfil.enviarSolicitud();
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Solicitud enviada')),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Solicitud enviada')));
     // Vuelve a la pantalla de Verificación, que ahora muestra "en revisión".
     Navigator.pop(context);
   }
@@ -49,7 +48,10 @@ class _PantallaSolicitudVerificacionState
       padding: const EdgeInsets.only(left: 12, top: 6),
       child: Text(
         texto,
-        style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.error),
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.error,
+        ),
       ),
     );
   }
@@ -66,13 +68,17 @@ class _PantallaSolicitudVerificacionState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Tus datos',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Tus datos',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _nombreCtrl,
                   textCapitalization: TextCapitalization.words,
-                  decoration: decoracionFormulario('Nombre completo (como en el documento)'),
+                  decoration: decoracionFormulario(
+                    'Nombre completo (como en el documento)',
+                  ),
                   validator: (valor) {
                     if (valor == null || valor.trim().length < 3) {
                       return 'Escribí tu nombre completo';
@@ -93,7 +99,10 @@ class _PantallaSolicitudVerificacionState
                         decoration: decoracionFormulario('Tipo'),
                         items: const [
                           DropdownMenuItem(value: 'DNI', child: Text('DNI')),
-                          DropdownMenuItem(value: 'Pasaporte', child: Text('Pasaporte')),
+                          DropdownMenuItem(
+                            value: 'Pasaporte',
+                            child: Text('Pasaporte'),
+                          ),
                           DropdownMenuItem(value: 'Otro', child: Text('Otro')),
                         ],
                         onChanged: (valor) {
@@ -132,15 +141,22 @@ class _PantallaSolicitudVerificacionState
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: adjunta ? colorVerificado : colorAcento,
+                              foregroundColor: adjunta
+                                  ? colorVerificado
+                                  : colorAcento,
                               side: BorderSide(
-                                  color: adjunta ? colorVerificado : colorAcento),
+                                color: adjunta ? colorVerificado : colorAcento,
+                              ),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
-                            icon: Icon(adjunta ? Icons.check_circle : Icons.upload_file),
-                            label: Text(adjunta
-                                ? 'Foto adjuntada (simulado)'
-                                : 'Adjuntar foto del documento'),
+                            icon: Icon(
+                              adjunta ? Icons.check_circle : Icons.upload_file,
+                            ),
+                            label: Text(
+                              adjunta
+                                  ? 'Foto adjuntada (simulado)'
+                                  : 'Adjuntar foto del documento',
+                            ),
                             onPressed: () => campo.didChange(!adjunta),
                           ),
                         ),
@@ -150,8 +166,10 @@ class _PantallaSolicitudVerificacionState
                   },
                 ),
                 const SizedBox(height: 28),
-                const Text('Dónde vas a cobrar',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Dónde vas a cobrar',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _cuentaCtrl,
@@ -172,13 +190,17 @@ class _PantallaSolicitudVerificacionState
                   },
                 ),
                 const SizedBox(height: 28),
-                const Text('Tu música',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Tu música',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _linkCtrl,
                   keyboardType: TextInputType.url,
-                  decoration: decoracionFormulario('Link a tu música o redes (opcional)'),
+                  decoration: decoracionFormulario(
+                    'Link a tu música o redes (opcional)',
+                  ),
                 ),
                 const SizedBox(height: 20),
                 // Aceptación obligatoria.

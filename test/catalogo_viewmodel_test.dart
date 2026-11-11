@@ -4,14 +4,14 @@ import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 
 Cancion _cancion(String titulo) => Cancion(
-      titulo: titulo,
-      duracion: '3:00',
-      reproducciones: '0',
-      tendencia: 'Recién publicada',
-      lugar: 'Sin datos todavía',
-      horarioPico: 'Sin datos todavía',
-      colorPortada: const Color(0xFFFF5500),
-    );
+  titulo: titulo,
+  duracion: '3:00',
+  reproducciones: '0',
+  tendencia: 'Recién publicada',
+  lugar: 'Sin datos todavía',
+  horarioPico: 'Sin datos todavía',
+  colorPortada: const Color(0xFFFF5500),
+);
 
 void main() {
   test('publicar una canción suelta la agrega y notifica', () {
@@ -21,7 +21,10 @@ void main() {
     var notificaciones = 0;
     c.addListener(() => notificaciones++);
 
-    c.publicar(nuevas: [_cancion('Nueva')], colorPortada: const Color(0xFFFF5500));
+    c.publicar(
+      nuevas: [_cancion('Nueva')],
+      colorPortada: const Color(0xFFFF5500),
+    );
 
     expect(c.canciones.length, antes + 1);
     expect(c.canciones.last.titulo, 'Nueva');

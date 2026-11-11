@@ -33,11 +33,15 @@ class ObservadorReproductor extends NavigatorObserver {
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    reproductor.marcarPantallaCompleta(previousRoute?.settings.name == '/reproductor');
+    reproductor.marcarPantallaCompleta(
+      previousRoute?.settings.name == '/reproductor',
+    );
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    reproductor.marcarPantallaCompleta(newRoute?.settings.name == '/reproductor');
+    reproductor.marcarPantallaCompleta(
+      newRoute?.settings.name == '/reproductor',
+    );
   }
 }

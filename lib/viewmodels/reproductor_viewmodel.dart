@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
@@ -11,7 +12,8 @@ class ControladorReproduccion extends ChangeNotifier {
   int? indiceActual; // null = todavía no se eligió ninguna canción
   int posicion = 0; // segundos reproducidos de la canción actual
   bool reproduciendo = false;
-  bool pantallaCompletaAbierta = false; // true cuando está abierto el reproductor grande
+  bool pantallaCompletaAbierta =
+      false; // true cuando está abierto el reproductor grande
   final Set<int> meGustas = {}; // índices de canciones guardadas
   Timer? _timer;
 
@@ -67,7 +69,10 @@ class ControladorReproduccion extends ChangeNotifier {
     if (posicion > 3) {
       posicion = 0;
     } else {
-      _irA((indiceActual! - 1 + catalogo.canciones.length) % catalogo.canciones.length);
+      _irA(
+        (indiceActual! - 1 + catalogo.canciones.length) %
+            catalogo.canciones.length,
+      );
     }
     notifyListeners();
   }

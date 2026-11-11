@@ -23,8 +23,8 @@ class EntradasScreen extends StatelessWidget {
       body: ListenableBuilder(
         listenable: entradasViewModel,
         builder: (context, _) {
-        final lista = List.of(entradasViewModel.entradasCompradas)
-           ..sort((a, b) => a.fecha.compareTo(b.fecha));
+          final lista = List.of(entradasViewModel.entradasCompradas)
+            ..sort((a, b) => a.fecha.compareTo(b.fecha));
           if (lista.isEmpty) {
             return const Center(
               child: Column(
@@ -57,24 +57,31 @@ class EntradasScreen extends StatelessWidget {
                 Color(0xFFD500F9),
               ];
               final hoy = DateTime.now();
-              final dias = DateTime(entrada.fecha.year, entrada.fecha.month, entrada.fecha.day)
-                  .difference(DateTime(hoy.year, hoy.month, hoy.day))
-                  .inDays;
+              final dias = DateTime(
+                entrada.fecha.year,
+                entrada.fecha.month,
+                entrada.fecha.day,
+              ).difference(DateTime(hoy.year, hoy.month, hoy.day)).inDays;
               final faltan = dias > 1
                   ? 'Faltan $dias días'
                   : dias == 1
-                      ? 'Es mañana'
-                      : dias == 0
-                          ? 'Es hoy'
-                          : 'Finalizado';
+                  ? 'Es mañana'
+                  : dias == 0
+                  ? 'Es hoy'
+                  : 'Finalizado';
               final nombreCorto = entrada.concierto.replaceAll(' ', '');
-              final letras = nombreCorto.length < 3 ? nombreCorto : nombreCorto.substring(0, 3);
-              final codigo = 'ST-${letras.toUpperCase()}-${entrada.fecha.day.toString().padLeft(2, '0')}${entrada.fecha.month.toString().padLeft(2, '0')}';
+              final letras = nombreCorto.length < 3
+                  ? nombreCorto
+                  : nombreCorto.substring(0, 3);
+              final codigo =
+                  'ST-${letras.toUpperCase()}-${entrada.fecha.day.toString().padLeft(2, '0')}${entrada.fecha.month.toString().padLeft(2, '0')}';
               return Card(
                 color: const Color(0xFF262626),
                 clipBehavior: Clip.antiAlias,
                 margin: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(12),
                   leading: Container(
@@ -84,44 +91,66 @@ class EntradasScreen extends StatelessWidget {
                       color: coloresPortada[index % coloresPortada.length],
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.confirmation_number, color: Colors.black),
+                    child: const Icon(
+                      Icons.confirmation_number,
+                      color: Colors.black,
+                    ),
                   ),
                   title: Text(
                     entrada.concierto,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                    subtitle: Column(
+                  subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${entrada.lugar}\n${formatearFecha(entrada.fecha)}\n$faltan',                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        '${entrada.lugar}\n${formatearFecha(entrada.fecha)}\n$faltan',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
                       Container(
                         margin: const EdgeInsets.only(top: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFF181818),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           codigo,
-                          style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                    trailing: Column(
+                  trailing: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
                         'x${entrada.cantidad}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFFFF5500)),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Color(0xFFFF5500),
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         formatearPrecio(entrada.precio * entrada.cantidad),
-                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),

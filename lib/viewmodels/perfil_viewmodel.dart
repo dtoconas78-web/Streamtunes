@@ -10,7 +10,11 @@ class PerfilUsuario extends ChangeNotifier {
   String bio =
       'Artista independiente de Mendoza. Hace música desde 2019, mezclando rock alternativo con sonidos electrónicos.';
 
-  void guardar({required String nombre, required String pais, required String bio}) {
+  void guardar({
+    required String nombre,
+    required String pais,
+    required String bio,
+  }) {
     this.nombre = nombre;
     this.pais = pais;
     this.bio = bio;
@@ -56,8 +60,9 @@ class PerfilUsuario extends ChangeNotifier {
   // SOLO PARA PRUEBAS: simula la respuesta del equipo que revisa.
   // Cuando haya backend, esto se reemplaza por la respuesta real.
   void simularResultado({required bool aprobada, String motivo = ''}) {
-    estadoVerificacion =
-        aprobada ? EstadoVerificacion.verificada : EstadoVerificacion.rechazada;
+    estadoVerificacion = aprobada
+        ? EstadoVerificacion.verificada
+        : EstadoVerificacion.rechazada;
     motivoRechazo = motivo;
     notifyListeners();
   }

@@ -7,9 +7,11 @@ import 'package:streamtunes_demo/models/cancion.dart';
 // globales de datos_ejemplo a mano: pasa por acá y las pantallas se
 // actualizan solas con ListenableBuilder.
 class CatalogoViewModel extends ChangeNotifier {
-  CatalogoViewModel({List<Cancion>? cancionesIniciales, List<Album>? albumesIniciales})
-    : canciones = List.of(cancionesIniciales ?? datos.canciones),
-      albumes = List.of(albumesIniciales ?? datos.albumes);
+  CatalogoViewModel({
+    List<Cancion>? cancionesIniciales,
+    List<Album>? albumesIniciales,
+  }) : canciones = List.of(cancionesIniciales ?? datos.canciones),
+       albumes = List.of(albumesIniciales ?? datos.albumes);
 
   final List<Cancion> canciones;
   final List<Album> albumes;

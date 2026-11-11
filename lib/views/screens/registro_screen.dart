@@ -36,14 +36,18 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
   void _error(String mensaje) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
   // Con backend real, si la cuenta de Google todavía no existe se crea acá
   // (mismo flujo: FirebaseAuth crea la cuenta con el credential de Google).
   Future<void> _registrarConGoogle() async {
     if (_cargando) return;
-    final rol = await elegirRol(context, titulo: '¿Cómo te registrás con Google?');
+    final rol = await elegirRol(
+      context,
+      titulo: '¿Cómo te registrás con Google?',
+    );
     if (rol == null) return;
     setState(() => _cargando = true);
     try {
@@ -95,7 +99,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
               ),
               const SizedBox(height: 24),
               if (_cargando)
-                const Center(child: CircularProgressIndicator(color: colorAcento))
+                const Center(
+                  child: CircularProgressIndicator(color: colorAcento),
+                )
               else ...[
                 BotonGoogle(
                   texto: 'Registrarse con Google',
@@ -107,7 +113,10 @@ class _RegistroScreenState extends State<RegistroScreen> {
                     Expanded(child: Divider(color: Colors.grey)),
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('o con tu email', style: TextStyle(color: Colors.grey)),
+                      child: Text(
+                        'o con tu email',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ),
                     Expanded(child: Divider(color: Colors.grey)),
                   ],
@@ -144,7 +153,8 @@ class _RegistroScreenState extends State<RegistroScreen> {
                       controller: _repetirCtrl,
                       obscureText: true,
                       decoration: decoracionFormulario('Repetir contraseña'),
-                      validator: (v) => validarRepeticion(v, _passwordCtrl.text),
+                      validator: (v) =>
+                          validarRepeticion(v, _passwordCtrl.text),
                     ),
                     const SizedBox(height: 16),
                     const Text(

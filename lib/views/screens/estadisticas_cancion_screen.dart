@@ -1,15 +1,17 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
+
 // Pantalla B: estadísticas de la canción seleccionada.
 class PantallaB extends StatefulWidget {
   final Cancion cancion;
 
   const PantallaB({super.key, required this.cancion});
 
-  @override 
+  @override
   State<PantallaB> createState() => _PantallaBState();
 }
 
@@ -20,7 +22,9 @@ class _PantallaBState extends State<PantallaB> {
   @override
   void initState() {
     super.initState();
-    reproduccionesLive = int.parse(widget.cancion.reproducciones.replaceAll('.', ''));
+    reproduccionesLive = int.parse(
+      widget.cancion.reproducciones.replaceAll('.', ''),
+    );
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       setState(() {
         reproduccionesLive += 7; // simulado
@@ -71,32 +75,35 @@ class _PantallaBState extends State<PantallaB> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: cancion.colorPortada,
-                      borderRadius: BorderRadius.circular(8),
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: cancion.colorPortada,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.music_note, color: Colors.black),
                     ),
-                    child: const Icon(Icons.music_note, color: Colors.black),
-                  ),
-                  const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        cancion.titulo,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Mateo Cabral',
-                        style: TextStyle(fontSize: 13, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          cancion.titulo,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Mateo Cabral',
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -130,7 +137,10 @@ class _PantallaBState extends State<PantallaB> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                Text(cancion.tendencia, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  cancion.tendencia,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ],
             ),
             const SizedBox(height: 24),
@@ -142,16 +152,39 @@ class _PantallaBState extends State<PantallaB> {
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
               childAspectRatio: 1.6,
-                children: [
-                const _TarjetaMetrica(icono: Icons.headphones, valor: '9.120', etiqueta: 'Oyentes únicos'),
-                const _TarjetaMetrica(icono: Icons.favorite, valor: '3.402', etiqueta: 'Guardados'),
-                const _TarjetaMetrica(icono: Icons.share, valor: '812', etiqueta: 'Compartidos'),
-                const _TarjetaMetrica(icono: Icons.repeat, valor: '5.6', etiqueta: 'Repeticiones prom.'),
-                _TarjetaMetrica(icono: Icons.access_time, valor: cancion.horarioPico, etiqueta: 'Horario pico'),
+              children: [
+                const _TarjetaMetrica(
+                  icono: Icons.headphones,
+                  valor: '9.120',
+                  etiqueta: 'Oyentes únicos',
+                ),
+                const _TarjetaMetrica(
+                  icono: Icons.favorite,
+                  valor: '3.402',
+                  etiqueta: 'Guardados',
+                ),
+                const _TarjetaMetrica(
+                  icono: Icons.share,
+                  valor: '812',
+                  etiqueta: 'Compartidos',
+                ),
+                const _TarjetaMetrica(
+                  icono: Icons.repeat,
+                  valor: '5.6',
+                  etiqueta: 'Repeticiones prom.',
+                ),
+                _TarjetaMetrica(
+                  icono: Icons.access_time,
+                  valor: cancion.horarioPico,
+                  etiqueta: 'Horario pico',
+                ),
               ],
             ),
             const SizedBox(height: 24),
-            _FilaEstadistica(icono: Icons.place, texto: 'Lugar más frecuente: ${cancion.lugar}'),
+            _FilaEstadistica(
+              icono: Icons.place,
+              texto: 'Lugar más frecuente: ${cancion.lugar}',
+            ),
           ],
         ),
       ),
@@ -165,7 +198,11 @@ class _TarjetaMetrica extends StatelessWidget {
   final String valor;
   final String etiqueta;
 
-  const _TarjetaMetrica({required this.icono, required this.valor, required this.etiqueta});
+  const _TarjetaMetrica({
+    required this.icono,
+    required this.valor,
+    required this.etiqueta,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -185,8 +222,14 @@ class _TarjetaMetrica extends StatelessWidget {
           children: [
             Icon(icono, color: colorAcento, size: 22),
             const SizedBox(height: 8),
-            Text(valor, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text(etiqueta, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+            Text(
+              valor,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              etiqueta,
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
+            ),
           ],
         ),
       ),

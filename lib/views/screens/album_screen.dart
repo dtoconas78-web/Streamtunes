@@ -36,7 +36,10 @@ class PantallaAlbum extends StatelessWidget {
               Text(
                 album.titulo,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 4),
               const Text(
@@ -57,7 +60,10 @@ class PantallaAlbum extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colorAcento,
                     foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 10,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),

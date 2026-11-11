@@ -6,7 +6,11 @@ class BotonPrincipal extends StatelessWidget {
   final String texto;
   final VoidCallback onPressed;
 
-  const BotonPrincipal({super.key, required this.texto, required this.onPressed});
+  const BotonPrincipal({
+    super.key,
+    required this.texto,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +21,9 @@ class BotonPrincipal extends StatelessWidget {
           backgroundColor: colorAcento,
           foregroundColor: Colors.black,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
         ),
         onPressed: onPressed,
         child: Text(texto),

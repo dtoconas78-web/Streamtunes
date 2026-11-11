@@ -26,8 +26,10 @@ class MiApp extends StatelessWidget {
               child: ListenableBuilder(
                 listenable: reproductor,
                 builder: (context, _) {
-                  final tecladoAbierto = MediaQuery.of(context).viewInsets.bottom > 0;
-                  final miniVisible = reproductor.hayCancion &&
+                  final tecladoAbierto =
+                      MediaQuery.of(context).viewInsets.bottom > 0;
+                  final miniVisible =
+                      reproductor.hayCancion &&
                       !reproductor.pantallaCompletaAbierta &&
                       !tecladoAbierto;
                   return MediaQuery.removePadding(

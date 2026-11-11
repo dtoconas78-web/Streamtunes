@@ -16,11 +16,14 @@ class MiniReproductor extends StatelessWidget {
         final cancion = reproductor.cancion;
         // Se oculta si no hay canción o si ya está abierto el reproductor grande.
         final tecladoAbierto = MediaQuery.of(context).viewInsets.bottom > 0;
-        if (cancion == null || reproductor.pantallaCompletaAbierta || tecladoAbierto) {
+        if (cancion == null ||
+            reproductor.pantallaCompletaAbierta ||
+            tecladoAbierto) {
           return const SizedBox.shrink();
         }
-        final progreso =
-        reproductor.total == 0 ? 0.0 : reproductor.posicion / reproductor.total;
+        final progreso = reproductor.total == 0
+            ? 0.0
+            : reproductor.posicion / reproductor.total;
 
         return Material(
           color: colorTarjeta,
@@ -49,7 +52,10 @@ class MiniReproductor extends StatelessWidget {
                             color: cancion.colorPortada,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.music_note, color: Colors.black),
+                          child: const Icon(
+                            Icons.music_note,
+                            color: Colors.black,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -61,22 +67,31 @@ class MiniReproductor extends StatelessWidget {
                                 cancion.titulo,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const Text(
                                 'Mateo Cabral',
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ],
                           ),
                         ),
                         IconButton(
                           icon: Icon(
-                            reproductor.reproduciendo ? Icons.pause : Icons.play_arrow,
+                            reproductor.reproduciendo
+                                ? Icons.pause
+                                : Icons.play_arrow,
                             color: colorAcento,
                             size: 30,
                           ),
-                          tooltip: reproductor.reproduciendo ? 'Pausar' : 'Reproducir',
+                          tooltip: reproductor.reproduciendo
+                              ? 'Pausar'
+                              : 'Reproducir',
                           onPressed: reproductor.alternarPausa,
                         ),
                         IconButton(

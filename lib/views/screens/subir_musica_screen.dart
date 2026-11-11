@@ -18,7 +18,11 @@ class _PistaBorrador {
   final double mb;
   final TextEditingController titulo = TextEditingController();
 
-  _PistaBorrador({required this.archivo, required this.segundos, required this.mb});
+  _PistaBorrador({
+    required this.archivo,
+    required this.segundos,
+    required this.mb,
+  });
 }
 
 // Pantalla Subir música: una canción suelta o un álbum.
@@ -85,11 +89,13 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
   void _agregarPista() {
     _contadorArchivos++;
     setState(() {
-      _pistas.add(_PistaBorrador(
-        archivo: 'audio_$_contadorArchivos.mp3',
-        segundos: 120 + _azar.nextInt(181),
-        mb: 3 + _azar.nextDouble() * 6,
-      ));
+      _pistas.add(
+        _PistaBorrador(
+          archivo: 'audio_$_contadorArchivos.mp3',
+          segundos: 120 + _azar.nextInt(181),
+          mb: 3 + _azar.nextDouble() * 6,
+        ),
+      );
       _errorAudio = false;
     });
   }
@@ -152,7 +158,9 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_esAlbum ? 'Álbum "$titulo" publicado' : '"$titulo" publicada'),
+        content: Text(
+          _esAlbum ? 'Álbum "$titulo" publicado' : '"$titulo" publicada',
+        ),
       ),
     );
     Navigator.pop(context);
@@ -161,7 +169,10 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
   Widget _tituloSeccion(String texto) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Text(texto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+      child: Text(
+        texto,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
     );
   }
 
@@ -187,7 +198,10 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
       padding: const EdgeInsets.only(left: 12, top: 6),
       child: Text(
         texto,
-        style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.error),
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.error,
+        ),
       ),
     );
   }
@@ -253,8 +267,13 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                       child: CircleAvatar(
                         radius: 12,
                         backgroundColor: colorAcento,
-                        child: Text('${i + 1}',
-                            style: const TextStyle(fontSize: 12, color: Colors.black)),
+                        child: Text(
+                          '${i + 1}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -262,8 +281,11 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                       child: TextFormField(
                         controller: _pistas[i].titulo,
                         textCapitalization: TextCapitalization.sentences,
-                        decoration: decoracionFormulario('Título de la canción'),
-                        validator: (valor) => (valor == null || valor.trim().isEmpty)
+                        decoration: decoracionFormulario(
+                          'Título de la canción',
+                        ),
+                        validator: (valor) =>
+                            (valor == null || valor.trim().isEmpty)
                             ? 'Escribí el título'
                             : null,
                       ),
@@ -321,16 +343,19 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                       child: SegmentedButton<bool>(
                         segments: const [
                           ButtonSegment(
-                              value: false,
-                              label: Text('Canción'),
-                              icon: Icon(Icons.music_note)),
+                            value: false,
+                            label: Text('Canción'),
+                            icon: Icon(Icons.music_note),
+                          ),
                           ButtonSegment(
-                              value: true,
-                              label: Text('Álbum'),
-                              icon: Icon(Icons.album)),
+                            value: true,
+                            label: Text('Álbum'),
+                            icon: Icon(Icons.album),
+                          ),
                         ],
                         selected: {_esAlbum},
-                        onSelectionChanged: (seleccion) => _cambiarModo(seleccion.first),
+                        onSelectionChanged: (seleccion) =>
+                            _cambiarModo(seleccion.first),
                         style: SegmentedButton.styleFrom(
                           selectedBackgroundColor: colorAcento,
                           selectedForegroundColor: Colors.black,
@@ -342,9 +367,11 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                     _tituloSeccion(_esAlbum ? 'Canciones del álbum' : 'Audio'),
                     _esAlbum ? _audioAlbum() : _audioCancion(),
                     if (_errorAudio)
-                      _error(_esAlbum
-                          ? 'Sumá al menos 2 canciones'
-                          : 'Seleccioná el archivo de audio'),
+                      _error(
+                        _esAlbum
+                            ? 'Sumá al menos 2 canciones'
+                            : 'Seleccioná el archivo de audio',
+                      ),
                     const Padding(
                       padding: EdgeInsets.only(top: 8),
                       child: Text(
@@ -397,8 +424,10 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                       maxLength: 60,
                       textCapitalization: TextCapitalization.sentences,
                       decoration: decoracionFormulario(
-                          _esAlbum ? 'Título del álbum' : 'Título de la canción'),
-                      validator: (valor) => (valor == null || valor.trim().isEmpty)
+                        _esAlbum ? 'Título del álbum' : 'Título de la canción',
+                      ),
+                      validator: (valor) =>
+                          (valor == null || valor.trim().isEmpty)
                           ? 'Escribí un título'
                           : null,
                     ),
@@ -408,8 +437,8 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                         controller: _anioCtrl,
                         maxLength: 4,
                         keyboardType: TextInputType.number,
-                        decoration:
-                            decoracionFormulario('Año').copyWith(counterText: ''),
+                        decoration: decoracionFormulario('Año')
+                            .copyWith(counterText: ''),
                         validator: (valor) {
                           final anio = int.tryParse((valor ?? '').trim());
                           if (anio == null ||
@@ -440,7 +469,9 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                       controller: _descripcionCtrl,
                       maxLength: 300,
                       maxLines: 3,
-                      decoration: decoracionFormulario('Descripción (opcional)'),
+                      decoration: decoracionFormulario(
+                        'Descripción (opcional)',
+                      ),
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
@@ -450,7 +481,10 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                         _publica
                             ? 'Cualquiera puede escucharla'
                             : 'Solo vos la vas a ver',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                       value: _publica,
                       onChanged: (valor) => setState(() => _publica = valor),
