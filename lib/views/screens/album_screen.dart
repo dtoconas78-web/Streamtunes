@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart';
 import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 
 // Pantalla Detalle de álbum: portada, datos y lista de canciones.
@@ -87,7 +87,7 @@ class _FilaCancionAlbum extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cancion = canciones[indice];
+    final cancion = catalogo.canciones[indice];
     final sonando = reproductor.indiceActual == indice;
 
     return ListTile(

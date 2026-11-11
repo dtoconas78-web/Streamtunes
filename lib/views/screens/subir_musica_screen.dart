@@ -2,13 +2,12 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart';
-import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/constantes.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
+import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 
 // Un audio elegido que todavía no se publicó. Los datos del archivo son
@@ -142,16 +141,13 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
         ),
     ];
 
-    final primero = canciones.length; // posición de la primera canción nueva
-    canciones.addAll(nuevas);
-    if (_esAlbum) {
-      albumes.add(Album(
-        titulo: titulo,
-        anio: _anioCtrl.text.trim(),
-        colorPortada: _colorPortada,
-        indices: [for (int i = 0; i < nuevas.length; i++) primero + i],
-      ));
-    }
+    // El catálogo es el dueño de las listas: publica y notifica solo.
+    catalogo.publicar(
+      nuevas: nuevas,
+      tituloAlbum: _esAlbum ? titulo : null,
+      anioAlbum: _anioCtrl.text.trim(),
+      colorPortada: _colorPortada,
+    );
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(

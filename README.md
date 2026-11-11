@@ -37,7 +37,7 @@ lib/
 ├── models/              → Usuario, Cancion, Album, Concierto, Entrada, Movimiento
 ├── data/                → datos de ejemplo (hasta conectar backend)
 ├── services/            → auth simulado (listo para Firebase/Google real)
-├── viewmodels/          → ChangeNotifiers globales (auth, reproductor, perfil, …)
+├── viewmodels/          → ChangeNotifiers globales (auth, catálogo, reproductor, perfil, …)
 ├── views/screens/       → pantallas
 ├── views/widgets/       → mini reproductor, botón principal, diálogo de registro
 ├── theme/ + utils/      → colores, constantes, validadores, formatos

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/album_screen.dart';
 import 'package:streamtunes_demo/views/screens/editar_perfil_screen.dart';
@@ -63,13 +63,11 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
         foregroundColor: Colors.black,
         icon: const Icon(Icons.upload),
         label: const Text('Subir música'),
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PantallaSubirMusica()),
-          );
-          if (mounted) setState(() {});
-        },
+        // Al volver no hace falta setState: el catálogo notifica solo.
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PantallaSubirMusica()),
+        ),
       ),
       body: SafeArea(
         child: Column(
@@ -236,15 +234,17 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
             ),
             // Contenido de cada tab.
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
+              child: ListenableBuilder(
+                listenable: catalogo,
+                builder: (context, _) => TabBarView(
+                  controller: _tabController,
+                  children: [
                  // Tab 1: lista de canciones.
                   ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                    itemCount: canciones.length,
+                    itemCount: catalogo.canciones.length,
                     itemBuilder: (context, index) {
-                      final cancion = canciones[index];
+                      final cancion = catalogo.canciones[index];
                       // Card: agrupa cada canción con esquinas redondeadas.
                       return Card(
                         color: colorTarjeta,
@@ -288,9 +288,9 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                   // Tab 2: lista de álbumes.
                   ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 88),
-                    itemCount: albumes.length,
+                    itemCount: catalogo.albumes.length,
                     itemBuilder: (context, index) {
-                      final album = albumes[index];
+                      final album = catalogo.albumes[index];
                       return Card(
                         color: colorTarjeta,
                         elevation: 0,
@@ -339,7 +339,8 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                       ),
                     ),
                   ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

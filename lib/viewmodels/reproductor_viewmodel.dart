@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
+import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 
 // Controlador de reproducción: guarda qué suena, en qué segundo y si está en pausa.
 // Vive fuera de las pantallas, por eso la música sigue al navegar.
@@ -16,7 +16,8 @@ class ControladorReproduccion extends ChangeNotifier {
   Timer? _timer;
 
   bool get hayCancion => indiceActual != null;
-  Cancion? get cancion => indiceActual == null ? null : canciones[indiceActual!];
+  Cancion? get cancion =>
+      indiceActual == null ? null : catalogo.canciones[indiceActual!];
   int get total => cancion == null ? 0 : aSegundos(cancion!.duracion);
   bool get leGusta => indiceActual != null && meGustas.contains(indiceActual);
 
@@ -37,7 +38,7 @@ class ControladorReproduccion extends ChangeNotifier {
     posicion++;
     // Al terminar la canción, pasa a la siguiente.
     if (posicion >= total) {
-      _irA((indiceActual! + 1) % canciones.length);
+      _irA((indiceActual! + 1) % catalogo.canciones.length);
     }
     notifyListeners();
   }
@@ -55,7 +56,7 @@ class ControladorReproduccion extends ChangeNotifier {
 
   void siguiente() {
     if (!hayCancion) return;
-    _irA((indiceActual! + 1) % canciones.length);
+    _irA((indiceActual! + 1) % catalogo.canciones.length);
     notifyListeners();
   }
 
@@ -66,7 +67,7 @@ class ControladorReproduccion extends ChangeNotifier {
     if (posicion > 3) {
       posicion = 0;
     } else {
-      _irA((indiceActual! - 1 + canciones.length) % canciones.length);
+      _irA((indiceActual! - 1 + catalogo.canciones.length) % catalogo.canciones.length);
     }
     notifyListeners();
   }
