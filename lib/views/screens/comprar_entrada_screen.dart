@@ -3,8 +3,11 @@ import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
+import 'package:streamtunes_demo/utils/constantes.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/views/widgets/portada.dart';
+import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
 class ComprarEntradaScreen extends StatelessWidget {
   const ComprarEntradaScreen({super.key});
@@ -36,29 +39,12 @@ class ComprarEntradaScreen extends StatelessWidget {
             itemCount: lista.length,
             itemBuilder: (context, index) {
               final concierto = lista[index];
-              const coloresPortada = [
-                Color(0xFFFF5500),
-                Color(0xFF3D5AFE),
-                Color(0xFF00BFA5),
-                Color(0xFFD500F9),
-              ];
-              return Card(
-                color: const Color(0xFF262626),
-                clipBehavior: Clip.antiAlias,
+              return Tarjeta(
                 margin: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(12),
-                  leading: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: coloresPortada[index % coloresPortada.length],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.music_note, color: Colors.black),
+                  leading: PortadaCuadrada(
+                    color: coloresPortada[index % coloresPortada.length],
                   ),
                   title: Text(
                     concierto.nombre,
@@ -84,7 +70,7 @@ class ComprarEntradaScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: concierto.disponibles == 0
                                 ? Colors.grey
-                                : const Color(0xFFFF5500),
+                                : colorAcento,
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -104,7 +90,7 @@ class ComprarEntradaScreen extends StatelessWidget {
                     formatearPrecio(concierto.precio),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFFFF5500),
+                      color: colorAcento,
                     ),
                   ),
                   onTap: () => _elegirCantidad(context, concierto),
@@ -128,12 +114,9 @@ class ComprarEntradaScreen extends StatelessWidget {
       return;
     }
     int cantidad = 1;
+    // El fondo y las esquinas salen del bottomSheetTheme del tema.
     final confirmado = await showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: const Color(0xFF262626),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setStateSheet) {
@@ -188,7 +171,7 @@ class ComprarEntradaScreen extends StatelessWidget {
                     width: double.infinity,
                     child: FilledButton(
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF5500),
+                        backgroundColor: colorAcento,
                         foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: const StadiumBorder(),

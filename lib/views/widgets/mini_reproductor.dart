@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/portada.dart';
 
 // Barra chica que acompaña en todas las pantallas mientras haya una canción
 // elegida. Tocarla abre el reproductor grande.
@@ -45,17 +46,9 @@ class MiniReproductor extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
                     child: Row(
                       children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: cancion.colorPortada,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.music_note,
-                            color: Colors.black,
-                          ),
+                        PortadaCuadrada(
+                          color: cancion.colorPortada,
+                          tamano: 44,
                         ),
                         const SizedBox(width: 12),
                         Expanded(

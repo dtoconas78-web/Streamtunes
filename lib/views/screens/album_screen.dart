@@ -3,6 +3,7 @@ import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/portada.dart';
 
 // Pantalla Detalle de álbum: portada, datos y lista de canciones.
 class PantallaAlbum extends StatelessWidget {
@@ -22,14 +23,12 @@ class PantallaAlbum extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             children: [
               Center(
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    color: album.colorPortada,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(Icons.album, size: 72, color: Colors.black),
+                child: PortadaCuadrada(
+                  color: album.colorPortada,
+                  tamano: 180,
+                  radio: 16,
+                  icono: Icons.album,
+                  tamanoIcono: 72,
                 ),
               ),
               const SizedBox(height: 20),

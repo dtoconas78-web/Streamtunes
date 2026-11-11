@@ -5,6 +5,8 @@ import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/portada.dart';
+import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
 // Pantalla A: perfil del artista + tabs + lista de canciones.
 // Es Stateful porque el botón "Seguir" cambia de estado al tocarlo.
@@ -67,7 +69,7 @@ class _PantallaAState extends State<PantallaA>
               height: 140,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFFFF5500), Color(0xFF8A2C00)],
+                  colors: [colorAcento, colorAcentoOscuro],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -253,30 +255,13 @@ class _PantallaAState extends State<PantallaA>
                       itemCount: catalogo.canciones.length,
                       itemBuilder: (context, index) {
                         final cancion = catalogo.canciones[index];
-                        // Card: agrupa cada canción con esquinas redondeadas.
-                        return Card(
-                          color: colorTarjeta,
-                          elevation: 0,
-                          margin: const EdgeInsets.only(bottom: 10),
-                          clipBehavior: Clip.antiAlias,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(
-                              color: colorAcento.withValues(alpha: 0.35),
-                            ),
-                          ),
+                        // Tarjeta estándar con borde de acento.
+                        return Tarjeta(
+                          bordeAcento: true,
                           child: ListTile(
-                            leading: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: cancion.colorPortada,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.music_note,
-                                color: Colors.black,
-                              ),
+                            leading: PortadaCuadrada(
+                              color: cancion.colorPortada,
+                              tamano: 44,
                             ),
                             title: Text(cancion.titulo),
                             subtitle: Text(
@@ -304,29 +289,13 @@ class _PantallaAState extends State<PantallaA>
                       itemCount: catalogo.albumes.length,
                       itemBuilder: (context, index) {
                         final album = catalogo.albumes[index];
-                        return Card(
-                          color: colorTarjeta,
-                          elevation: 0,
-                          margin: const EdgeInsets.only(bottom: 10),
-                          clipBehavior: Clip.antiAlias,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(
-                              color: colorAcento.withValues(alpha: 0.35),
-                            ),
-                          ),
+                        return Tarjeta(
+                          bordeAcento: true,
                           child: ListTile(
-                            leading: Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: album.colorPortada,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.album,
-                                color: Colors.black,
-                              ),
+                            leading: PortadaCuadrada(
+                              color: album.colorPortada,
+                              tamano: 44,
+                              icono: Icons.album,
                             ),
                             title: Text(album.titulo),
                             subtitle: Text(

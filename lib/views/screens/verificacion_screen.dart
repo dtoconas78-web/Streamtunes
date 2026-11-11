@@ -3,6 +3,7 @@ import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
+import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
 // Pantalla Verificación: muestra una vista distinta según el estado.
 class PantallaVerificacion extends StatelessWidget {
@@ -28,20 +29,21 @@ class PantallaVerificacion extends StatelessWidget {
                   titulo: 'Verificá tu perfil',
                   mensaje: 'Para publicar conciertos y cobrar entradas necesitamos confirmar tu identidad y dónde vas a cobrar. Subir música sigue siendo libre.',
                   hijos: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: colorTarjeta,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _Paso(numero: 1, texto: 'Tus datos y tu documento'),
-                          _Paso(numero: 2, texto: 'Tu cuenta de cobro'),
-                          _Paso(numero: 3, texto: 'Revisión de nuestro equipo'),
-                        ],
+                    Tarjeta(
+                      margin: EdgeInsets.zero,
+                      child: const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _Paso(numero: 1, texto: 'Tus datos y tu documento'),
+                            _Paso(numero: 2, texto: 'Tu cuenta de cobro'),
+                            _Paso(
+                              numero: 3,
+                              texto: 'Revisión de nuestro equipo',
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),

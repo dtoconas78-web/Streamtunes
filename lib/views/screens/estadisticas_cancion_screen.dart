@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
+import 'package:streamtunes_demo/views/widgets/portada.dart';
+import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
 // Pantalla B: estadísticas de la canción seleccionada.
 class PantallaB extends StatefulWidget {
@@ -64,27 +66,15 @@ class _PantallaBState extends State<PantallaB> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Tarjeta con la canción.
-            Card(
-              color: colorTarjeta,
-              elevation: 0,
+            Tarjeta(
+              bordeAcento: true,
               margin: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: colorAcento.withValues(alpha: 0.35)),
-              ),
+              radio: 16,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: cancion.colorPortada,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.music_note, color: Colors.black),
-                    ),
+                    PortadaCuadrada(color: cancion.colorPortada),
                     const SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,14 +196,10 @@ class _TarjetaMetrica extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: colorTarjeta,
-      elevation: 0,
+    return Tarjeta(
+      bordeAcento: true,
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: colorAcento.withValues(alpha: 0.35)),
-      ),
+      radio: 14,
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(

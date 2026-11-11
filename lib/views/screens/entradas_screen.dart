@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/utils/constantes.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
+import 'package:streamtunes_demo/views/widgets/portada.dart';
+import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
 class EntradasScreen extends StatelessWidget {
   const EntradasScreen({super.key});
@@ -50,12 +53,6 @@ class EntradasScreen extends StatelessWidget {
             itemCount: lista.length,
             itemBuilder: (context, index) {
               final entrada = lista[index];
-              const coloresPortada = [
-                Color(0xFFFF5500),
-                Color(0xFF3D5AFE),
-                Color(0xFF00BFA5),
-                Color(0xFFD500F9),
-              ];
               final hoy = DateTime.now();
               final dias = DateTime(
                 entrada.fecha.year,
@@ -75,26 +72,13 @@ class EntradasScreen extends StatelessWidget {
                   : nombreCorto.substring(0, 3);
               final codigo =
                   'ST-${letras.toUpperCase()}-${entrada.fecha.day.toString().padLeft(2, '0')}${entrada.fecha.month.toString().padLeft(2, '0')}';
-              return Card(
-                color: const Color(0xFF262626),
-                clipBehavior: Clip.antiAlias,
+              return Tarjeta(
                 margin: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
                 child: ListTile(
                   contentPadding: const EdgeInsets.all(12),
-                  leading: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: coloresPortada[index % coloresPortada.length],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.confirmation_number,
-                      color: Colors.black,
-                    ),
+                  leading: PortadaCuadrada(
+                    color: coloresPortada[index % coloresPortada.length],
+                    icono: Icons.confirmation_number,
                   ),
                   title: Text(
                     entrada.concierto,
@@ -117,7 +101,7 @@ class EntradasScreen extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF181818),
+                          color: colorFondo,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -141,7 +125,7 @@ class EntradasScreen extends StatelessWidget {
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: Color(0xFFFF5500),
+                          color: colorAcento,
                         ),
                       ),
                       const SizedBox(height: 4),
