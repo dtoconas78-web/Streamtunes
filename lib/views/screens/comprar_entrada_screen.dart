@@ -19,6 +19,11 @@ class ComprarEntradaScreen extends StatelessWidget {
         title: const Text('Comprar entrada'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.volunteer_activism),
+            tooltip: 'Donar al artista',
+            onPressed: () => irA(context, Rutas.donar),
+          ),
+          IconButton(
             icon: const Icon(Icons.confirmation_number),
             tooltip: 'Mis entradas',
             onPressed: () => irA(context, Rutas.entradas),

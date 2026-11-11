@@ -6,6 +6,7 @@ import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/seguimiento_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
@@ -20,7 +21,6 @@ class PantallaA extends StatefulWidget {
 
 class _PantallaAState extends State<PantallaA>
     with SingleTickerProviderStateMixin {
-  bool siguiendo = false;
   late TabController _tabController;
 
   @override
@@ -132,41 +132,43 @@ class _PantallaAState extends State<PantallaA>
                   ),
                   const SizedBox(height: 12),
                   if (!authViewModel.esArtista)
-                    // Botón "Seguir" con estado: cambia al tocarlo.
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: siguiendo ? colorTarjeta : colorAcento,
-                        foregroundColor: siguiendo
-                            ? Colors.white
-                            : Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: siguiendo
-                              ? const BorderSide(color: colorAcento)
-                              : BorderSide.none,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 28,
-                          vertical: 10,
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          siguiendo = !siguiendo;
-                        });
-                        // SnackBar: confirma la acción sin interrumpir al usuario.
-                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              siguiendo
-                                  ? 'Ahora seguís a Mateo Cabral'
-                                  : 'Dejaste de seguir a Mateo Cabral',
+                    // Botón "Seguir": usa el mismo seguimiento que la pantalla
+                    // de donación (seguir es lo que habilita donar).
+                    ListenableBuilder(
+                      listenable: seguimientoViewModel,
+                      builder: (context, _) {
+                        final sigo = seguimientoViewModel.sigo('mateo-cabral');
+                        return ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: sigo ? colorTarjeta : colorAcento,
+                            foregroundColor: sigo ? Colors.white : Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: sigo
+                                  ? const BorderSide(color: colorAcento)
+                                  : BorderSide.none,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 28,
+                              vertical: 10,
                             ),
                           ),
+                          onPressed: () {
+                            seguimientoViewModel.alternar('mateo-cabral');
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  seguimientoViewModel.sigo('mateo-cabral')
+                                      ? 'Ahora seguís a Mateo Cabral. Ya podés donarle.'
+                                      : 'Dejaste de seguir a Mateo Cabral',
+                                ),
+                              ),
+                            );
+                          },
+                          child: Text(sigo ? 'Siguiendo' : 'Seguir'),
                         );
                       },
-                      child: Text(siguiendo ? 'Siguiendo' : 'Seguir'),
                     ),
                   Wrap(
                     alignment: WrapAlignment.center,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
@@ -215,11 +216,12 @@ class PantallaReproductor extends StatelessWidget {
                       icon: const Icon(Icons.volunteer_activism),
                       label: const Text('Apoyar a Mateo Cabral'),
                       onPressed: () {
-                        // Donar es solo para cuentas registradas.
+                        // Donar es solo para cuentas registradas; además,
+                        // en Donar se aplica la regla de seguir al artista.
                         if (authViewModel.esInvitado) {
                           mostrarDialogoRegistro(context, 'apoyar al artista');
                         } else {
-                          _avisar(context, 'Las donaciones llegan pronto');
+                          irA(context, Rutas.donar);
                         }
                       },
                     ),

@@ -1,9 +1,16 @@
 import 'package:streamtunes_demo/models/album.dart';
+import 'package:streamtunes_demo/models/artista.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/models/entrada.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+
+// Artistas de la app (en el demo hay uno; con backend viene de la API).
+// La regla: solo se le puede donar a un artista que se sigue.
+final List<Artista> artistas = [
+  Artista(id: 'mateo-cabral', nombre: 'Mateo Cabral'),
+];
 
 // Lista de canciones del artista (datos de ejemplo, realistas).
 // Cada una con un color de "portada" distinto para simular variedad visual.
