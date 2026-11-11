@@ -15,6 +15,7 @@ final List<Cancion> canciones = [
     lugar: 'Buenos Aires, AR',
     horarioPico: '21hs - 23hs',
     colorPortada: Color(0xFFFF5500),
+    genero: 'Pop'
   ),
   Cancion(
     titulo: 'Otra Vuelta',
@@ -24,6 +25,7 @@ final List<Cancion> canciones = [
     lugar: 'Córdoba, AR',
     horarioPico: '18hs - 20hs',
     colorPortada: Color(0xFF3D5AFE),
+    genero: 'Rock'
   ),
   Cancion(
     titulo: 'Sin Señal',
@@ -33,6 +35,7 @@ final List<Cancion> canciones = [
     lugar: 'Mendoza, AR',
     horarioPico: '12hs - 14hs',
     colorPortada: Color(0xFF00BFA5),
+    genero: 'Elctrónica'
   ),
   Cancion(
     titulo: 'Ruta 7',
@@ -42,6 +45,7 @@ final List<Cancion> canciones = [
     lugar: 'Rosario, AR',
     horarioPico: '08hs - 10hs',
     colorPortada: Color(0xFFD500F9),
+    genero: 'Folklore'
   ),
 ];
 

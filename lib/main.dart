@@ -1,11 +1,10 @@
+// StreamTunes - Demo de navegación (solo front, sin lógica real).
+
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
-import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
-import 'package:streamtunes_demo/views/screens/perfil_artista_screen.dart';
 import 'package:streamtunes_demo/views/screens/login_screen.dart';
-import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
 import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 
 void main() => runApp(const MiApp());
@@ -18,6 +17,7 @@ class MiApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: navegadorKey,
       navigatorObservers: [ObservadorReproductor()],
+      // builder envuelve TODAS las pantallas: el mini-player queda abajo siempre.
       builder: (context, child) {
         return Column(
           children: [
@@ -29,6 +29,8 @@ class MiApp extends StatelessWidget {
                   final miniVisible = reproductor.hayCancion &&
                       !reproductor.pantallaCompletaAbierta &&
                       !tecladoAbierto;
+                  // Si el mini-player está visible, las pantallas no deben
+                  // dejar margen inferior (ya lo ocupa el mini-player).
                   return MediaQuery.removePadding(
                     context: context,
                     removeBottom: miniVisible,
@@ -48,18 +50,7 @@ class MiApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: ListenableBuilder(
-        listenable: authViewModel,
-        builder: (context, _) {
-          if (!authViewModel.estaLogueado) {
-            return const LoginScreen();
-          }
-          if (authViewModel.esArtista) {
-            return const PantallaA();
-          }
-          return const ComprarEntradaScreen();
-        },
-      ),
+      home: const LoginScreen(),
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
-import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
+import 'package:streamtunes_demo/views/screens/pantalla_principal.dart';
 import 'package:streamtunes_demo/views/screens/perfil_artista_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -40,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ComprarEntradaScreen()),
+        MaterialPageRoute(builder: (context) => const PantallaPrincipal()),
       );
     }
   }

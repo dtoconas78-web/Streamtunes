@@ -70,19 +70,23 @@ class MiniReproductor extends StatelessWidget {
                             ],
                           ),
                         ),
-                        IconButton(
-                          icon: Icon(
-                            reproductor.reproduciendo ? Icons.pause : Icons.play_arrow,
-                            color: colorAcento,
-                            size: 30,
+                        Semantics(
+                            label: reproductor.reproduciendo ? 'Pausar' : 'Reproducir',
+                            child: IconButton(
+                              icon: Icon(
+                                reproductor.reproduciendo ? Icons.pause : Icons.play_arrow,
+                                color: colorAcento,
+                                size: 30,
+                              ),
+                              onPressed: reproductor.alternarPausa,
+                            ),
                           ),
-                          tooltip: reproductor.reproduciendo ? 'Pausar' : 'Reproducir',
-                          onPressed: reproductor.alternarPausa,
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.skip_next, size: 28),
-                          tooltip: 'Siguiente',
-                          onPressed: reproductor.siguiente,
+                        Semantics(
+                          label: 'Siguiente',
+                          child: IconButton(
+                            icon: const Icon(Icons.skip_next, size: 28),
+                            onPressed: reproductor.siguiente,
+                          ),
                         ),
                       ],
                     ),
