@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
+import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/viewmodels/ventas_viewmodel.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
-import 'package:streamtunes_demo/views/screens/login_screen.dart';
 
 class VentasDonacionesScreen extends StatefulWidget {
   const VentasDonacionesScreen({super.key});
@@ -15,14 +14,6 @@ class VentasDonacionesScreen extends StatefulWidget {
 class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
   String filtro = 'Todos';
 
-  void _cerrarSesion(BuildContext context) {
-    authViewModel.logout();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,7 +23,7 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
           IconButton(
             icon: const Icon(Icons.logout, color: colorAcento),
             tooltip: 'Cerrar sesión',
-            onPressed: () => _cerrarSesion(context),
+            onPressed: cerrarSesion,
           ),
         ],
       ),

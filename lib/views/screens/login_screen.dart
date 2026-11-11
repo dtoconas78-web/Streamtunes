@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
-import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
-import 'package:streamtunes_demo/views/screens/perfil_artista_screen.dart';
+import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,32 +17,35 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordCtrl = TextEditingController();
   RolUsuario rolSeleccionado = RolUsuario.oyente;
 
+  @override
+  void dispose() {
+    emailCtrl.dispose();
+    passwordCtrl.dispose();
+    super.dispose();
+  }
+
+  void _mostrarError(String mensaje) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(mensaje)));
+  }
+
+  // El home de main.dart reacciona solo al login: acá no se navega a mano,
+  // así el stack del Navigator no queda con pantallas duplicadas.
   void ingresar() {
     final email = emailCtrl.text.trim();
-    if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresá tu email')),
-      );
-      return;
+    final password = passwordCtrl.text;
+    if (email.isEmpty) return _mostrarError('Ingresá tu email');
+    if (password.length < 6) {
+      return _mostrarError('La contraseña tiene al menos 6 caracteres');
     }
-    final usuario = Usuario(
-      id: 'usuario_1',
-      nombre: email.split('@').first,
-      email: email,
-      rol: rolSeleccionado,
+    authViewModel.login(
+      Usuario(
+        id: 'usuario_1',
+        nombre: email.split('@').first,
+        email: email,
+        rol: rolSeleccionado,
+      ),
     );
-    authViewModel.login(usuario);
-    if (rolSeleccionado == RolUsuario.artista) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const PantallaA()),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ComprarEntradaScreen()),
-      );
-    }
   }
 
   @override
@@ -75,29 +78,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: emailCtrl,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    filled: true,
-                    fillColor: Color(0xFF262626),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+                  decoration: decoracionFormulario('Email'),
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: passwordCtrl,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Contraseña',
-                    filled: true,
-                    fillColor: Color(0xFF262626),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+                  decoration: decoracionFormulario('Contraseña'),
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -112,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           });
                         },
                         selectedColor: colorAcento,
-                        backgroundColor: const Color(0xFF262626),
+                        backgroundColor: colorTarjeta,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -126,30 +113,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           });
                         },
                         selectedColor: colorAcento,
-                        backgroundColor: const Color(0xFF262626),
+                        backgroundColor: colorTarjeta,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorAcento,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    onPressed: ingresar,
-                    child: const Text(
-                      'Ingresar',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
+                BotonPrincipal(texto: 'Ingresar', onPressed: ingresar),
               ],
             ),
           ),
