@@ -47,7 +47,7 @@ class MiniReproductor extends StatelessWidget {
                     child: Row(
                       children: [
                         PortadaCuadrada(
-                          color: cancion.colorPortada,
+                          color: colorDe(cancion.colorPortada),
                           tamano: 44,
                         ),
                         const SizedBox(width: 12),

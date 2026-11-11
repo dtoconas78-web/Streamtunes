@@ -140,7 +140,7 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
           tendencia: 'Recién publicada',
           lugar: 'Sin datos todavía',
           horarioPico: 'Sin datos todavía',
-          colorPortada: _colorPortada,
+          colorPortada: _colorPortada.toARGB32(),
           genero: _genero,
           descripcion: descripcion,
           publica: _publica,

@@ -10,7 +10,7 @@ Cancion _cancion(String titulo) => Cancion(
   tendencia: 'Recién publicada',
   lugar: 'Sin datos todavía',
   horarioPico: 'Sin datos todavía',
-  colorPortada: const Color(0xFFFF5500),
+  colorPortada: 0xFFFF5500,
 );
 
 void main() {

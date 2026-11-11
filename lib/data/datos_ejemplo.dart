@@ -15,7 +15,7 @@ final List<Cancion> canciones = [
     tendencia: '+12% esta semana',
     lugar: 'Buenos Aires, AR',
     horarioPico: '21hs - 23hs',
-    colorPortada: colorAcento,
+    colorPortada: colorAcento.toARGB32(),
   ),
   Cancion(
     titulo: 'Otra Vuelta',
@@ -24,7 +24,7 @@ final List<Cancion> canciones = [
     tendencia: '+5% esta semana',
     lugar: 'Córdoba, AR',
     horarioPico: '18hs - 20hs',
-    colorPortada: colorAzul,
+    colorPortada: colorAzul.toARGB32(),
   ),
   Cancion(
     titulo: 'Sin Señal',
@@ -33,7 +33,7 @@ final List<Cancion> canciones = [
     tendencia: '+21% esta semana',
     lugar: 'Mendoza, AR',
     horarioPico: '12hs - 14hs',
-    colorPortada: colorVerificado,
+    colorPortada: colorVerificado.toARGB32(),
   ),
   Cancion(
     titulo: 'Ruta 7',
@@ -42,7 +42,7 @@ final List<Cancion> canciones = [
     tendencia: '+3% esta semana',
     lugar: 'Rosario, AR',
     horarioPico: '08hs - 10hs',
-    colorPortada: colorMagenta,
+    colorPortada: colorMagenta.toARGB32(),
   ),
 ];
 
@@ -51,13 +51,13 @@ final List<Album> albumes = [
   Album(
     titulo: 'Postales',
     anio: '2024',
-    colorPortada: colorAcento,
+    colorPortada: colorAcento.toARGB32(),
     indices: [0, 1],
   ),
   Album(
     titulo: 'Sin Señal EP',
     anio: '2023',
-    colorPortada: colorVerificado,
+    colorPortada: colorVerificado.toARGB32(),
     indices: [2, 3],
   ),
 ];

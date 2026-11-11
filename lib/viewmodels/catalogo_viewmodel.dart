@@ -30,7 +30,7 @@ class CatalogoViewModel extends ChangeNotifier {
         Album(
           titulo: tituloAlbum,
           anio: anioAlbum ?? '',
-          colorPortada: colorPortada,
+          colorPortada: colorPortada.toARGB32(),
           indices: [for (int i = 0; i < nuevas.length; i++) primero + i],
         ),
       );

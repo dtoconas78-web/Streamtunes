@@ -15,3 +15,7 @@ const Color colorAzul = Color(0xFF3D5AFE);
 const Color colorMagenta = Color(0xFFD500F9);
 const Color colorAmarillo = Color(0xFFFFC107);
 const Color colorRosa = Color(0xFFE91E63);
+
+// Los modelos guardan el color como int ARGB (sin depender de Flutter);
+// esto lo convierte en el Color que usa la UI.
+Color colorDe(int argb) => Color(argb);

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-
 // Modelo simple para representar una canción.
+// No depende de Flutter: el color de portada se guarda como int ARGB
+// (conviertelo con colorDe() de theme/colores.dart para mostrarlo).
 class Cancion {
   final String titulo;
   final String duracion;
@@ -8,7 +8,7 @@ class Cancion {
   final String tendencia;
   final String lugar;
   final String horarioPico;
-  final Color colorPortada;
+  final int colorPortada;
   final String genero;
   final String descripcion;
   final bool publica;

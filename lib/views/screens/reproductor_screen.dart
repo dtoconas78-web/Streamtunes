@@ -60,7 +60,7 @@ class PantallaReproductor extends StatelessWidget {
                         aspectRatio: 1,
                         child: Container(
                           decoration: BoxDecoration(
-                            color: cancion.colorPortada,
+                            color: colorDe(cancion.colorPortada),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Icon(

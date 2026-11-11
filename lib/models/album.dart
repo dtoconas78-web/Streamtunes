@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
-
 // Modelo simple para representar un álbum.
+// No depende de Flutter: el color de portada se guarda como int ARGB.
 // "indices" son las posiciones de sus canciones en la lista `canciones`.
 class Album {
   final String titulo;
   final String anio;
-  final Color colorPortada;
+  final int colorPortada;
   final List<int> indices;
 
   const Album({

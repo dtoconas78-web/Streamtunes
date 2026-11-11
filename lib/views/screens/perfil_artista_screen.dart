@@ -260,7 +260,7 @@ class _PantallaAState extends State<PantallaA>
                           bordeAcento: true,
                           child: ListTile(
                             leading: PortadaCuadrada(
-                              color: cancion.colorPortada,
+                              color: colorDe(cancion.colorPortada),
                               tamano: 44,
                             ),
                             title: Text(cancion.titulo),
@@ -293,7 +293,7 @@ class _PantallaAState extends State<PantallaA>
                           bordeAcento: true,
                           child: ListTile(
                             leading: PortadaCuadrada(
-                              color: album.colorPortada,
+                              color: colorDe(album.colorPortada),
                               tamano: 44,
                               icono: Icons.album,
                             ),

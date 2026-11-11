@@ -83,7 +83,7 @@ class ExplorarScreen extends StatelessWidget {
             for (int i = 0; i < catalogo.canciones.length; i++)
               ListTile(
                 leading: PortadaCuadrada(
-                  color: catalogo.canciones[i].colorPortada,
+                  color: colorDe(catalogo.canciones[i].colorPortada),
                   tamano: 44,
                 ),
                 title: Text(catalogo.canciones[i].titulo),

@@ -74,7 +74,7 @@ class _PantallaBState extends State<PantallaB> {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    PortadaCuadrada(color: cancion.colorPortada),
+                    PortadaCuadrada(color: colorDe(cancion.colorPortada)),
                     const SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
