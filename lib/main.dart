@@ -4,6 +4,7 @@ import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/perfil_artista_screen.dart';
+import 'package:streamtunes_demo/views/screens/explorar_screen.dart';
 import 'package:streamtunes_demo/views/screens/login_screen.dart';
 import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
 import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
@@ -53,6 +54,10 @@ class MiApp extends StatelessWidget {
         builder: (context, _) {
           if (!authViewModel.estaLogueado) {
             return const LoginScreen();
+          }
+          // Invitado: solo puede escuchar.
+          if (authViewModel.esInvitado) {
+            return const ExplorarScreen();
           }
           if (authViewModel.esArtista) {
             return const PantallaA();

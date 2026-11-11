@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
+import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/requiere_registro.dart';
 
 // Pantalla Reproductor: portada, controles y barra de progreso.
 // No guarda estado propio: lee_todo del controlador global.
@@ -91,7 +93,14 @@ class PantallaReproductor extends StatelessWidget {
                           size: 28,
                         ),
                         tooltip: leGusta ? 'Quitar de guardados' : 'Guardar',
-                        onPressed: reproductor.alternarMeGusta,
+                        onPressed: () {
+                          // Guardar es solo para cuentas registradas.
+                          if (authViewModel.esInvitado) {
+                            mostrarDialogoRegistro(context, 'guardar canciones');
+                          } else {
+                            reproductor.alternarMeGusta();
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -174,7 +183,14 @@ class PantallaReproductor extends StatelessWidget {
                       ),
                       icon: const Icon(Icons.volunteer_activism),
                       label: const Text('Apoyar a Mateo Cabral'),
-                      onPressed: () => _avisar(context, 'Las donaciones llegan pronto'),
+                      onPressed: () {
+                        // Donar es solo para cuentas registradas.
+                        if (authViewModel.esInvitado) {
+                          mostrarDialogoRegistro(context, 'apoyar al artista');
+                        } else {
+                          _avisar(context, 'Las donaciones llegan pronto');
+                        }
+                      },
                     ),
                   ),
                 ],
