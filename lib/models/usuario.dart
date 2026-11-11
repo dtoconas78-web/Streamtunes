@@ -1,4 +1,6 @@
-enum RolUsuario { artista, oyente }
+// invitado = entró sin cuenta: solo puede escuchar. Todo lo demás
+// (guardar, listas, subir música, comprar entradas, donar) requiere registro.
+enum RolUsuario { artista, oyente, invitado }
 
 class Usuario {
   final String id;
