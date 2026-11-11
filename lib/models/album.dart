@@ -1,16 +1,17 @@
 // Modelo simple para representar un álbum.
 // No depende de Flutter: el color de portada se guarda como int ARGB.
-// "indices" son las posiciones de sus canciones en la lista `canciones`.
+// "cancionIds" son los ids de sus canciones (más robusto que posiciones:
+// si el catálogo cambia de orden, el álbum sigue apuntando bien).
 class Album {
   final String titulo;
   final String anio;
   final int colorPortada;
-  final List<int> indices;
+  final List<String> cancionIds;
 
   const Album({
     required this.titulo,
     required this.anio,
     required this.colorPortada,
-    required this.indices,
+    required this.cancionIds,
   });
 }

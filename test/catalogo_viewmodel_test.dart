@@ -3,7 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 
-Cancion _cancion(String titulo) => Cancion(
+Cancion _cancion(String titulo, {required String id}) => Cancion(
+  id: id,
   titulo: titulo,
   duracionSegundos: 180,
   reproducciones: 0,
@@ -22,7 +23,7 @@ void main() {
     c.addListener(() => notificaciones++);
 
     c.publicar(
-      nuevas: [_cancion('Nueva')],
+      nuevas: [_cancion('Nueva', id: 'nueva')],
       colorPortada: const Color(0xFFFF5500),
     );
 
@@ -37,7 +38,10 @@ void main() {
     final antes = c.canciones.length;
 
     c.publicar(
-      nuevas: [_cancion('Tema 1'), _cancion('Tema 2')],
+      nuevas: [
+        _cancion('Tema 1', id: 'tema-1'),
+        _cancion('Tema 2', id: 'tema-2'),
+      ],
       tituloAlbum: 'Mi álbum',
       anioAlbum: '2026',
       colorPortada: const Color(0xFF00BFA5),
@@ -47,6 +51,6 @@ void main() {
     final album = c.albumes.last;
     expect(album.titulo, 'Mi álbum');
     expect(album.anio, '2026');
-    expect(album.indices, [antes, antes + 1]);
+    expect(album.cancionIds, ['tema-1', 'tema-2']);
   });
 }

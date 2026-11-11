@@ -9,6 +9,7 @@ import 'package:streamtunes_demo/theme/colores.dart';
 // Cada una con un color de "portada" distinto para simular variedad visual.
 final List<Cancion> canciones = [
   Cancion(
+    id: 'luces-de-la-ciudad',
     titulo: 'Luces de la Ciudad',
     duracionSegundos: 204,
     reproducciones: 48302,
@@ -18,6 +19,7 @@ final List<Cancion> canciones = [
     colorPortada: colorAcento.toARGB32(),
   ),
   Cancion(
+    id: 'otra-vuelta',
     titulo: 'Otra Vuelta',
     duracionSegundos: 177,
     reproducciones: 31750,
@@ -27,6 +29,7 @@ final List<Cancion> canciones = [
     colorPortada: colorAzul.toARGB32(),
   ),
   Cancion(
+    id: 'sin-senal',
     titulo: 'Sin Señal',
     duracionSegundos: 242,
     reproducciones: 22140,
@@ -36,6 +39,7 @@ final List<Cancion> canciones = [
     colorPortada: colorVerificado.toARGB32(),
   ),
   Cancion(
+    id: 'ruta-7',
     titulo: 'Ruta 7',
     duracionSegundos: 191,
     reproducciones: 15890,
@@ -52,13 +56,13 @@ final List<Album> albumes = [
     titulo: 'Postales',
     anio: '2024',
     colorPortada: colorAcento.toARGB32(),
-    indices: [0, 1],
+    cancionIds: ['luces-de-la-ciudad', 'otra-vuelta'],
   ),
   Album(
     titulo: 'Sin Señal EP',
     anio: '2023',
     colorPortada: colorVerificado.toARGB32(),
-    indices: [2, 3],
+    cancionIds: ['sin-senal', 'ruta-7'],
   ),
 ];
 

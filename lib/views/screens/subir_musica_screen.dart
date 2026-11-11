@@ -132,10 +132,11 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
     final descripcion = _descripcionCtrl.text.trim();
 
     final nuevas = [
-      for (final pista in _pistas)
+      for (var i = 0; i < _pistas.length; i++)
         Cancion(
-          titulo: _esAlbum ? pista.titulo.text.trim() : titulo,
-          duracionSegundos: pista.segundos,
+          id: 'pista-${DateTime.now().millisecondsSinceEpoch}-$i',
+          titulo: _esAlbum ? _pistas[i].titulo.text.trim() : titulo,
+          duracionSegundos: _pistas[i].segundos,
           reproducciones: 0,
           tendencia: 'Recién publicada',
           lugar: 'Sin datos todavía',

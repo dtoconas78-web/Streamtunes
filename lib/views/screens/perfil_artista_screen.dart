@@ -300,7 +300,7 @@ class _PantallaAState extends State<PantallaA>
                             ),
                             title: Text(album.titulo),
                             subtitle: Text(
-                              '${album.indices.length} canciones, ${album.anio}',
+                              '${album.cancionIds.length} canciones, ${album.anio}',
                               style: const TextStyle(color: Colors.grey),
                             ),
                             trailing: const Icon(

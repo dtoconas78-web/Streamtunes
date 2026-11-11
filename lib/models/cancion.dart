@@ -2,6 +2,7 @@
 // No depende de Flutter: el color de portada se guarda como int ARGB
 // (conviertelo con colorDe() de theme/colores.dart para mostrarlo).
 class Cancion {
+  final String id; // identificador único (los álbumes referencian por id)
   final String titulo;
   final int duracionSegundos; // duración en segundos (la UI la formatea)
   final int reproducciones;
@@ -14,6 +15,7 @@ class Cancion {
   final bool publica;
 
   const Cancion({
+    required this.id,
     required this.titulo,
     required this.duracionSegundos,
     required this.reproducciones,

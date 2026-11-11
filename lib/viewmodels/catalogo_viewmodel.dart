@@ -23,7 +23,6 @@ class CatalogoViewModel extends ChangeNotifier {
     String? anioAlbum,
     required Color colorPortada,
   }) {
-    final primero = canciones.length;
     canciones.addAll(nuevas);
     if (tituloAlbum != null) {
       albumes.add(
@@ -31,7 +30,7 @@ class CatalogoViewModel extends ChangeNotifier {
           titulo: tituloAlbum,
           anio: anioAlbum ?? '',
           colorPortada: colorPortada.toARGB32(),
-          indices: [for (int i = 0; i < nuevas.length; i++) primero + i],
+          cancionIds: [for (final c in nuevas) c.id],
         ),
       );
     }

@@ -49,7 +49,7 @@ class PantallaAlbum extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                '${album.anio}, ${album.indices.length} canciones',
+                '${album.anio}, ${album.cancionIds.length} canciones',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
@@ -70,12 +70,18 @@ class PantallaAlbum extends StatelessWidget {
                   ),
                   icon: const Icon(Icons.play_arrow),
                   label: const Text('Reproducir'),
-                  onPressed: () => reproductor.reproducir(album.indices.first),
+                  onPressed: () {
+                    // El álbum referencia por id; resolvemos la posición actual.
+                    final primero = catalogo.canciones.indexWhere(
+                      (c) => c.id == album.cancionIds.first,
+                    );
+                    if (primero >= 0) reproductor.reproducir(primero);
+                  },
                 ),
               ),
               const SizedBox(height: 16),
-              for (int i = 0; i < album.indices.length; i++)
-                _FilaCancionAlbum(numero: i + 1, indice: album.indices[i]),
+              for (int i = 0; i < album.cancionIds.length; i++)
+                _FilaCancionAlbum(numero: i + 1, id: album.cancionIds[i]),
             ],
           );
         },
@@ -87,12 +93,15 @@ class PantallaAlbum extends StatelessWidget {
 // Una fila de la lista de canciones del álbum.
 class _FilaCancionAlbum extends StatelessWidget {
   final int numero;
-  final int indice; // posición en la lista `canciones`
+  final String id; // id de la canción en el catálogo
 
-  const _FilaCancionAlbum({required this.numero, required this.indice});
+  const _FilaCancionAlbum({required this.numero, required this.id});
 
   @override
   Widget build(BuildContext context) {
+    // Resolvemos el id a la posición actual del catálogo.
+    final indice = catalogo.canciones.indexWhere((c) => c.id == id);
+    if (indice < 0) return const SizedBox.shrink();
     final cancion = catalogo.canciones[indice];
     final sonando = reproductor.indiceActual == indice;
 
