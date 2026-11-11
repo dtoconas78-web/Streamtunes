@@ -12,6 +12,8 @@ class EntradasViewModel extends ChangeNotifier {
     if (cantidad <= 0 || cantidad > concierto.disponibles) {
       return false;
     }
+    final posicion = conciertosDisponibles.indexOf(concierto);
+    if (posicion < 0) return false;
     entradasCompradas.add(
       Entrada(
         concierto: concierto.nombre,
@@ -21,7 +23,10 @@ class EntradasViewModel extends ChangeNotifier {
         cantidad: cantidad,
       ),
     );
-    concierto.disponibles -= cantidad;
+    // El concierto es inmutable: se reemplaza por una copia actualizada.
+    conciertosDisponibles[posicion] = concierto.conDisponibles(
+      concierto.disponibles - cantidad,
+    );
     ventasViewModel.registrarVenta(
       '${concierto.nombre} x$cantidad',
       concierto.precio * cantidad,

@@ -7,7 +7,7 @@ class VentasViewModel extends ChangeNotifier {
   double get totalVentas {
     double total = 0;
     for (final m in movimientos) {
-      if (m.tipo == 'Venta') {
+      if (m.tipo == TipoMovimiento.venta) {
         total += m.monto;
       }
     }
@@ -17,7 +17,7 @@ class VentasViewModel extends ChangeNotifier {
   double get totalDonaciones {
     double total = 0;
     for (final m in movimientos) {
-      if (m.tipo == 'Donación') {
+      if (m.tipo == TipoMovimiento.donacion) {
         total += m.monto;
       }
     }
@@ -27,7 +27,7 @@ class VentasViewModel extends ChangeNotifier {
   void registrarVenta(String detalle, double monto) {
     movimientos.add(
       Movimiento(
-        tipo: 'Venta',
+        tipo: TipoMovimiento.venta,
         detalle: detalle,
         monto: monto,
         fecha: DateTime.now(),
@@ -39,7 +39,7 @@ class VentasViewModel extends ChangeNotifier {
   void registrarDonacion(String detalle, double monto) {
     movimientos.add(
       Movimiento(
-        tipo: 'Donación',
+        tipo: TipoMovimiento.donacion,
         detalle: detalle,
         monto: monto,
         fecha: DateTime.now(),

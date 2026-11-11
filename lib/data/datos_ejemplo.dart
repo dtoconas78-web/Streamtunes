@@ -123,19 +123,19 @@ final List<Concierto> conciertos = [
 
 final List<Movimiento> movimientos = [
   Movimiento(
-    tipo: 'Venta',
+    tipo: TipoMovimiento.venta,
     detalle: 'Mateo Cabral en vivo x2',
     monto: 30000,
     fecha: DateTime(2026, 11, 2),
   ),
   Movimiento(
-    tipo: 'Donación',
+    tipo: TipoMovimiento.donacion,
     detalle: 'Donación de un fan',
     monto: 5000,
     fecha: DateTime(2026, 11, 4),
   ),
   Movimiento(
-    tipo: 'Venta',
+    tipo: TipoMovimiento.venta,
     detalle: 'Luna Roja Tour x1',
     monto: 22000,
     fecha: DateTime(2026, 11, 5),

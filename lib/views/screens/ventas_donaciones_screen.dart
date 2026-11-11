@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
+import 'package:streamtunes_demo/models/movimiento.dart';
 import 'package:streamtunes_demo/viewmodels/ventas_viewmodel.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
@@ -36,7 +37,10 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
               .where(
                 (m) =>
                     filtro == 'Todos' ||
-                    m.tipo == (filtro == 'Ventas' ? 'Venta' : 'Donación'),
+                    m.tipo ==
+                        (filtro == 'Ventas'
+                            ? TipoMovimiento.venta
+                            : TipoMovimiento.donacion),
               )
               .toList()
               .reversed
@@ -97,7 +101,7 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
                   itemCount: lista.length,
                   itemBuilder: (context, index) {
                     final m = lista[index];
-                    final esVenta = m.tipo == 'Venta';
+                    final esVenta = m.tipo == TipoMovimiento.venta;
                     final color = esVenta ? colorAcento : colorMagenta;
                     return Tarjeta(
                       margin: const EdgeInsets.only(
@@ -118,7 +122,7 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          '${m.tipo} · ${formatearFecha(m.fecha)}',
+                          '${m.tipo.etiqueta} · ${formatearFecha(m.fecha)}',
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 12,
