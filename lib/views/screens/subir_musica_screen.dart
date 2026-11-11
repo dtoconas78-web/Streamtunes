@@ -428,7 +428,7 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       isExpanded: true,
-                      value: _genero,
+                      initialValue: _genero,
                       dropdownColor: colorTarjeta,
                       decoration: decoracionFormulario('Género'),
                       items: [
@@ -448,7 +448,7 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      activeColor: colorAcento,
+                      activeThumbColor: colorAcento,
                       title: const Text('Pública'),
                       subtitle: Text(
                         _publica
