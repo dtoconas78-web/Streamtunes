@@ -10,8 +10,8 @@ import 'package:streamtunes_demo/theme/colores.dart';
 final List<Cancion> canciones = [
   Cancion(
     titulo: 'Luces de la Ciudad',
-    duracion: '3:24',
-    reproducciones: '48.302',
+    duracionSegundos: 204,
+    reproducciones: 48302,
     tendencia: '+12% esta semana',
     lugar: 'Buenos Aires, AR',
     horarioPico: '21hs - 23hs',
@@ -19,8 +19,8 @@ final List<Cancion> canciones = [
   ),
   Cancion(
     titulo: 'Otra Vuelta',
-    duracion: '2:57',
-    reproducciones: '31.750',
+    duracionSegundos: 177,
+    reproducciones: 31750,
     tendencia: '+5% esta semana',
     lugar: 'Córdoba, AR',
     horarioPico: '18hs - 20hs',
@@ -28,8 +28,8 @@ final List<Cancion> canciones = [
   ),
   Cancion(
     titulo: 'Sin Señal',
-    duracion: '4:02',
-    reproducciones: '22.140',
+    duracionSegundos: 242,
+    reproducciones: 22140,
     tendencia: '+21% esta semana',
     lugar: 'Mendoza, AR',
     horarioPico: '12hs - 14hs',
@@ -37,8 +37,8 @@ final List<Cancion> canciones = [
   ),
   Cancion(
     titulo: 'Ruta 7',
-    duracion: '3:11',
-    reproducciones: '15.890',
+    duracionSegundos: 191,
+    reproducciones: 15890,
     tendencia: '+3% esta semana',
     lugar: 'Rosario, AR',
     horarioPico: '08hs - 10hs',

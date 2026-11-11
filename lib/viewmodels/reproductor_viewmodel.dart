@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
-import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 
 // Controlador de reproducción: guarda qué suena, en qué segundo y si está en pausa.
@@ -20,7 +19,7 @@ class ControladorReproduccion extends ChangeNotifier {
   bool get hayCancion => indiceActual != null;
   Cancion? get cancion =>
       indiceActual == null ? null : catalogo.canciones[indiceActual!];
-  int get total => cancion == null ? 0 : aSegundos(cancion!.duracion);
+  int get total => cancion == null ? 0 : cancion!.duracionSegundos;
   bool get leGusta => indiceActual != null && meGustas.contains(indiceActual);
 
   // Pone a sonar una canción. Si ya era la actual, sigue desde donde estaba.

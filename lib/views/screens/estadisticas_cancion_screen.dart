@@ -24,9 +24,7 @@ class _PantallaBState extends State<PantallaB> {
   @override
   void initState() {
     super.initState();
-    reproduccionesLive = int.parse(
-      widget.cancion.reproducciones.replaceAll('.', ''),
-    );
+    reproduccionesLive = widget.cancion.reproducciones;
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
       setState(() {
         reproduccionesLive += 7; // simulado

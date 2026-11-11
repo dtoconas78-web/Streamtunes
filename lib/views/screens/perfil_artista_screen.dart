@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
@@ -266,8 +267,8 @@ class _PantallaAState extends State<PantallaA>
                             title: Text(cancion.titulo),
                             subtitle: Text(
                               cancion.publica
-                                  ? cancion.duracion
-                                  : '${cancion.duracion}, privada',
+                                  ? formatoTiempo(cancion.duracionSegundos)
+                                  : '${formatoTiempo(cancion.duracionSegundos)}, privada',
                               style: const TextStyle(color: Colors.grey),
                             ),
                             trailing: const Icon(

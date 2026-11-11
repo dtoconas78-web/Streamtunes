@@ -5,8 +5,8 @@ import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 
 Cancion _cancion(String titulo) => Cancion(
   titulo: titulo,
-  duracion: '3:00',
-  reproducciones: '0',
+  duracionSegundos: 180,
+  reproducciones: 0,
   tendencia: 'Recién publicada',
   lugar: 'Sin datos todavía',
   horarioPico: 'Sin datos todavía',

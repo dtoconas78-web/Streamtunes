@@ -3,8 +3,8 @@
 // (conviertelo con colorDe() de theme/colores.dart para mostrarlo).
 class Cancion {
   final String titulo;
-  final String duracion;
-  final String reproducciones;
+  final int duracionSegundos; // duración en segundos (la UI la formatea)
+  final int reproducciones;
   final String tendencia;
   final String lugar;
   final String horarioPico;
@@ -15,7 +15,7 @@ class Cancion {
 
   const Cancion({
     required this.titulo,
-    required this.duracion,
+    required this.duracionSegundos,
     required this.reproducciones,
     required this.tendencia,
     required this.lugar,

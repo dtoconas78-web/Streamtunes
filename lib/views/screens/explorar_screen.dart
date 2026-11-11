@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
@@ -88,7 +89,7 @@ class ExplorarScreen extends StatelessWidget {
                 ),
                 title: Text(catalogo.canciones[i].titulo),
                 subtitle: Text(
-                  catalogo.canciones[i].duracion,
+                  formatoTiempo(catalogo.canciones[i].duracionSegundos),
                   style: const TextStyle(color: Colors.grey),
                 ),
                 trailing: const Icon(Icons.play_circle, color: colorAcento),

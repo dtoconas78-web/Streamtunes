@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
@@ -115,7 +116,10 @@ class _FilaCancionAlbum extends StatelessWidget {
       ),
       trailing: sonando
           ? const Icon(Icons.graphic_eq, color: colorAcento)
-          : Text(cancion.duracion, style: const TextStyle(color: Colors.grey)),
+          : Text(
+              formatoTiempo(cancion.duracionSegundos),
+              style: const TextStyle(color: Colors.grey),
+            ),
       // Reproduce y se queda en la pantalla: aparece el mini-player abajo.
       onTap: () => reproductor.reproducir(indice),
     );

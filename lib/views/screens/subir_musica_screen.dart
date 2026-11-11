@@ -135,8 +135,8 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
       for (final pista in _pistas)
         Cancion(
           titulo: _esAlbum ? pista.titulo.text.trim() : titulo,
-          duracion: formatoTiempo(pista.segundos),
-          reproducciones: '0',
+          duracionSegundos: pista.segundos,
+          reproducciones: 0,
           tendencia: 'Recién publicada',
           lugar: 'Sin datos todavía',
           horarioPico: 'Sin datos todavía',
