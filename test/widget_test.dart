@@ -48,7 +48,9 @@ void main() {
   testWidgets('navegar a registro por ruta nombrada funciona', (tester) async {
     await tester.pumpWidget(const MiApp());
     await tester.pump();
-    await tester.tap(find.text('Crear cuenta gratis', findRichText: true));
+    await tester.tap(
+      find.textContaining('Crear cuenta gratis', findRichText: true),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(RegistroScreen), findsOneWidget);
   });
