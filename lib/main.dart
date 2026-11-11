@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
-import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/theme/tema.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/perfil_artista_screen.dart';
@@ -46,13 +46,7 @@ class MiApp extends StatelessWidget {
           ],
         );
       },
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: colorFondo,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: colorFondo,
-          elevation: 0,
-        ),
-      ),
+      theme: temaApp,
       home: ListenableBuilder(
         listenable: authViewModel,
         builder: (context, _) {

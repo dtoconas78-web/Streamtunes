@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/constantes.dart';
+import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 
 // Pantalla Editar perfil: foto, nombre, país y "sobre mí".
@@ -26,19 +27,6 @@ class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
     _nombreCtrl.dispose();
     _bioCtrl.dispose();
     super.dispose();
-  }
-
-  // Estilo común de los campos del formulario.
-  InputDecoration _decoracion(String etiqueta) {
-    return InputDecoration(
-      labelText: etiqueta,
-      filled: true,
-      fillColor: colorTarjeta,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-    );
   }
 
   void _cambiarFoto() {
@@ -111,7 +99,7 @@ class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
                   controller: _nombreCtrl,
                   maxLength: 40,
                   textCapitalization: TextCapitalization.words,
-                  decoration: _decoracion('Nombre'),
+                  decoration: decoracionFormulario('Nombre'),
                   validator: (valor) {
                     if (valor == null || valor.trim().isEmpty) {
                       return 'Escribí tu nombre';
@@ -126,7 +114,7 @@ class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
                 DropdownButtonFormField<String>(
                   initialValue: paises.contains(_pais) ? _pais : null,
                   dropdownColor: colorTarjeta,
-                  decoration: _decoracion('País'),
+                  decoration: decoracionFormulario('País'),
                   items: [
                     for (final pais in paises)
                       DropdownMenuItem(value: pais, child: Text(pais)),
@@ -140,7 +128,7 @@ class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
                   controller: _bioCtrl,
                   maxLength: 200,
                   maxLines: 4,
-                  decoration: _decoracion('Sobre mí'),
+                  decoration: decoracionFormulario('Sobre mí'),
                 ),
                 const SizedBox(height: 16),
                 SizedBox(

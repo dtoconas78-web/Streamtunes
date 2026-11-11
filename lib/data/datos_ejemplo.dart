@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/models/entrada.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
+import 'package:streamtunes_demo/theme/colores.dart';
 
 // Lista de canciones del artista (datos de ejemplo, realistas).
 // Cada una con un color de "portada" distinto para simular variedad visual.
@@ -15,7 +15,7 @@ final List<Cancion> canciones = [
     tendencia: '+12% esta semana',
     lugar: 'Buenos Aires, AR',
     horarioPico: '21hs - 23hs',
-    colorPortada: Color(0xFFFF5500),
+    colorPortada: colorAcento,
   ),
   Cancion(
     titulo: 'Otra Vuelta',
@@ -24,7 +24,7 @@ final List<Cancion> canciones = [
     tendencia: '+5% esta semana',
     lugar: 'Córdoba, AR',
     horarioPico: '18hs - 20hs',
-    colorPortada: Color(0xFF3D5AFE),
+    colorPortada: colorAzul,
   ),
   Cancion(
     titulo: 'Sin Señal',
@@ -33,7 +33,7 @@ final List<Cancion> canciones = [
     tendencia: '+21% esta semana',
     lugar: 'Mendoza, AR',
     horarioPico: '12hs - 14hs',
-    colorPortada: Color(0xFF00BFA5),
+    colorPortada: colorVerificado,
   ),
   Cancion(
     titulo: 'Ruta 7',
@@ -42,7 +42,7 @@ final List<Cancion> canciones = [
     tendencia: '+3% esta semana',
     lugar: 'Rosario, AR',
     horarioPico: '08hs - 10hs',
-    colorPortada: Color(0xFFD500F9),
+    colorPortada: colorMagenta,
   ),
 ];
 
@@ -51,13 +51,13 @@ final List<Album> albumes = [
   Album(
     titulo: 'Postales',
     anio: '2024',
-    colorPortada: Color(0xFFFF5500),
+    colorPortada: colorAcento,
     indices: [0, 1],
   ),
   Album(
     titulo: 'Sin Señal EP',
     anio: '2023',
-    colorPortada: Color(0xFF00BFA5),
+    colorPortada: colorVerificado,
     indices: [2, 3],
   ),
 ];

@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/theme/tema.dart';
 
-// Estilo común para los campos de los formularios.
+// Decoración común de los campos de formulario: delega en theme/tema.dart
+// para que el estilo viva en un solo lugar.
 InputDecoration decoracionFormulario(String etiqueta) {
-  return InputDecoration(
-    labelText: etiqueta,
-    filled: true,
-    fillColor: colorTarjeta,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide.none,
-    ),
-  );
+  return decoracionCampo(etiqueta);
 }
 
 final _regexEmail = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');

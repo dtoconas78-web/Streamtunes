@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'dart:ui' show Color;
+
+import 'package:streamtunes_demo/theme/colores.dart';
 
 // Países disponibles en la pantalla Editar perfil.
 const List<String> paises = [
@@ -31,12 +33,12 @@ const List<String> generos = [
   'Otro',
 ];
 
-// Colores entre los que se elige la portada (la imagen real se conecta después).
+// Colores entre los que se elige la portada, definidos una sola vez en theme/colores.dart.
 const List<Color> coloresPortada = [
-  Color(0xFFFF5500),
-  Color(0xFF3D5AFE),
-  Color(0xFF00BFA5),
-  Color(0xFFD500F9),
-  Color(0xFFFFC107),
-  Color(0xFFE91E63),
+  colorAcento,
+  colorAzul,
+  colorVerificado,
+  colorMagenta,
+  colorAmarillo,
+  colorRosa,
 ];
