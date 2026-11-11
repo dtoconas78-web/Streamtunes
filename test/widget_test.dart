@@ -1,9 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:streamtunes_demo/main.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/explorar_screen.dart';
 import 'package:streamtunes_demo/views/screens/login_screen.dart';
+import 'package:streamtunes_demo/views/screens/registro_screen.dart';
 
 void main() {
   setUp(() => authViewModel.logout());
@@ -31,5 +33,13 @@ void main() {
     expect(authViewModel.esRegistrado, isFalse);
     expect(find.byType(ExplorarScreen), findsOneWidget);
     expect(find.text('Estás como invitado'), findsOneWidget);
+  });
+
+  testWidgets('el registro también ofrece registrarse con Google',
+      (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: RegistroScreen()));
+    await tester.pump();
+    expect(find.text('Registrarse con Google'), findsOneWidget);
+    expect(find.text('Crear cuenta gratis'), findsOneWidget);
   });
 }

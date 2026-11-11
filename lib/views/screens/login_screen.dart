@@ -4,7 +4,9 @@ import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/registro_screen.dart';
+import 'package:streamtunes_demo/views/widgets/boton_google.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
+import 'package:streamtunes_demo/views/widgets/elegir_rol.dart';
 
 // Pantalla de acceso: entrar con Google, con email o como invitado.
 // El home de main.dart reacciona solo al login: acá no se navega a mano.
@@ -60,79 +62,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Google no devuelve el rol: se elige antes de entrar.
   Future<void> _ingresarConGoogle() async {
-    final rol = await showModalBottomSheet<RolUsuario>(
-      context: context,
-      backgroundColor: colorTarjeta,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '¿Cómo entrás con Google?',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Elegí el rol de esta cuenta:',
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 12),
-              for (final r in [RolUsuario.artista, RolUsuario.oyente])
-                ListTile(
-                  leading: Icon(
-                    r == RolUsuario.artista ? Icons.mic : Icons.headphones,
-                    color: colorAcento,
-                  ),
-                  title: Text(r == RolUsuario.artista ? 'Artista' : 'Oyente'),
-                  subtitle: Text(
-                    r == RolUsuario.artista
-                        ? 'Subo mi música, publico conciertos y veo mis ventas'
-                        : 'Escucho gratis, compro entradas y apoyo directo al artista',
-                  ),
-                  onTap: () => Navigator.pop(ctx, r),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
+    final rol = await elegirRol(context, titulo: '¿Cómo entrás con Google?');
     if (rol != null) {
       await _ejecutar(() => authViewModel.loginConGoogle(rol: rol));
     }
-  }
-
-  Widget _botonGoogle() {
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton.icon(
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
-          side: const BorderSide(color: Colors.grey),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        ),
-        icon: const CircleAvatar(
-          radius: 11,
-          backgroundColor: Colors.white,
-          child: Text(
-            'G',
-            style: TextStyle(
-              color: Colors.blue,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
-        ),
-        label: const Text('Continuar con Google'),
-        onPressed: _ingresarConGoogle,
-      ),
-    );
   }
 
   Widget _selectorRol() {
@@ -222,7 +155,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: CircularProgressIndicator(color: colorAcento),
                   )
                 else ...[
-                  _botonGoogle(),
+                  BotonGoogle(
+                    texto: 'Continuar con Google',
+                    onPressed: _ingresarConGoogle,
+                  ),
                   const SizedBox(height: 16),
                   const Row(
                     children: [
