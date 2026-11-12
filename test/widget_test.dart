@@ -72,11 +72,11 @@ void main() {
     );
     await tester.pump();
 
-    // Arranca en el shell con las tres pestañas.
+    // Arranca en el shell con las cinco pestañas.
     expect(find.byType(OyenteShell), findsOneWidget);
     final barra = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(barra.selectedIndex, 0);
-    expect(barra.destinations.length, 3);
+    expect(barra.destinations.length, 5);
     expect(find.text('Hola, Ana'), findsOneWidget);
 
     // Tocar "Buscar" cambia la pestaña activa.
@@ -86,5 +86,14 @@ void main() {
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
       1,
     );
+
+    // Tocar "Donar" en la barra muestra la pantalla de donación.
+    await tester.tap(find.text('Donar'));
+    await tester.pump();
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      2,
+    );
+    expect(find.text('Donar al artista'), findsOneWidget);
   });
 }

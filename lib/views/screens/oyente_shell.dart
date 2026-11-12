@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/views/screens/biblioteca_screen.dart';
 import 'package:streamtunes_demo/views/screens/buscar_screen.dart';
+import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
+import 'package:streamtunes_demo/views/screens/donar_screen.dart';
 import 'package:streamtunes_demo/views/screens/inicio_oyente_screen.dart';
 
-// Shell del oyente: barra inferior con Inicio / Buscar / Biblioteca.
-// El mini-reproductor queda por encima de todo (viene de main.dart).
+// Shell del oyente: barra inferior con Inicio / Buscar / Donar / Entradas /
+// Biblioteca. Donar y Entradas viven como pestañas (así la barra queda
+// siempre visible). El mini-reproductor queda por encima de todo (main.dart).
 class OyenteShell extends StatefulWidget {
   const OyenteShell({super.key});
 
@@ -18,13 +21,15 @@ class _OyenteShellState extends State<OyenteShell> {
   final List<Widget> _paginas = const [
     InicioOyenteScreen(),
     BuscarScreen(),
+    DonarScreen(),
+    ComprarEntradaScreen(),
     BibliotecaScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // IndexedStack: las tres pestañas quedan vivas, cambia la visible.
+      // IndexedStack: las cinco pestañas quedan vivas, cambia la visible.
       body: IndexedStack(index: _indice, children: _paginas),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _indice,
@@ -39,6 +44,16 @@ class _OyenteShellState extends State<OyenteShell> {
             icon: Icon(Icons.search),
             selectedIcon: Icon(Icons.search),
             label: 'Buscar',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.volunteer_activism_outlined),
+            selectedIcon: Icon(Icons.volunteer_activism),
+            label: 'Donar',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.confirmation_number_outlined),
+            selectedIcon: Icon(Icons.confirmation_number),
+            label: 'Entradas',
           ),
           NavigationDestination(
             icon: Icon(Icons.library_music_outlined),
