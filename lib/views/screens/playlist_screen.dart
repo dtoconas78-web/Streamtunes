@@ -6,6 +6,7 @@ import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/playlists_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/boton_modo_reproduccion.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
@@ -237,38 +238,8 @@ class PantallaPlaylist extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // Cambiar entre "en orden" y "aleatoria".
-                  OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor:
-                          reproductor.modo == ModoReproduccion.aleatorio
-                          ? colorAcento
-                          : Colors.grey,
-                      side: BorderSide(
-                        color: reproductor.modo == ModoReproduccion.aleatorio
-                            ? colorAcento
-                            : Colors.grey,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 14,
-                        horizontal: 16,
-                      ),
-                      shape: const StadiumBorder(),
-                    ),
-                    onPressed: () {
-                      final nuevo = reproductor.alternarModo();
-                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Modo de reproducción: ${nuevo.etiqueta}',
-                          ),
-                        ),
-                      );
-                    },
-                    icon: Icon(reproductor.modo.icono),
-                    label: Text(reproductor.modo.etiqueta),
-                  ),
+                  // Modo de reproducción: en orden / aleatoria / solo esta.
+                  const BotonModoReproduccion(),
                 ],
               ),
               const SizedBox(height: 12),

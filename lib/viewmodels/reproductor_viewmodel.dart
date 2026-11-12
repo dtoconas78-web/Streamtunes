@@ -5,14 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 
-// Cómo se recorre la cola: en orden o aleatorio.
-enum ModoReproduccion { enOrden, aleatorio }
+// Cómo se recorre la cola: en orden, aleatorio o repitiendo solo la canción
+// elegida.
+enum ModoReproduccion { enOrden, aleatorio, repetirUna }
 
 extension ModoReproduccionEtiqueta on ModoReproduccion {
-  String get etiqueta =>
-      this == ModoReproduccion.aleatorio ? 'Aleatoria' : 'En orden';
-  IconData get icono =>
-      this == ModoReproduccion.aleatorio ? Icons.shuffle : Icons.repeat;
+  String get etiqueta => switch (this) {
+    ModoReproduccion.enOrden => 'En orden',
+    ModoReproduccion.aleatorio => 'Aleatoria',
+    ModoReproduccion.repetirUna => 'Solo esta canción',
+  };
+  IconData get icono => switch (this) {
+    ModoReproduccion.enOrden => Icons.repeat,
+    ModoReproduccion.aleatorio => Icons.shuffle,
+    ModoReproduccion.repetirUna => Icons.repeat_one,
+  };
 }
 
 // Controlador de reproducción: guarda qué suena, en qué segundo y si está en pausa.
@@ -89,9 +96,14 @@ class ControladorReproduccion extends ChangeNotifier {
   void _avanzar() {
     if (!reproduciendo || !hayCancion) return;
     posicion++;
-    // Al terminar la canción, pasa a la siguiente de la cola.
+    // Al terminar la canción: en "solo esta canción" vuelve a empezarla;
+    // en los otros modos pasa a la siguiente de la cola.
     if (posicion >= total) {
-      _irA(_indiceEnCola(_posEnCola() + 1));
+      if (modo == ModoReproduccion.repetirUna) {
+        posicion = 0;
+      } else {
+        _irA(_indiceEnCola(_posEnCola() + 1));
+      }
     }
     notifyListeners();
   }
@@ -107,11 +119,14 @@ class ControladorReproduccion extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Cambia entre "en orden" y "aleatorio" y devuelve el modo activo.
+  // Cicla entre "en orden" -> "aleatorio" -> "solo esta canción" y devuelve
+  // el modo activo.
   ModoReproduccion alternarModo() {
-    modo = modo == ModoReproduccion.enOrden
-        ? ModoReproduccion.aleatorio
-        : ModoReproduccion.enOrden;
+    modo = switch (modo) {
+      ModoReproduccion.enOrden => ModoReproduccion.aleatorio,
+      ModoReproduccion.aleatorio => ModoReproduccion.repetirUna,
+      ModoReproduccion.repetirUna => ModoReproduccion.enOrden,
+    };
     _historialAleatorio.clear();
     notifyListeners();
     return modo;

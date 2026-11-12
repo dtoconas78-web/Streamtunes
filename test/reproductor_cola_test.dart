@@ -66,10 +66,28 @@ void main() {
     reproductor.detener();
   });
 
-  test('alternarModo cambia entre enOrden y aleatorio', () {
+  test('alternarModo cicla enOrden -> aleatorio -> repetirUna -> enOrden', () {
     expect(reproductor.modo, ModoReproduccion.enOrden);
     expect(reproductor.alternarModo(), ModoReproduccion.aleatorio);
+    expect(reproductor.alternarModo(), ModoReproduccion.repetirUna);
     expect(reproductor.alternarModo(), ModoReproduccion.enOrden);
+    reproductor.detener();
+  });
+
+  testWidgets('en modo repetirUna la canción se repite sola al terminar', (
+    tester,
+  ) async {
+    reproductor.reproducirCola([0, 1]);
+    reproductor.alternarModo(); // aleatorio
+    reproductor.alternarModo(); // repetirUna
+    expect(reproductor.modo, ModoReproduccion.repetirUna);
+    final actual = reproductor.indiceActual;
+    // queda 1 segundo de canción y avanzamos el reloj: debe volver a 0
+    // sin cambiar de canción.
+    reproductor.saltarA(reproductor.total - 1);
+    await tester.pump(const Duration(seconds: 1));
+    expect(reproductor.indiceActual, actual);
+    expect(reproductor.posicion, 0);
     reproductor.detener();
   });
 

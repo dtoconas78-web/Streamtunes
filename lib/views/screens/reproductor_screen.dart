@@ -199,11 +199,11 @@ class PantallaReproductor extends StatelessWidget {
                         onPressed: reproductor.siguiente,
                       ),
                       const SizedBox(width: 12),
-                      // Modo de reproducción de la cola: en orden o aleatoria.
+                      // Modo de la cola: en orden, aleatoria o solo esta canción.
                       IconButton(
                         iconSize: 26,
                         icon: Icon(reproductor.modo.icono),
-                        color: reproductor.modo == ModoReproduccion.aleatorio
+                        color: reproductor.modo != ModoReproduccion.enOrden
                             ? colorAcento
                             : Colors.grey,
                         tooltip: 'Modo: ${reproductor.modo.etiqueta}',
