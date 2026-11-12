@@ -9,8 +9,9 @@ import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
-// Pantalla de una playlist del oyente: reproducirla (en orden o aleatorio),
-// agregar canciones del catálogo, sacar canciones y renombrar/eliminar.
+// Pantalla de una playlist del oyente: reproducirla (en orden, aleatorio o
+// solo la elegida), agregar canciones del catálogo, sacar canciones y
+// renombrar/eliminar.
 class PantallaPlaylist extends StatelessWidget {
   final Playlist playlist;
 
@@ -29,36 +30,14 @@ class PantallaPlaylist extends StatelessWidget {
   }
 
   Future<void> _dialogoRenombrar(BuildContext context, Playlist p) async {
-    final controlador = TextEditingController(text: p.nombre);
     final nombre = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colorTarjeta,
-        title: const Text('Renombrar playlist'),
-        content: TextField(
-          controller: controlador,
-          autofocus: true,
-          maxLength: 40,
-          decoration: decoracionFormulario('Nombre de la playlist'),
-          onSubmitted: (v) => Navigator.pop(ctx, v),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: colorAcento,
-              foregroundColor: Colors.black,
-            ),
-            onPressed: () => Navigator.pop(ctx, controlador.text),
-            child: const Text('Guardar'),
-          ),
-        ],
+      builder: (ctx) => _DialogoRenombrarPlaylist(
+        nombreInicial: p.nombre,
+        alAceptar: (v) => Navigator.pop(ctx, v),
+        alCancelar: () => Navigator.pop(ctx),
       ),
     );
-    controlador.dispose();
     if (nombre != null && nombre.trim().isNotEmpty && context.mounted) {
       playlistsViewModel.renombrar(p.id, nombre);
     }
@@ -352,6 +331,66 @@ class PantallaPlaylist extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+// Diálogo "Renombrar playlist": el controller vive acá para no romper el
+// árbol de widgets al cerrar el diálogo (ver _DialogoNuevaPlaylist en
+// biblioteca_screen.dart).
+class _DialogoRenombrarPlaylist extends StatefulWidget {
+  final String nombreInicial;
+  final void Function(String nombre) alAceptar;
+  final VoidCallback alCancelar;
+
+  const _DialogoRenombrarPlaylist({
+    required this.nombreInicial,
+    required this.alAceptar,
+    required this.alCancelar,
+  });
+
+  @override
+  State<_DialogoRenombrarPlaylist> createState() =>
+      _DialogoRenombrarPlaylistState();
+}
+
+class _DialogoRenombrarPlaylistState extends State<_DialogoRenombrarPlaylist> {
+  late final TextEditingController _controlador = TextEditingController(
+    text: widget.nombreInicial,
+  );
+
+  @override
+  void dispose() {
+    _controlador.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: colorTarjeta,
+      title: const Text('Renombrar playlist'),
+      content: TextField(
+        controller: _controlador,
+        autofocus: true,
+        maxLength: 40,
+        decoration: decoracionFormulario('Nombre de la playlist'),
+        onSubmitted: widget.alAceptar,
+      ),
+      actions: [
+        TextButton(
+          onPressed: widget.alCancelar,
+          child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: colorAcento,
+            foregroundColor: Colors.black,
+          ),
+          onPressed: () => widget.alAceptar(_controlador.text),
+          child: const Text('Guardar'),
+        ),
+      ],
     );
   }
 }

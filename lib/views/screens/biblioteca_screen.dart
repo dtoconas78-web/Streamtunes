@@ -17,37 +17,13 @@ class BibliotecaScreen extends StatelessWidget {
 
   // Diálogo para crear una playlist nueva y abrirla enseguida.
   Future<void> _crearPlaylist(BuildContext context) async {
-    final controlador = TextEditingController();
     final nombre = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colorTarjeta,
-        title: const Text('Nueva playlist'),
-        content: TextField(
-          controller: controlador,
-          autofocus: true,
-          maxLength: 40,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: decoracionFormulario('Nombre de la playlist'),
-          onSubmitted: (v) => Navigator.pop(ctx, v),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: colorAcento,
-              foregroundColor: Colors.black,
-            ),
-            onPressed: () => Navigator.pop(ctx, controlador.text),
-            child: const Text('Crear'),
-          ),
-        ],
+      builder: (ctx) => _DialogoNuevaPlaylist(
+        alAceptar: (v) => Navigator.pop(ctx, v),
+        alCancelar: () => Navigator.pop(ctx),
       ),
     );
-    controlador.dispose();
     if (nombre == null || nombre.trim().isEmpty || !context.mounted) return;
     final playlist = playlistsViewModel.crear(nombre);
     irA(context, Rutas.playlist, argumentos: playlist);
@@ -245,6 +221,63 @@ class BibliotecaScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// Diálogo "Nueva playlist". El TextEditingController vive acá (no en el
+// llamador) para no hacer dispose() mientras el diálogo todavía está montado
+// durante la animación de cierre: eso rompía el árbol de widgets con
+// "_dependents.isEmpty" al tocar "Crear".
+class _DialogoNuevaPlaylist extends StatefulWidget {
+  final void Function(String nombre) alAceptar;
+  final VoidCallback alCancelar;
+
+  const _DialogoNuevaPlaylist({
+    required this.alAceptar,
+    required this.alCancelar,
+  });
+
+  @override
+  State<_DialogoNuevaPlaylist> createState() => _DialogoNuevaPlaylistState();
+}
+
+class _DialogoNuevaPlaylistState extends State<_DialogoNuevaPlaylist> {
+  final _controlador = TextEditingController();
+
+  @override
+  void dispose() {
+    _controlador.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: colorTarjeta,
+      title: const Text('Nueva playlist'),
+      content: TextField(
+        controller: _controlador,
+        autofocus: true,
+        maxLength: 40,
+        textCapitalization: TextCapitalization.sentences,
+        decoration: decoracionFormulario('Nombre de la playlist'),
+        onSubmitted: widget.alAceptar,
+      ),
+      actions: [
+        TextButton(
+          onPressed: widget.alCancelar,
+          child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: colorAcento,
+            foregroundColor: Colors.black,
+          ),
+          onPressed: () => widget.alAceptar(_controlador.text),
+          child: const Text('Crear'),
+        ),
+      ],
     );
   }
 }
