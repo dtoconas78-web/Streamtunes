@@ -20,8 +20,8 @@ class _OyenteShellState extends State<OyenteShell> {
 
   final List<Widget> _paginas = const [
     InicioOyenteScreen(),
-    BuscarScreen(),
     DonarScreen(),
+    BuscarScreen(),
     ComprarEntradaScreen(),
     BibliotecaScreen(),
   ];
@@ -41,14 +41,14 @@ class _OyenteShellState extends State<OyenteShell> {
             label: 'Inicio',
           ),
           NavigationDestination(
-            icon: Icon(Icons.search),
-            selectedIcon: Icon(Icons.search),
-            label: 'Buscar',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.volunteer_activism_outlined),
             selectedIcon: Icon(Icons.volunteer_activism),
             label: 'Donar',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.search),
+            selectedIcon: Icon(Icons.search),
+            label: 'Buscar',
           ),
           NavigationDestination(
             icon: Icon(Icons.confirmation_number_outlined),

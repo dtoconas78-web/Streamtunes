@@ -79,21 +79,21 @@ void main() {
     expect(barra.destinations.length, 5);
     expect(find.text('Hola, Ana'), findsOneWidget);
 
-    // Tocar "Buscar" cambia la pestaña activa.
-    await tester.tap(find.text('Buscar'));
+    // Tocar "Donar" en la barra (índice 1) muestra la pantalla de donación.
+    await tester.tap(find.text('Donar'));
     await tester.pump();
     expect(
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
       1,
     );
+    expect(find.text('Donar al artista'), findsOneWidget);
 
-    // Tocar "Donar" en la barra muestra la pantalla de donación.
-    await tester.tap(find.text('Donar'));
+    // Tocar "Buscar" (índice 2) cambia la pestaña activa.
+    await tester.tap(find.text('Buscar'));
     await tester.pump();
     expect(
       tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
       2,
     );
-    expect(find.text('Donar al artista'), findsOneWidget);
   });
 }

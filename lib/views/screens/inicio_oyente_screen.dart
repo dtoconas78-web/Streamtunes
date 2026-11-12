@@ -7,7 +7,6 @@ import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
-import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
 // Inicio del oyente (estilo Spotify/Apple Music): saludo, accesos rápidos,
 // álbumes en grilla y canciones. Todo el catálogo se actualiza solo.
@@ -21,16 +20,6 @@ class InicioOyenteScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Inicio'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.volunteer_activism),
-            tooltip: 'Donar al artista',
-            onPressed: () => irA(context, Rutas.donar),
-          ),
-          IconButton(
-            icon: const Icon(Icons.confirmation_number),
-            tooltip: 'Comprar entrada',
-            onPressed: () => irA(context, Rutas.comprarEntrada),
-          ),
           IconButton(
             icon: const Icon(Icons.logout, color: colorAcento),
             tooltip: 'Cerrar sesión',
@@ -53,29 +42,6 @@ class InicioOyenteScreen extends StatelessWidget {
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
             const SizedBox(height: 20),
-            // Accesos rápidos: apoyar al artista y comprar entradas.
-            Row(
-              children: [
-                Expanded(
-                  child: _AccesoRapido(
-                    icono: Icons.volunteer_activism,
-                    titulo: 'Donar',
-                    subtitulo: 'Al artista que seguís',
-                    onTap: () => irA(context, Rutas.donar),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _AccesoRapido(
-                    icono: Icons.confirmation_number,
-                    titulo: 'Entradas',
-                    subtitulo: 'Próximos conciertos',
-                    onTap: () => irA(context, Rutas.comprarEntrada),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
             const Text(
               'Álbumes',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -147,63 +113,6 @@ class InicioOyenteScreen extends StatelessWidget {
               ),
             const SizedBox(height: 24),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// Tarjeta chica de acceso rápido (Donar, Entradas).
-class _AccesoRapido extends StatelessWidget {
-  final IconData icono;
-  final String titulo;
-  final String subtitulo;
-  final VoidCallback onTap;
-
-  const _AccesoRapido({
-    required this.icono,
-    required this.titulo,
-    required this.subtitulo,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Tarjeta(
-      margin: EdgeInsets.zero,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              PortadaCuadrada(
-                color: colorAcento,
-                tamano: 40,
-                icono: icono,
-                tamanoIcono: 22,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      titulo,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      subtitulo,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
