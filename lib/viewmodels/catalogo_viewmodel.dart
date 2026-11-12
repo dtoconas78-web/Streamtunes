@@ -15,6 +15,7 @@ class CatalogoViewModel extends ChangeNotifier {
 
   final List<Cancion> canciones;
   final List<Album> albumes;
+  int _contadorAlbumes = 0;
 
   // Publica canciones nuevas (sueltas o como álbum) y notifica.
   void publicar({
@@ -25,8 +26,10 @@ class CatalogoViewModel extends ChangeNotifier {
   }) {
     canciones.addAll(nuevas);
     if (tituloAlbum != null) {
+      _contadorAlbumes++;
       albumes.add(
         Album(
+          id: 'album-publicado-$_contadorAlbumes',
           titulo: tituloAlbum,
           anio: anioAlbum ?? '',
           colorPortada: colorPortada.toARGB32(),

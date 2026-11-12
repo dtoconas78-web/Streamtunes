@@ -194,7 +194,40 @@ class BibliotecaScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             const Text(
-              'Álbumes',
+              'Álbumes que sigo',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            if (seguimientoViewModel.albumesSeguidos.isEmpty)
+              const Text(
+                'Tocá el corazón en un álbum para seguirlo y verlo acá.',
+                style: TextStyle(color: Colors.grey, fontSize: 13),
+              )
+            else
+              for (final album in seguimientoViewModel.albumesSeguidos)
+                Tarjeta(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: PortadaCuadrada(
+                      color: colorDe(album.colorPortada),
+                      icono: Icons.album,
+                    ),
+                    title: Text(album.titulo),
+                    subtitle: Text(
+                      '${album.cancionIds.length} canciones · ${album.anio}',
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                    trailing: const Icon(
+                      Icons.favorite,
+                      color: colorAcento,
+                      size: 20,
+                    ),
+                    onTap: () => irA(context, Rutas.album, argumentos: album),
+                  ),
+                ),
+            const SizedBox(height: 20),
+            const Text(
+              'Todos los álbumes',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),

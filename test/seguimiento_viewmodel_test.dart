@@ -33,4 +33,31 @@ void main() {
     s.alternar('mateo-cabral');
     expect(s.sigo('mateo-cabral'), isFalse);
   });
+
+  test('seguir álbumes: solo los seguidos aparecen en albumesSeguidos', () {
+    final s = SeguimientoViewModel();
+    var notificaciones = 0;
+    s.addListener(() => notificaciones++);
+
+    // Al principio no hay álbumes seguidos.
+    expect(s.albumesSeguidos, isEmpty);
+    expect(s.sigoAlbum('postales'), isFalse);
+
+    s.alternarAlbum('postales');
+    expect(s.sigoAlbum('postales'), isTrue);
+    expect(s.albumesSeguidos.length, 1);
+    expect(s.albumesSeguidos.first.id, 'postales');
+    expect(s.albumesSeguidos.first.titulo, 'Postales');
+    expect(notificaciones, 1);
+
+    // Dejar de seguir lo saca de la lista.
+    s.alternarAlbum('postales');
+    expect(s.sigoAlbum('postales'), isFalse);
+    expect(s.albumesSeguidos, isEmpty);
+    expect(notificaciones, 2);
+
+    // Seguir un id que no existe en el catálogo no rompe la lista.
+    s.alternarAlbum('no-existe');
+    expect(s.albumesSeguidos, isEmpty);
+  });
 }

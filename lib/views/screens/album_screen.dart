@@ -4,18 +4,59 @@ import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/seguimiento_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 
-// Pantalla Detalle de álbum: portada, datos y lista de canciones.
+// Pantalla Detalle de álbum: portada, datos, lista de canciones y el
+// corazón para seguirlo (al seguirlo aparece en la Biblioteca).
 class PantallaAlbum extends StatelessWidget {
   final Album album;
 
   const PantallaAlbum({super.key, required this.album});
 
+  // Ids del álbum -> posiciones actuales en el catálogo.
+  List<int> _indicesDelAlbum() => [
+    for (final id in album.cancionIds)
+      catalogo.canciones.indexWhere((c) => c.id == id),
+  ].where((i) => i >= 0).toList();
+
   @override
   Widget build(BuildContext context) {
+    final indices = _indicesDelAlbum();
     return Scaffold(
-      appBar: AppBar(title: Text(album.titulo)),
+      appBar: AppBar(
+        title: Text(album.titulo),
+        actions: [
+          // Corazón: seguir/dejar de seguir el álbum. Al seguirlo, aparece
+          // en "Álbumes que sigo" de la Biblioteca.
+          ListenableBuilder(
+            listenable: seguimientoViewModel,
+            builder: (context, _) {
+              final sigo = seguimientoViewModel.sigoAlbum(album.id);
+              return IconButton(
+                icon: Icon(
+                  sigo ? Icons.favorite : Icons.favorite_border,
+                  color: sigo ? colorAcento : Colors.grey,
+                ),
+                tooltip: sigo ? 'Dejar de seguir álbum' : 'Seguir álbum',
+                onPressed: () {
+                  seguimientoViewModel.alternarAlbum(album.id);
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        seguimientoViewModel.sigoAlbum(album.id)
+                            ? 'Álbum "${album.titulo}" agregado a tu Biblioteca'
+                            : 'Dejaste de seguir "${album.titulo}"',
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
       // ListenableBuilder: resalta la canción que está sonando.
       body: ListenableBuilder(
         listenable: reproductor,
@@ -54,7 +95,7 @@ class PantallaAlbum extends StatelessWidget {
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
               const SizedBox(height: 16),
-              // Botón que reproduce el álbum desde la primera canción.
+              // Botón que reproduce el álbum completo como cola.
               Center(
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
@@ -70,18 +111,20 @@ class PantallaAlbum extends StatelessWidget {
                   ),
                   icon: const Icon(Icons.play_arrow),
                   label: const Text('Reproducir'),
-                  onPressed: () {
-                    // El álbum referencia por id; resolvemos la posición actual.
-                    final primero = catalogo.canciones.indexWhere(
-                      (c) => c.id == album.cancionIds.first,
-                    );
-                    if (primero >= 0) reproductor.reproducir(primero);
-                  },
+                  onPressed: indices.isEmpty
+                      ? null
+                      : () => reproductor.reproducirCola(indices),
                 ),
               ),
               const SizedBox(height: 16),
               for (int i = 0; i < album.cancionIds.length; i++)
-                _FilaCancionAlbum(numero: i + 1, id: album.cancionIds[i]),
+                _FilaCancionAlbum(
+                  numero: i + 1,
+                  id: album.cancionIds[i],
+                  onTap: indices.isEmpty
+                      ? null
+                      : () => reproductor.reproducirCola(indices, inicio: i),
+                ),
             ],
           );
         },
@@ -94,8 +137,9 @@ class PantallaAlbum extends StatelessWidget {
 class _FilaCancionAlbum extends StatelessWidget {
   final int numero;
   final String id; // id de la canción en el catálogo
+  final VoidCallback? onTap;
 
-  const _FilaCancionAlbum({required this.numero, required this.id});
+  const _FilaCancionAlbum({required this.numero, required this.id, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -129,8 +173,8 @@ class _FilaCancionAlbum extends StatelessWidget {
               formatoTiempo(cancion.duracionSegundos),
               style: const TextStyle(color: Colors.grey),
             ),
-      // Reproduce y se queda en la pantalla: aparece el mini-player abajo.
-      onTap: () => reproductor.reproducir(indice),
+      // Reproduce el álbum desde esta canción (cola del álbum).
+      onTap: onTap,
     );
   }
 }

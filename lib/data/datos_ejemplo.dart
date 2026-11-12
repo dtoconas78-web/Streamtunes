@@ -60,12 +60,14 @@ final List<Cancion> canciones = [
 // Álbumes del artista (datos de ejemplo).
 final List<Album> albumes = [
   Album(
+    id: 'postales',
     titulo: 'Postales',
     anio: '2024',
     colorPortada: colorAcento.toARGB32(),
     cancionIds: ['luces-de-la-ciudad', 'otra-vuelta'],
   ),
   Album(
+    id: 'sin-senal-ep',
     titulo: 'Sin Señal EP',
     anio: '2023',
     colorPortada: colorVerificado.toARGB32(),
