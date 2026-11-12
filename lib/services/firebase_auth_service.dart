@@ -15,6 +15,18 @@ class FirebaseAuthService extends AuthService {
   // Ojo: estos getters solo se tocan cuando Firebase está inicializado.
   FirebaseAuth get _auth => FirebaseAuth.instance;
   GoogleSignIn get _google => GoogleSignIn.instance;
+  bool _googleInit = false;
+
+  // google_sign_in v7 exige llamar initialize() exactamente una vez (y esperar
+  // el future) antes de cualquier otro método; sin esto el comportamiento es
+  // "undefined" y authenticate() puede fallar aunque todo esté bien configurado.
+  // En Android alcanza sin argumentos: lee el default_web_client_id generado
+  // desde google-services.json por el plugin de Gradle.
+  Future<void> _initGoogle() async {
+    if (_googleInit) return;
+    await _google.initialize();
+    _googleInit = true;
+  }
 
   Usuario _mapear(User fbUser, RolUsuario rol) => Usuario(
     id: fbUser.uid,
@@ -28,10 +40,11 @@ class FirebaseAuthService extends AuthService {
   );
 
   /// Login/registro con Google (google_sign_in v7 + Firebase Auth):
-  /// 1) selector de cuentas de Google, 2) credential con el idToken,
-  /// 3) signInWithCredential en Firebase Auth.
+  /// 1) initialize + selector de cuentas de Google, 2) credential con el
+  /// idToken, 3) signInWithCredential en Firebase Auth.
   @override
   Future<Usuario> ingresarConGoogle({required RolUsuario rol}) async {
+    await _initGoogle();
     final googleUser = await _google.authenticate();
     final credential = GoogleAuthProvider.credential(
       idToken: googleUser.authentication.idToken,

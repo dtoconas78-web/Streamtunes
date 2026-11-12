@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/utils/errores_auth.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
@@ -44,8 +45,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _cargando = true);
     try {
       await accion();
-    } catch (_) {
-      _error('No se pudo entrar. Probá de nuevo.');
+    } catch (e) {
+      _error(descripcionErrorAuth(e));
     }
     if (mounted) setState(() => _cargando = false);
   }

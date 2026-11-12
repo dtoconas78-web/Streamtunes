@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/utils/errores_auth.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/boton_google.dart';
@@ -53,9 +54,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
     try {
       await authViewModel.loginConGoogle(rol: rol);
       if (mounted) Navigator.popUntil(context, (route) => route.isFirst);
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      _error('No se pudo crear la cuenta. Probá de nuevo.');
+      _error(descripcionErrorAuth(e));
       setState(() => _cargando = false);
     }
   }
@@ -71,9 +72,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
         rol: _rol,
       );
       if (mounted) Navigator.popUntil(context, (route) => route.isFirst);
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      _error('No se pudo crear la cuenta. Probá de nuevo.');
+      _error(descripcionErrorAuth(e));
       setState(() => _cargando = false);
     }
   }
