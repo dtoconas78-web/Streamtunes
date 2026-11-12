@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
+import 'package:streamtunes_demo/services/firebase_auth_service.dart';
+import 'package:streamtunes_demo/services/firebase_inicial.dart';
+
+// Servicio de auth activo: Firebase si se inicializó bien; si no, el simulado.
+// Así la app funciona igual en modo demo (tests, sin configurar Firebase).
+AuthService get _servicioAuth =>
+    firebaseInicializado ? firebaseAuthService : authService;
 
 class AuthViewModel extends ChangeNotifier {
   Usuario? _usuario;
@@ -20,6 +27,10 @@ class AuthViewModel extends ChangeNotifier {
 
   void logout() {
     _usuario = null;
+    // Si hay Firebase, también se cierra la sesión allá (fire and forget).
+    if (firebaseInicializado) {
+      firebaseAuthService.cerrarSesion();
+    }
     notifyListeners();
   }
 
@@ -29,7 +40,7 @@ class AuthViewModel extends ChangeNotifier {
     required RolUsuario rol,
   }) async {
     login(
-      await authService.ingresarConEmail(
+      await _servicioAuth.ingresarConEmail(
         email: email,
         password: password,
         rol: rol,
@@ -38,7 +49,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> loginConGoogle({required RolUsuario rol}) async {
-    login(await authService.ingresarConGoogle(rol: rol));
+    login(await _servicioAuth.ingresarConGoogle(rol: rol));
   }
 
   Future<void> registrar({
@@ -48,7 +59,7 @@ class AuthViewModel extends ChangeNotifier {
     required RolUsuario rol,
   }) async {
     login(
-      await authService.registrar(
+      await _servicioAuth.registrar(
         nombre: nombre,
         email: email,
         password: password,

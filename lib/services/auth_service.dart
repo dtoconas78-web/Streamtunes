@@ -1,11 +1,9 @@
 import 'package:streamtunes_demo/models/usuario.dart';
 
-/// Capa de autenticación.
-///
-/// AHORA está simulada con datos falsos, igual que el resto de la app (todavía
-/// no hay backend). DESPUÉS solo se reemplaza el interior de esta clase por
-/// Firebase Auth + Google Sign-In (ver docs/AUTH_GOOGLE.md): las pantallas y
-/// el AuthViewModel no cambian.
+/// Capa de autenticación SIMULADA (modo demo): se usa cuando Firebase no está
+/// inicializado (tests, o todavía no se corrió `flutterfire configure`).
+/// Con Firebase activo se usa `FirebaseAuthService` (mismo contrato, auth real),
+/// ver lib/services/firebase_auth_service.dart y docs/FIREBASE.md.
 class AuthService {
   int _contador = 0;
 
