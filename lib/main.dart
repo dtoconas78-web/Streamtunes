@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
+import 'package:streamtunes_demo/services/firebase_inicial.dart';
 import 'package:streamtunes_demo/theme/tema.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
@@ -10,7 +11,13 @@ import 'package:streamtunes_demo/views/screens/login_screen.dart';
 import 'package:streamtunes_demo/views/screens/oyente_shell.dart';
 import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 
-void main() => runApp(const MiApp());
+// Arranque: se inicializa Firebase primero (si está configurado); si no,
+// la app arranca en modo demo con el auth simulado (ver services/firebase_inicial.dart).
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await inicializarFirebase();
+  runApp(const MiApp());
+}
 
 class MiApp extends StatelessWidget {
   const MiApp({super.key});
