@@ -21,32 +21,34 @@ Ya está en la rama `feature/login-registro-invitado`:
   inicializado usa el servicio real; si no, el simulado (modo demo).
 - Los tests nunca tocan Firebase (no se inicializa) y siguen en verde.
 
-### Lo que falta hacer VOS en la Firebase Console (proyecto `streamtunes-itu`)
+### Estado del Paso 1: ✅ HECHO
 
-1. **Agregar la app Android** con package name `com.example.streamtunes_demo`
-   (ver `android/app/build.gradle.kts` → `applicationId`).
-2. **Authentication → Sign-in method → habilitar Google**.
-3. **Huellas SHA**: ya están guardadas SOLO en tu máquina en
-   `docs/local/claves-firebase.md` (gitignored, el repo es público). Cargarlas en
-   Firebase Console → ⚙️ Configuración del proyecto → tu app Android →
-   "Agregar huella digital": pegar **SHA-1** `B8:0C:...:A1:A5` y **SHA-256**
-   `C9:42:...:B2:E2` (debug). Para release se repite con el keystore de producción.
-4. **Descargar `android/app/google-services.json`** de la consola y copiarlo a
-   esa ruta (está gitignored). El plugin de Gradle
-   (`com.google.gms.google-services`) ya quedó agregado en
-   `android/settings.gradle.kts` y `android/app/build.gradle.kts`.
-5. **Pasarme los valores de la app** (de `google-services.json` o de la consola)
-   para completar `lib/firebase_options.dart` (hoy es plantilla):
-   - `apiKey`, `appId` (móvil_client → client_info), `messagingSenderId`
-     (project_number), `projectId`, `storageBucket`
-   - Con eso el login con Google real anda sin correr `flutterfire configure`.
-   - Alternativa: correr vos `dart pub global activate flutterfire_cli` +
-     `flutterfire configure --project=streamtunes-itu` (sobrescribe
-     `lib/firebase_options.dart` con valores reales; **no commitear esa versión**:
-     `git update-index --skip-worktree lib/firebase_options.dart`).
-6. Correr la app en **Android (emulador/dispositivo) o web** — en Windows/Linux
-   de escritorio `firebase_auth`/`google_sign_in` no tienen soporte, así que ahí
-   la app arranca sola en modo demo (auth simulado), sin romperse.
+- App Android `com.example.streamtunes_demo` agregada en la consola; **Google
+  habilitado** en Authentication; **SHA-1/SHA-256 de debug cargadas** (están solo
+  en local: `docs/local/claves-firebase.md`, gitignored).
+- `android/app/google-services.json` descargado y guardado en esa ruta
+  (**gitignored**). Validado con Gradle: `./gradlew :app:processDebugGoogleServices` → OK.
+- Plugin `com.google.gms.google-services` **4.5.0** en `android/settings.gradle.kts`
+  y aplicado en `android/app/build.gradle.kts`.
+- `lib/firebase_options.dart` con los **valores reales de Android** cargados desde
+  el json (apiKey, appId `1:402504152041:android:49c2533fde4fcfa3a51178`,
+  sender `402504152041`, project `streamtunes-itu`, bucket
+  `streamtunes-itu.firebasestorage.app`). Como el repo es público, ese archivo
+  quedó en **skip-worktree** (`git update-index --skip-worktree
+  lib/firebase_options.dart`): el repo solo guarda la plantilla con placeholders
+  y la apiKey real nunca se commitea. Para ver el estado real:
+  `git ls-files -v lib/firebase_options.dart` (la `S` marca skip-worktree).
+
+### Para probar el login con Google real
+
+Correr en **Android (emulador o dispositivo) o web**:
+
+```powershell
+flutter run
+```
+
+En Windows/Linux de escritorio `firebase_auth`/`google_sign_in` no tienen
+soporte: ahí la app arranca sola en **modo demo** (auth simulado), sin romperse.
 
 ### Cómo se comporta la app
 
