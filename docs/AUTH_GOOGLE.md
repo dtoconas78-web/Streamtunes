@@ -1,8 +1,14 @@
-# Login con Google (Android) — cómo consumir la API real
+# Login con Google (Android) — guía original
 
-Hoy `lib/services/auth_service.dart` **simula** el login con Google. Cuando haya
-backend, solo se reemplaza el interior de `ingresarConGoogle()` por el flujo real
-de abajo. Las pantallas no cambian.
+> **Actualizado**: esta guía quedó reemplazada por **docs/FIREBASE.md**, que es
+> la hoja de ruta completa de Firebase (Auth + Google ya implementado en código
+> como `FirebaseAuthService`; falta correr `flutterfire configure` y habilitar
+> Google en la consola). Lo de abajo se conserva como referencia histórica del
+> flujo paso a paso.
+
+Hoy `lib/services/auth_service.dart` **simula** el login con Google (modo demo,
+cuando Firebase no está inicializado). Con Firebase activo se usa
+`lib/services/firebase_auth_service.dart` (mismo contrato).
 
 > Apple Sign-In quedó **descartado** por ahora: el desarrollo es Android-first.
 > Ojo: si después se publica en iOS y la app ofrece login con Google, Apple
