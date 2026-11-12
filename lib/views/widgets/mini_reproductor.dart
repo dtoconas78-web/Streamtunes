@@ -74,9 +74,10 @@ class MiniReproductor extends StatelessWidget {
                             ],
                           ),
                         ),
-                        // Sin tooltip: el mini-player vive fuera del Navigator
-                        // (en el builder de main.dart) y un Tooltip ahí no
-                        // encuentra el Overlay y rompe la pantalla.
+                        // Sin tooltip: cuando el mini-player vive fuera del
+                        // Navigator (invitado/artista, en el builder de
+                        // main.dart) un Tooltip no encuentra el Overlay y
+                        // rompe la pantalla.
                         IconButton(
                           icon: Icon(
                             reproductor.reproduciendo

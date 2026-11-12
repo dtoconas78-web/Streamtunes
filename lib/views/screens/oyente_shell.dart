@@ -4,6 +4,7 @@ import 'package:streamtunes_demo/views/screens/buscar_screen.dart';
 import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
 import 'package:streamtunes_demo/views/screens/donar_screen.dart';
 import 'package:streamtunes_demo/views/screens/inicio_oyente_screen.dart';
+import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 
 // Shell del oyente: barra inferior con Inicio / Buscar / Donar / Entradas /
 // Biblioteca. Donar y Entradas viven como pestañas (así la barra queda
@@ -30,7 +31,15 @@ class _OyenteShellState extends State<OyenteShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       // IndexedStack: las cinco pestañas quedan vivas, cambia la visible.
-      body: IndexedStack(index: _indice, children: _paginas),
+      // El mini-reproductor queda por encima de la barra inferior.
+      body: Column(
+        children: [
+          Expanded(
+            child: IndexedStack(index: _indice, children: _paginas),
+          ),
+          const MiniReproductor(),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _indice,
         onDestinationSelected: (i) => setState(() => _indice = i),

@@ -22,28 +22,30 @@ class MiApp extends StatelessWidget {
       navigatorObservers: [ObservadorReproductor()],
       onGenerateRoute: generarRuta,
       builder: (context, child) {
-        return Column(
-          children: [
-            Expanded(
-              child: ListenableBuilder(
-                listenable: reproductor,
-                builder: (context, _) {
-                  final tecladoAbierto =
-                      MediaQuery.of(context).viewInsets.bottom > 0;
-                  final miniVisible =
-                      reproductor.hayCancion &&
-                      !reproductor.pantallaCompletaAbierta &&
-                      !tecladoAbierto;
-                  return MediaQuery.removePadding(
+        return ListenableBuilder(
+          listenable: Listenable.merge([reproductor, authViewModel]),
+          builder: (context, _) {
+            final tecladoAbierto = MediaQuery.of(context).viewInsets.bottom > 0;
+            final miniVisible =
+                reproductor.hayCancion &&
+                !reproductor.pantallaCompletaAbierta &&
+                !tecladoAbierto;
+            // El oyente ve el mini-reproductor dentro del shell, por encima
+            // de la barra inferior; invitado/artista lo ven abajo de todo.
+            final miniAqui = miniVisible && !authViewModel.esOyente;
+            return Column(
+              children: [
+                Expanded(
+                  child: MediaQuery.removePadding(
                     context: context,
-                    removeBottom: miniVisible,
+                    removeBottom: miniAqui,
                     child: child!,
-                  );
-                },
-              ),
-            ),
-            const MiniReproductor(),
-          ],
+                  ),
+                ),
+                if (miniAqui) const MiniReproductor(),
+              ],
+            );
+          },
         );
       },
       theme: temaApp,

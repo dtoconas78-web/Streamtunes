@@ -4,11 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:streamtunes_demo/main.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/explorar_screen.dart';
 import 'package:streamtunes_demo/views/screens/login_screen.dart';
 import 'package:streamtunes_demo/views/screens/oyente_shell.dart';
 import 'package:streamtunes_demo/views/screens/perfil_oyente_screen.dart';
 import 'package:streamtunes_demo/views/screens/registro_screen.dart';
+import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 
 void main() {
   setUp(() => authViewModel.logout());
@@ -137,4 +139,35 @@ void main() {
       expect(find.byType(LoginScreen), findsOneWidget);
     },
   );
+
+  testWidgets('el mini-reproductor queda por encima de la barra inferior', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MiApp());
+    await tester.pump();
+    authViewModel.login(
+      const Usuario(
+        id: 'o1',
+        nombre: 'Ana',
+        email: 'ana@example.com',
+        rol: RolUsuario.oyente,
+      ),
+    );
+    await tester.pump();
+
+    // Reproducir una canción (desde el catálogo, como hace el Inicio).
+    reproductor.reproducir(0);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Hay un solo mini-reproductor (dentro del shell) y termina antes de
+    // donde empieza la barra inferior.
+    expect(find.byType(MiniReproductor), findsOneWidget);
+    final mini = tester.getRect(find.byType(MiniReproductor));
+    final barra = tester.getRect(find.byType(NavigationBar));
+    expect(mini.bottom, lessThanOrEqualTo(barra.top));
+
+    // Frenar el reloj global para no terminar con timers pendientes.
+    reproductor.detener();
+  });
 }
