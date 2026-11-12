@@ -5,6 +5,7 @@ import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/seguimiento_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/boton_modo_reproduccion.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 
 // Pantalla Detalle de álbum: portada, datos, lista de canciones y el
@@ -95,26 +96,33 @@ class PantallaAlbum extends StatelessWidget {
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
               const SizedBox(height: 16),
-              // Botón que reproduce el álbum completo como cola.
-              Center(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorAcento,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 28,
-                      vertical: 10,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+              // Reproducir el álbum completo como cola + modo de reproducción
+              // (en orden / aleatoria / solo esta canción) al lado.
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorAcento,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 28,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text('Reproducir'),
+                      onPressed: indices.isEmpty
+                          ? null
+                          : () => reproductor.reproducirCola(indices),
                     ),
                   ),
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('Reproducir'),
-                  onPressed: indices.isEmpty
-                      ? null
-                      : () => reproductor.reproducirCola(indices),
-                ),
+                  const SizedBox(width: 10),
+                  const BotonModoReproduccion(),
+                ],
               ),
               const SizedBox(height: 16),
               for (int i = 0; i < album.cancionIds.length; i++)

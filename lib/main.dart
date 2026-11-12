@@ -30,16 +30,25 @@ class MiApp extends StatelessWidget {
       onGenerateRoute: generarRuta,
       builder: (context, child) {
         return ListenableBuilder(
-          listenable: Listenable.merge([reproductor, authViewModel]),
+          listenable: Listenable.merge([
+            reproductor,
+            authViewModel,
+            estadoNavegacion,
+          ]),
           builder: (context, _) {
             final tecladoAbierto = MediaQuery.of(context).viewInsets.bottom > 0;
             final miniVisible =
                 reproductor.hayCancion &&
                 !reproductor.pantallaCompletaAbierta &&
                 !tecladoAbierto;
-            // El oyente ve el mini-reproductor dentro del shell, por encima
-            // de la barra inferior; invitado/artista lo ven abajo de todo.
-            final miniAqui = miniVisible && !authViewModel.esOyente;
+            // El oyente ve el mini-reproductor dentro del shell (encima de la
+            // barra inferior) cuando está en el home; si hay una ruta apilada
+            // (álbum, playlist...) va acá, abajo de todo, por encima de ella.
+            // Invitado/artista siempre lo ven abajo de todo.
+            final miniAqui =
+                miniVisible &&
+                (!authViewModel.esOyente ||
+                    estadoNavegacion.hayRutaSuperpuesta);
             return Column(
               children: [
                 Expanded(

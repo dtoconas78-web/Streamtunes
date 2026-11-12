@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/views/screens/biblioteca_screen.dart';
 import 'package:streamtunes_demo/views/screens/buscar_screen.dart';
 import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
@@ -37,7 +38,15 @@ class _OyenteShellState extends State<OyenteShell> {
           Expanded(
             child: IndexedStack(index: _indice, children: _paginas),
           ),
-          const MiniReproductor(),
+          // En el home el mini-reproductor va acá, encima de la barra; si hay
+          // una ruta apilada (álbum, playlist...) se muestra desde main.dart,
+          // por encima de esa ruta, para no duplicarlo.
+          ListenableBuilder(
+            listenable: estadoNavegacion,
+            builder: (context, _) => estadoNavegacion.hayRutaSuperpuesta
+                ? const SizedBox.shrink()
+                : const MiniReproductor(),
+          ),
         ],
       ),
       bottomNavigationBar: NavigationBar(
