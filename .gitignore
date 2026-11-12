@@ -49,5 +49,9 @@ android/local.properties
 ios/Flutter/ephemeral/
 macos/Flutter/ephemeral/
 
+# Firebase en repo público: NO commitear claves ni google-services.json
+/android/app/google-services.json
+/docs/local/claves-firebase.md
+
 # Widget Preview related
 .widget_preview/
