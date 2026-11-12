@@ -11,6 +11,7 @@ final GlobalKey<NavigatorState> navegadorKey = GlobalKey<NavigatorState>();
 // cambio de authViewModel y muestra la pantalla de acceso.
 void cerrarSesion() {
   authViewModel.logout();
+  reproductor.detener();
   navegadorKey.currentState?.popUntil((route) => route.isFirst);
 }
 

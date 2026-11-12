@@ -74,6 +74,9 @@ class MiniReproductor extends StatelessWidget {
                             ],
                           ),
                         ),
+                        // Sin tooltip: el mini-player vive fuera del Navigator
+                        // (en el builder de main.dart) y un Tooltip ahí no
+                        // encuentra el Overlay y rompe la pantalla.
                         IconButton(
                           icon: Icon(
                             reproductor.reproduciendo
@@ -82,14 +85,10 @@ class MiniReproductor extends StatelessWidget {
                             color: colorAcento,
                             size: 30,
                           ),
-                          tooltip: reproductor.reproduciendo
-                              ? 'Pausar'
-                              : 'Reproducir',
                           onPressed: reproductor.alternarPausa,
                         ),
                         IconButton(
                           icon: const Icon(Icons.skip_next, size: 28),
-                          tooltip: 'Siguiente',
                           onPressed: reproductor.siguiente,
                         ),
                       ],

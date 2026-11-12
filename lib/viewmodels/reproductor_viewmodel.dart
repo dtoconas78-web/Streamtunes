@@ -95,6 +95,16 @@ class ControladorReproduccion extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Detiene todo y frena el reloj (al cerrar sesión, por ejemplo).
+  void detener() {
+    reproduciendo = false;
+    indiceActual = null;
+    posicion = 0;
+    _timer?.cancel();
+    _timer = null;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
