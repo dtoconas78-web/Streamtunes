@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/navigation/navegacion.dart';
-import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/utils/constantes.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/views/widgets/boton_perfil.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
@@ -17,23 +16,8 @@ class ComprarEntradaScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Comprar entrada'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.volunteer_activism),
-            tooltip: 'Donar al artista',
-            onPressed: () => irA(context, Rutas.donar),
-          ),
-          IconButton(
-            icon: const Icon(Icons.confirmation_number),
-            tooltip: 'Mis entradas',
-            onPressed: () => irA(context, Rutas.entradas),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout, color: colorAcento),
-            tooltip: 'Cerrar sesión',
-            onPressed: cerrarSesion,
-          ),
-        ],
+        // Donar y Mis entradas ya viven en la barra inferior.
+        actions: [const BotonPerfil()],
       ),
       body: ListenableBuilder(
         listenable: entradasViewModel,

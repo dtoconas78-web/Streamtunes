@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/boton_perfil.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 
 // Inicio del oyente (estilo Spotify/Apple Music): saludo, accesos rápidos,
@@ -19,13 +19,7 @@ class InicioOyenteScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inicio'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: colorAcento),
-            tooltip: 'Cerrar sesión',
-            onPressed: cerrarSesion,
-          ),
-        ],
+        actions: [const BotonPerfil()],
       ),
       body: ListenableBuilder(
         listenable: catalogo,

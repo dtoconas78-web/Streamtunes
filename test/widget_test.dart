@@ -7,6 +7,7 @@ import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/explorar_screen.dart';
 import 'package:streamtunes_demo/views/screens/login_screen.dart';
 import 'package:streamtunes_demo/views/screens/oyente_shell.dart';
+import 'package:streamtunes_demo/views/screens/perfil_oyente_screen.dart';
 import 'package:streamtunes_demo/views/screens/registro_screen.dart';
 
 void main() {
@@ -96,4 +97,44 @@ void main() {
       2,
     );
   });
+
+  testWidgets(
+    'el avatar de perfil abre el desplegable (Perfil/Configuración/Cerrar sesión)',
+    (tester) async {
+      await tester.pumpWidget(const MiApp());
+      await tester.pump();
+      authViewModel.login(
+        const Usuario(
+          id: 'o1',
+          nombre: 'Ana',
+          email: 'ana@example.com',
+          rol: RolUsuario.oyente,
+        ),
+      );
+      await tester.pump();
+
+      // Abrir el desplegable tocando el círculo del perfil.
+      await tester.tap(find.byType(CircleAvatar));
+      await tester.pumpAndSettle();
+      expect(find.text('Perfil'), findsOneWidget);
+      expect(find.text('Configuración'), findsOneWidget);
+      expect(find.text('Cerrar sesión'), findsOneWidget);
+
+      // "Perfil" abre la pantalla de perfil del oyente.
+      await tester.tap(find.text('Perfil'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PantallaPerfilOyente), findsOneWidget);
+      expect(find.text('ana@example.com'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      // "Cerrar sesión" vuelve a la pantalla de acceso.
+      await tester.tap(find.byType(CircleAvatar));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cerrar sesión'));
+      await tester.pumpAndSettle();
+      expect(authViewModel.estaLogueado, isFalse);
+      expect(find.byType(LoginScreen), findsOneWidget);
+    },
+  );
 }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
 import 'package:streamtunes_demo/viewmodels/seguimiento_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/ventas_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/boton_perfil.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
@@ -131,13 +131,7 @@ class DonarScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Donar al artista'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: colorAcento),
-            tooltip: 'Cerrar sesión',
-            onPressed: cerrarSesion,
-          ),
-        ],
+        actions: [const BotonPerfil()],
       ),
       body: ListenableBuilder(
         listenable: seguimientoViewModel,

@@ -4,10 +4,12 @@ import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/models/playlist.dart';
 import 'package:streamtunes_demo/views/screens/album_screen.dart';
 import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
+import 'package:streamtunes_demo/views/screens/configuracion_screen.dart';
 import 'package:streamtunes_demo/views/screens/donar_screen.dart';
 import 'package:streamtunes_demo/views/screens/editar_perfil_screen.dart';
 import 'package:streamtunes_demo/views/screens/entradas_screen.dart';
 import 'package:streamtunes_demo/views/screens/estadisticas_cancion_screen.dart';
+import 'package:streamtunes_demo/views/screens/perfil_oyente_screen.dart';
 import 'package:streamtunes_demo/views/screens/playlist_screen.dart';
 import 'package:streamtunes_demo/views/screens/publicar_concierto_screen.dart';
 import 'package:streamtunes_demo/views/screens/registro_screen.dart';
@@ -33,6 +35,8 @@ class Rutas {
   static const publicarConcierto = '/publicar-concierto';
   static const comprarEntrada = '/comprar-entrada';
   static const playlist = '/playlist';
+  static const perfilOyente = '/perfil-oyente';
+  static const configuracion = '/configuracion';
 }
 
 // Cada ruta sabe qué pantalla construir y con qué argumentos.
@@ -109,6 +113,16 @@ Route<dynamic> generarRuta(RouteSettings settings) {
         settings: settings,
         builder: (_) =>
             PantallaPlaylist(playlist: settings.arguments as Playlist),
+      );
+    case Rutas.perfilOyente:
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const PantallaPerfilOyente(),
+      );
+    case Rutas.configuracion:
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const PantallaConfiguracion(),
       );
     default:
       return MaterialPageRoute(

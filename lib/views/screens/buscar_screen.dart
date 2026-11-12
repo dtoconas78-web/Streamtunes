@@ -4,6 +4,7 @@ import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/boton_perfil.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 
 // Buscar: filtra en vivo canciones y álbumes del catálogo por texto.
@@ -21,7 +22,10 @@ class _BuscarScreenState extends State<BuscarScreen> {
   Widget build(BuildContext context) {
     final consulta = _query.trim().toLowerCase();
     return Scaffold(
-      appBar: AppBar(title: const Text('Buscar')),
+      appBar: AppBar(
+        title: const Text('Buscar'),
+        actions: [const BotonPerfil()],
+      ),
       body: Column(
         children: [
           Padding(
