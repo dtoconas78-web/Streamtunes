@@ -6,6 +6,7 @@ import 'package:streamtunes_demo/views/screens/donar_screen.dart';
 import 'package:streamtunes_demo/views/screens/editar_perfil_screen.dart';
 import 'package:streamtunes_demo/views/screens/entradas_screen.dart';
 import 'package:streamtunes_demo/views/screens/estadisticas_cancion_screen.dart';
+import 'package:streamtunes_demo/views/screens/publicar_concierto_screen.dart';
 import 'package:streamtunes_demo/views/screens/registro_screen.dart';
 import 'package:streamtunes_demo/views/screens/reproductor_screen.dart';
 import 'package:streamtunes_demo/views/screens/solicitud_verificacion_screen.dart';
@@ -26,6 +27,7 @@ class Rutas {
   static const registro = '/registro';
   static const entradas = '/entradas';
   static const donar = '/donar';
+  static const publicarConcierto = '/publicar-concierto';
 }
 
 // Cada ruta sabe qué pantalla construir y con qué argumentos.
@@ -86,6 +88,11 @@ Route<dynamic> generarRuta(RouteSettings settings) {
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const DonarScreen(),
+      );
+    case Rutas.publicarConcierto:
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const PublicarConciertoScreen(),
       );
     default:
       return MaterialPageRoute(

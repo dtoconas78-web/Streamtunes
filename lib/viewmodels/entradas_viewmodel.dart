@@ -8,6 +8,26 @@ class EntradasViewModel extends ChangeNotifier {
   final List<Entrada> entradasCompradas = List.of(entradas);
   final List<Concierto> conciertosDisponibles = List.of(conciertos);
 
+  // El artista publica un concierto: aparece en "Comprar entrada" del oyente.
+  void publicarConcierto({
+    required String nombre,
+    required String lugar,
+    required DateTime fecha,
+    required double precio,
+    required int disponibles,
+  }) {
+    conciertosDisponibles.add(
+      Concierto(
+        nombre: nombre,
+        lugar: lugar,
+        fecha: fecha,
+        precio: precio,
+        disponibles: disponibles,
+      ),
+    );
+    notifyListeners();
+  }
+
   bool comprar(Concierto concierto, int cantidad) {
     if (cantidad <= 0 || cantidad > concierto.disponibles) {
       return false;

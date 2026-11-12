@@ -42,6 +42,11 @@ class _PantallaAState extends State<PantallaA>
         title: const Text('Perfil'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.event),
+            tooltip: 'Publicar concierto',
+            onPressed: () => irA(context, Rutas.publicarConcierto),
+          ),
+          IconButton(
             icon: const Icon(Icons.attach_money),
             tooltip: 'Ventas y donaciones',
             onPressed: () => irA(context, Rutas.ventas),
