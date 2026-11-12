@@ -1,8 +1,19 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
+
+// Cómo se recorre la cola: en orden o aleatorio.
+enum ModoReproduccion { enOrden, aleatorio }
+
+extension ModoReproduccionEtiqueta on ModoReproduccion {
+  String get etiqueta =>
+      this == ModoReproduccion.aleatorio ? 'Aleatoria' : 'En orden';
+  IconData get icono =>
+      this == ModoReproduccion.aleatorio ? Icons.shuffle : Icons.repeat;
+}
 
 // Controlador de reproducción: guarda qué suena, en qué segundo y si está en pausa.
 // Vive fuera de las pantallas, por eso la música sigue al navegar.
@@ -16,14 +27,38 @@ class ControladorReproduccion extends ChangeNotifier {
   final Set<int> meGustas = {}; // índices de canciones guardadas
   Timer? _timer;
 
+  // Cola de reproducción (índices del catálogo). Vacía = todo el catálogo.
+  List<int> cola = [];
+  ModoReproduccion modo = ModoReproduccion.enOrden;
+  final List<int> _historialAleatorio =
+      []; // para poder volver atrás en modo aleatorio
+
   bool get hayCancion => indiceActual != null;
   Cancion? get cancion =>
       indiceActual == null ? null : catalogo.canciones[indiceActual!];
   int get total => cancion == null ? 0 : cancion!.duracionSegundos;
   bool get leGusta => indiceActual != null && meGustas.contains(indiceActual);
 
+  int get _largoCola => cola.isEmpty ? catalogo.canciones.length : cola.length;
+
+  // Posición de la canción actual dentro de la cola (0 si no está).
+  int _posEnCola() {
+    if (cola.isEmpty) return indiceActual ?? 0;
+    final p = cola.indexOf(indiceActual!);
+    return p < 0 ? 0 : p;
+  }
+
+  // Índice del catálogo que ocupa la posición pos de la cola (con wrap-around).
+  int _indiceEnCola(int pos) {
+    final largo = _largoCola;
+    if (largo == 0) return 0;
+    final p = ((pos % largo) + largo) % largo;
+    return cola.isEmpty ? p : cola[p];
+  }
+
   // Pone a sonar una canción. Si ya era la actual, sigue desde donde estaba.
   void reproducir(int indice) {
+    cola = []; // vuelve al modo "todo el catálogo"
     if (indiceActual != indice) {
       indiceActual = indice;
       posicion = 0;
@@ -34,12 +69,29 @@ class ControladorReproduccion extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Reproduce una cola (por ejemplo una playlist) desde la posición inicio.
+  void reproducirCola(
+    List<int> indices, {
+    ModoReproduccion? modoNuevo,
+    int inicio = 0,
+  }) {
+    if (indices.isEmpty) return;
+    cola = List.of(indices);
+    if (modoNuevo != null) modo = modoNuevo;
+    _historialAleatorio.clear();
+    indiceActual = cola[((inicio % cola.length) + cola.length) % cola.length];
+    posicion = 0;
+    reproduciendo = true;
+    _timer ??= Timer.periodic(const Duration(seconds: 1), (_) => _avanzar());
+    notifyListeners();
+  }
+
   void _avanzar() {
     if (!reproduciendo || !hayCancion) return;
     posicion++;
-    // Al terminar la canción, pasa a la siguiente.
+    // Al terminar la canción, pasa a la siguiente de la cola.
     if (posicion >= total) {
-      _irA((indiceActual! + 1) % catalogo.canciones.length);
+      _irA(_indiceEnCola(_posEnCola() + 1));
     }
     notifyListeners();
   }
@@ -55,23 +107,42 @@ class ControladorReproduccion extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Cambia entre "en orden" y "aleatorio" y devuelve el modo activo.
+  ModoReproduccion alternarModo() {
+    modo = modo == ModoReproduccion.enOrden
+        ? ModoReproduccion.aleatorio
+        : ModoReproduccion.enOrden;
+    _historialAleatorio.clear();
+    notifyListeners();
+    return modo;
+  }
+
   void siguiente() {
     if (!hayCancion) return;
-    _irA((indiceActual! + 1) % catalogo.canciones.length);
+    if (modo == ModoReproduccion.aleatorio && _largoCola > 1) {
+      // Elige otra canción de la cola al azar (nunca la misma dos veces seguidas).
+      _historialAleatorio.add(indiceActual!);
+      var elegido = indiceActual!;
+      while (elegido == indiceActual) {
+        elegido = _indiceEnCola(Random().nextInt(_largoCola));
+      }
+      _irA(elegido);
+    } else {
+      _irA(_indiceEnCola(_posEnCola() + 1));
+    }
     notifyListeners();
   }
 
   // Si ya pasaron más de 3 segundos, "anterior" vuelve al inicio de la misma
-  // canción; si no, va a la anterior (como en la mayoría de los reproductores).
+  // canción; si no, va a la anterior (en aleatorio, a la que sonó antes).
   void anterior() {
     if (!hayCancion) return;
-    if (posicion > 3) {
+    if (modo == ModoReproduccion.aleatorio && _historialAleatorio.isNotEmpty) {
+      _irA(_historialAleatorio.removeLast());
+    } else if (posicion > 3) {
       posicion = 0;
     } else {
-      _irA(
-        (indiceActual! - 1 + catalogo.canciones.length) %
-            catalogo.canciones.length,
-      );
+      _irA(_indiceEnCola(_posEnCola() - 1));
     }
     notifyListeners();
   }
@@ -100,6 +171,9 @@ class ControladorReproduccion extends ChangeNotifier {
     reproduciendo = false;
     indiceActual = null;
     posicion = 0;
+    cola = [];
+    modo = ModoReproduccion.enOrden;
+    _historialAleatorio.clear();
     _timer?.cancel();
     _timer = null;
     notifyListeners();

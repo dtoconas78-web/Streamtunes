@@ -198,6 +198,17 @@ class PantallaReproductor extends StatelessWidget {
                         tooltip: 'Siguiente',
                         onPressed: reproductor.siguiente,
                       ),
+                      const SizedBox(width: 12),
+                      // Modo de reproducción de la cola: en orden o aleatoria.
+                      IconButton(
+                        iconSize: 26,
+                        icon: Icon(reproductor.modo.icono),
+                        color: reproductor.modo == ModoReproduccion.aleatorio
+                            ? colorAcento
+                            : Colors.grey,
+                        tooltip: 'Modo: ${reproductor.modo.etiqueta}',
+                        onPressed: reproductor.alternarModo,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 28),
