@@ -7,7 +7,7 @@ import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/perfil_artista_screen.dart';
 import 'package:streamtunes_demo/views/screens/explorar_screen.dart';
 import 'package:streamtunes_demo/views/screens/login_screen.dart';
-import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
+import 'package:streamtunes_demo/views/screens/oyente_shell.dart';
 import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 
 void main() => runApp(const MiApp());
@@ -60,7 +60,8 @@ class MiApp extends StatelessWidget {
           if (authViewModel.esArtista) {
             return const PantallaA();
           }
-          return const ComprarEntradaScreen();
+          // Oyente registrado: arranca en Inicio con la barra inferior.
+          return const OyenteShell();
         },
       ),
     );

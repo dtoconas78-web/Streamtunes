@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:streamtunes_demo/main.dart';
+import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/explorar_screen.dart';
 import 'package:streamtunes_demo/views/screens/login_screen.dart';
+import 'package:streamtunes_demo/views/screens/oyente_shell.dart';
 import 'package:streamtunes_demo/views/screens/registro_screen.dart';
 
 void main() {
@@ -53,5 +55,36 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byType(RegistroScreen), findsOneWidget);
+  });
+
+  testWidgets('el oyente entra a Inicio con barra inferior y navega', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const MiApp());
+    await tester.pump();
+    authViewModel.login(
+      const Usuario(
+        id: 'o1',
+        nombre: 'Ana',
+        email: 'ana@example.com',
+        rol: RolUsuario.oyente,
+      ),
+    );
+    await tester.pump();
+
+    // Arranca en el shell con las tres pestañas.
+    expect(find.byType(OyenteShell), findsOneWidget);
+    final barra = tester.widget<NavigationBar>(find.byType(NavigationBar));
+    expect(barra.selectedIndex, 0);
+    expect(barra.destinations.length, 3);
+    expect(find.text('Hola, Ana'), findsOneWidget);
+
+    // Tocar "Buscar" cambia la pestaña activa.
+    await tester.tap(find.text('Buscar'));
+    await tester.pump();
+    expect(
+      tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
+      1,
+    );
   });
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/views/screens/album_screen.dart';
+import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
 import 'package:streamtunes_demo/views/screens/donar_screen.dart';
 import 'package:streamtunes_demo/views/screens/editar_perfil_screen.dart';
 import 'package:streamtunes_demo/views/screens/entradas_screen.dart';
@@ -28,6 +29,7 @@ class Rutas {
   static const entradas = '/entradas';
   static const donar = '/donar';
   static const publicarConcierto = '/publicar-concierto';
+  static const comprarEntrada = '/comprar-entrada';
 }
 
 // Cada ruta sabe qué pantalla construir y con qué argumentos.
@@ -93,6 +95,11 @@ Route<dynamic> generarRuta(RouteSettings settings) {
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => const PublicarConciertoScreen(),
+      );
+    case Rutas.comprarEntrada:
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => const ComprarEntradaScreen(),
       );
     default:
       return MaterialPageRoute(
