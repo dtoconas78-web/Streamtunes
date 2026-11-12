@@ -28,6 +28,11 @@ Ya está en la rama `feature/login-registro-invitado`:
   en local: `docs/local/claves-firebase.md`, gitignored).
 - `android/app/google-services.json` descargado y guardado en esa ruta
   (**gitignored**). Validado con Gradle: `./gradlew :app:processDebugGoogleServices` → OK.
+  > ⚠️ **Importante**: después de agregar las huellas SHA en la consola, hay que
+  > **volver a descargar `google-services.json`**: el nuevo archivo trae el OAuth
+  > client de Android (`client_type: 1` con tu `certificate_hash`), que es el que
+  > `google_sign_in` usa para el login en Android. Sin esa entrada el login con
+  > Google falla aunque la SHA esté cargada en la consola.
 - Plugin `com.google.gms.google-services` **4.5.0** en `android/settings.gradle.kts`
   y aplicado en `android/app/build.gradle.kts`.
 - `lib/firebase_options.dart` con los **valores reales de Android** cargados desde
