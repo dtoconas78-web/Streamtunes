@@ -26,21 +26,25 @@ Ya está en la rama `feature/login-registro-invitado`:
 1. **Agregar la app Android** con package name `com.example.streamtunes_demo`
    (ver `android/app/build.gradle.kts` → `applicationId`).
 2. **Authentication → Sign-in method → habilitar Google**.
-3. **Huellas SHA**: en PowerShell
-   ```powershell
-   keytool -list -v -keystore "$env:USERPROFILE\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android
-   ```
-   Copiar SHA-1 y SHA-256 en Settings de la app Android → "Agregar huella digital".
-4. **Vincular el proyecto con el código** (genera `lib/firebase_options.dart` real
-   y `android/app/google-services.json` + el plugin de Gradle):
-   ```powershell
-   dart pub global activate flutterfire_cli
-   flutterfire configure --project=streamtunes-itu
-   ```
-   > Si no podés correr `flutterfire`, pasame los valores de la app
-   > (apiKey, appId, messagingSenderId, projectId, storageBucket) y los cargo
-   > yo en `lib/firebase_options.dart`.
-5. Correr la app en **Android (emulador/dispositivo) o web** — en Windows/Linux
+3. **Huellas SHA**: ya están guardadas SOLO en tu máquina en
+   `docs/local/claves-firebase.md` (gitignored, el repo es público). Cargarlas en
+   Firebase Console → ⚙️ Configuración del proyecto → tu app Android →
+   "Agregar huella digital": pegar **SHA-1** `B8:0C:...:A1:A5` y **SHA-256**
+   `C9:42:...:B2:E2` (debug). Para release se repite con el keystore de producción.
+4. **Descargar `android/app/google-services.json`** de la consola y copiarlo a
+   esa ruta (está gitignored). El plugin de Gradle
+   (`com.google.gms.google-services`) ya quedó agregado en
+   `android/settings.gradle.kts` y `android/app/build.gradle.kts`.
+5. **Pasarme los valores de la app** (de `google-services.json` o de la consola)
+   para completar `lib/firebase_options.dart` (hoy es plantilla):
+   - `apiKey`, `appId` (móvil_client → client_info), `messagingSenderId`
+     (project_number), `projectId`, `storageBucket`
+   - Con eso el login con Google real anda sin correr `flutterfire configure`.
+   - Alternativa: correr vos `dart pub global activate flutterfire_cli` +
+     `flutterfire configure --project=streamtunes-itu` (sobrescribe
+     `lib/firebase_options.dart` con valores reales; **no commitear esa versión**:
+     `git update-index --skip-worktree lib/firebase_options.dart`).
+6. Correr la app en **Android (emulador/dispositivo) o web** — en Windows/Linux
    de escritorio `firebase_auth`/`google_sign_in` no tienen soporte, así que ahí
    la app arranca sola en modo demo (auth simulado), sin romperse.
 
