@@ -216,28 +216,30 @@ class PantallaPlaylist extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              Row(
+              // Wrap en vez de Row: en pantallas angostas los botones se
+              // acomodan en otra fila en vez de empujar un overflow.
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
                 children: [
                   // Reproducir la playlist completa con el modo actual.
-                  Expanded(
-                    child: FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: colorAcento,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: const StadiumBorder(),
-                      ),
-                      onPressed: indices.isEmpty
-                          ? null
-                          : () => _reproducirDesde(p, 0),
-                      icon: const Icon(Icons.play_arrow),
-                      label: const Text(
-                        'Reproducir',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colorAcento,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: const StadiumBorder(),
+                    ),
+                    onPressed: indices.isEmpty
+                        ? null
+                        : () => _reproducirDesde(p, 0),
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text(
+                      'Reproducir',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                  const SizedBox(width: 10),
                   // Modo de reproducción: en orden / aleatoria / solo esta.
                   const BotonModoReproduccion(),
                 ],

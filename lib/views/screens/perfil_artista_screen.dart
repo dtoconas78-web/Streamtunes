@@ -69,171 +69,211 @@ class _PantallaAState extends State<PantallaA>
       body: SafeArea(
         child: Column(
           children: [
-            // Banner con gradiente detrás del avatar.
-            Container(
-              width: double.infinity,
-              height: 140,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [colorAcento, colorAcentoOscuro],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-            // Avatar superpuesto al banner (con margen negativo simulado).
-            Transform.translate(
-              offset: const Offset(0, -50),
-              child: Column(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: colorFondo, width: 4),
+            // Encabezado (banner + avatar + datos + búsqueda): con Flexible y
+            // scroll interno para que en pantallas chicas o con texto grande
+            // nunca haya overflow vertical; las tabs y el contenido quedan
+            // fijos abajo.
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // Banner con gradiente detrás del avatar.
+                    Container(
+                      width: double.infinity,
+                      height: 140,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [colorAcento, colorAcentoOscuro],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
                     ),
-                    child: const CircleAvatar(
-                      radius: 45,
-                      backgroundColor: colorTarjeta,
-                      child: Icon(Icons.person, size: 45, color: colorAcento),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // Se actualiza solo cuando se edita el perfil.
-                  ListenableBuilder(
-                    listenable: perfil,
-                    builder: (context, _) => Column(
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              perfil.nombre,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
+                    // Avatar superpuesto al banner (con margen negativo simulado).
+                    Transform.translate(
+                      offset: const Offset(0, -50),
+                      child: Column(
+                        children: [
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: colorFondo, width: 4),
+                            ),
+                            child: const CircleAvatar(
+                              radius: 45,
+                              backgroundColor: colorTarjeta,
+                              child: Icon(
+                                Icons.person,
+                                size: 45,
+                                color: colorAcento,
                               ),
                             ),
-                            // La insignia aparece solo si el perfil está verificado.
-                            if (perfil.esVerificado) ...[
-                              const SizedBox(width: 6),
-                              const Icon(
-                                Icons.verified,
-                                color: colorVerificado,
-                                size: 20,
-                              ),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${perfil.pais}, 8.4K seguidores',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (!authViewModel.esArtista)
-                    // Botón "Seguir": usa el mismo seguimiento que la pantalla
-                    // de donación (seguir es lo que habilita donar).
-                    ListenableBuilder(
-                      listenable: seguimientoViewModel,
-                      builder: (context, _) {
-                        final sigo = seguimientoViewModel.sigo('mateo-cabral');
-                        return ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: sigo ? colorTarjeta : colorAcento,
-                            foregroundColor: sigo ? Colors.white : Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: sigo
-                                  ? const BorderSide(color: colorAcento)
-                                  : BorderSide.none,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 28,
-                              vertical: 10,
+                          const SizedBox(height: 10),
+                          // Se actualiza solo cuando se edita el perfil.
+                          ListenableBuilder(
+                            listenable: perfil,
+                            builder: (context, _) => Column(
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Flexible: el nombre largo no puede
+                                    // empujar un overflow horizontal.
+                                    Flexible(
+                                      child: Text(
+                                        perfil.nombre,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    // La insignia aparece solo si el perfil está verificado.
+                                    if (perfil.esVerificado) ...[
+                                      const SizedBox(width: 6),
+                                      const Icon(
+                                        Icons.verified,
+                                        color: colorVerificado,
+                                        size: 20,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${perfil.pais}, 8.4K seguidores',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          onPressed: () {
-                            seguimientoViewModel.alternar('mateo-cabral');
-                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  seguimientoViewModel.sigo('mateo-cabral')
-                                      ? 'Ahora seguís a Mateo Cabral. Ya podés donarle.'
-                                      : 'Dejaste de seguir a Mateo Cabral',
+                          const SizedBox(height: 12),
+                          if (!authViewModel.esArtista)
+                            // Botón "Seguir": usa el mismo seguimiento que la pantalla
+                            // de donación (seguir es lo que habilita donar).
+                            ListenableBuilder(
+                              listenable: seguimientoViewModel,
+                              builder: (context, _) {
+                                final sigo = seguimientoViewModel.sigo(
+                                  'mateo-cabral',
+                                );
+                                return ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: sigo
+                                        ? colorTarjeta
+                                        : colorAcento,
+                                    foregroundColor: sigo
+                                        ? Colors.white
+                                        : Colors.black,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                      side: sigo
+                                          ? const BorderSide(color: colorAcento)
+                                          : BorderSide.none,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 28,
+                                      vertical: 10,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    seguimientoViewModel.alternar(
+                                      'mateo-cabral',
+                                    );
+                                    ScaffoldMessenger.of(context)
+                                        .hideCurrentSnackBar();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          seguimientoViewModel.sigo(
+                                                'mateo-cabral',
+                                              )
+                                              ? 'Ahora seguís a Mateo Cabral. Ya podés donarle.'
+                                              : 'Dejaste de seguir a Mateo Cabral',
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(sigo ? 'Siguiendo' : 'Seguir'),
+                                );
+                              },
+                            ),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            children: [
+                              TextButton.icon(
+                                style: TextButton.styleFrom(
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                                onPressed: () =>
+                                    irA(context, Rutas.editarPerfil),
+                                icon: const Icon(
+                                  Icons.edit,
+                                  size: 16,
+                                  color: colorAcento,
+                                ),
+                                label: const Text(
+                                  'Editar perfil',
+                                  style: TextStyle(color: colorAcento),
                                 ),
                               ),
-                            );
-                          },
-                          child: Text(sigo ? 'Siguiendo' : 'Seguir'),
-                        );
-                      },
+                              // El texto, ícono y color cambian según el estado.
+                              ListenableBuilder(
+                                listenable: perfil,
+                                builder: (context, _) => TextButton.icon(
+                                  style: TextButton.styleFrom(
+                                    visualDensity: VisualDensity.compact,
+                                  ),
+                                  onPressed: () =>
+                                      irA(context, Rutas.verificacion),
+                                  icon: Icon(
+                                    perfil.iconoVerificacion,
+                                    size: 16,
+                                    color: perfil.colorVerificacion,
+                                  ),
+                                  label: Text(
+                                    perfil.etiquetaVerificacion,
+                                    style: TextStyle(
+                                      color: perfil.colorVerificacion,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    children: [
-                      TextButton.icon(
-                        style: TextButton.styleFrom(
-                          visualDensity: VisualDensity.compact,
+                    // Barra de búsqueda (solo visual, sin lógica).
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: colorTarjeta,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        onPressed: () => irA(context, Rutas.editarPerfil),
-                        icon: const Icon(
-                          Icons.edit,
-                          size: 16,
-                          color: colorAcento,
-                        ),
-                        label: const Text(
-                          'Editar perfil',
-                          style: TextStyle(color: colorAcento),
-                        ),
-                      ),
-                      // El texto, ícono y color cambian según el estado.
-                      ListenableBuilder(
-                        listenable: perfil,
-                        builder: (context, _) => TextButton.icon(
-                          style: TextButton.styleFrom(
-                            visualDensity: VisualDensity.compact,
-                          ),
-                          onPressed: () => irA(context, Rutas.verificacion),
-                          icon: Icon(
-                            perfil.iconoVerificacion,
-                            size: 16,
-                            color: perfil.colorVerificacion,
-                          ),
-                          label: Text(
-                            perfil.etiquetaVerificacion,
-                            style: TextStyle(color: perfil.colorVerificacion),
+                        child: const TextField(
+                          enabled: false,
+                          decoration: InputDecoration(
+                            hintText: 'Buscar canciones...',
+                            hintStyle: TextStyle(color: Colors.grey),
+                            prefixIcon: Icon(Icons.search, color: Colors.grey),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(vertical: 14),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // Barra de búsqueda (solo visual, sin lógica).
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: colorTarjeta,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const TextField(
-                  enabled: false,
-                  decoration: InputDecoration(
-                    hintText: 'Buscar canciones...',
-                    hintStyle: TextStyle(color: Colors.grey),
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
-                  ),
+                    ),
+                    // Cierro el encabezado scrollable (children + Column +
+                    // SingleChildScrollView + Flexible): abajo quedan fijos el TabBar
+                    // y el contenido de las tabs, sin overflow vertical.
+                  ],
                 ),
               ),
             ),

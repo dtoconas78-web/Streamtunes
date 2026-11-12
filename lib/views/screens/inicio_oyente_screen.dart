@@ -66,17 +66,26 @@ class InicioOyenteScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          album.titulo,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        // Flexible: en pantallas chicas o con texto grande la
+                        // celda tiene altura fija (childAspectRatio) y los
+                        // textos no deben empujar un overflow abajo.
+                        Flexible(
+                          child: Text(
+                            album.titulo,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
-                        Text(
-                          '${album.cancionIds.length} canciones · ${album.anio}',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
+                        Flexible(
+                          child: Text(
+                            '${album.cancionIds.length} canciones · ${album.anio}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],

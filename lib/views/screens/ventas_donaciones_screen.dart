@@ -73,24 +73,23 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                child: Row(
+                // Wrap en vez de Row: en pantallas angostas los filtros no
+                // deben empujar un overflow horizontal (se acomodan en
+                // varias filas solos).
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
                     for (final nombre in ['Todos', 'Ventas', 'Donaciones'])
-                      Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        // Colores de selección salen del chipTheme del tema.
-                        child: ChoiceChip(
-                          label: Text(nombre),
-                          selected: filtro == nombre,
-                          showCheckmark: false,
-                          labelStyle: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: filtro == nombre
-                                ? Colors.black
-                                : Colors.white,
-                          ),
-                          onSelected: (_) => setState(() => filtro = nombre),
+                      ChoiceChip(
+                        label: Text(nombre),
+                        selected: filtro == nombre,
+                        showCheckmark: false,
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: filtro == nombre ? Colors.black : Colors.white,
                         ),
+                        onSelected: (_) => setState(() => filtro = nombre),
                       ),
                   ],
                 ),

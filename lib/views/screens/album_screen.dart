@@ -97,30 +97,32 @@ class PantallaAlbum extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               // Reproducir el álbum completo como cola + modo de reproducción
-              // (en orden / aleatoria / solo esta canción) al lado.
-              Row(
+              // (en orden / aleatoria / solo esta canción) al lado. Wrap en vez
+              // de Row: en pantallas angostas los botones se acomodan en otra
+              // fila en vez de empujar un overflow horizontal.
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
                 children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorAcento,
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 28,
-                          vertical: 10,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorAcento,
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 28,
+                        vertical: 10,
                       ),
-                      icon: const Icon(Icons.play_arrow),
-                      label: const Text('Reproducir'),
-                      onPressed: indices.isEmpty
-                          ? null
-                          : () => reproductor.reproducirCola(indices),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                     ),
+                    icon: const Icon(Icons.play_arrow),
+                    label: const Text('Reproducir'),
+                    onPressed: indices.isEmpty
+                        ? null
+                        : () => reproductor.reproducirCola(indices),
                   ),
-                  const SizedBox(width: 10),
                   const BotonModoReproduccion(),
                 ],
               ),

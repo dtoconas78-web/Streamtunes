@@ -17,7 +17,7 @@ class BotonModoReproduccion extends StatelessWidget {
         final modo = reproductor.modo;
         // "En orden" es el modo neutro (gris); los otros se resaltan.
         final activo = modo != ModoReproduccion.enOrden;
-        return OutlinedButton.icon(
+        return OutlinedButton(
           style: OutlinedButton.styleFrom(
             foregroundColor: activo ? colorAcento : Colors.grey,
             side: BorderSide(color: activo ? colorAcento : Colors.grey),
@@ -33,8 +33,22 @@ class BotonModoReproduccion extends StatelessWidget {
               ),
             );
           },
-          icon: Icon(modo.icono),
-          label: Text(modo.etiqueta),
+          // Row propio (en vez de OutlinedButton.icon) para que la etiqueta
+          // pueda achicarse con ellipsis si el botón queda en un ancho chico.
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(modo.icono),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  modo.etiqueta,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
