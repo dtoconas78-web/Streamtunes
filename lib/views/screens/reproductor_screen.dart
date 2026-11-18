@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
@@ -110,9 +112,11 @@ class PantallaReproductor extends StatelessWidget {
                         onPressed: () {
                           // Guardar es solo para cuentas registradas.
                           if (authViewModel.esInvitado) {
-                            mostrarDialogoRegistro(
-                              context,
-                              'guardar canciones',
+                            unawaited(
+                              mostrarDialogoRegistro(
+                                context,
+                                'guardar canciones',
+                              ),
                             );
                           } else {
                             reproductor.alternarMeGusta();
@@ -231,7 +235,12 @@ class PantallaReproductor extends StatelessWidget {
                         // Donar es solo para cuentas registradas; además,
                         // en Donar se aplica la regla de seguir al artista.
                         if (authViewModel.esInvitado) {
-                          mostrarDialogoRegistro(context, 'apoyar al artista');
+                          unawaited(
+                            mostrarDialogoRegistro(
+                              context,
+                              'apoyar al artista',
+                            ),
+                          );
                         } else {
                           irA(context, Rutas.donar);
                         }

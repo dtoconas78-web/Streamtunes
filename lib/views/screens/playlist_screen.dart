@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/playlist.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
@@ -70,74 +72,76 @@ class PantallaPlaylist extends StatelessWidget {
 
   // Hoja con todas las canciones del catálogo para agregar/quitar.
   void _hojaAgregarCanciones(BuildContext context, Playlist p) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) => DraggableScrollableSheet(
-        expand: false,
-        initialChildSize: 0.7,
-        maxChildSize: 0.95,
-        builder: (ctx, scrollController) => ListenableBuilder(
-          listenable: playlistsViewModel,
-          builder: (ctx, _) {
-            final actual = playlistsViewModel.porId(p.id);
-            if (actual == null) {
-              return const Center(child: Text('La playlist ya no existe'));
-            }
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                  child: Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Agregar canciones',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (sheetContext) => DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.7,
+          maxChildSize: 0.95,
+          builder: (ctx, scrollController) => ListenableBuilder(
+            listenable: playlistsViewModel,
+            builder: (ctx, _) {
+              final actual = playlistsViewModel.porId(p.id);
+              if (actual == null) {
+                return const Center(child: Text('La playlist ya no existe'));
+              }
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Agregar canciones',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(sheetContext),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    itemCount: catalogo.canciones.length,
-                    itemBuilder: (ctx, i) {
-                      final c = catalogo.canciones[i];
-                      final enPlaylist = actual.cancionIds.contains(c.id);
-                      return CheckboxListTile(
-                        value: enPlaylist,
-                        activeColor: colorAcento,
-                        title: Text(c.titulo),
-                        subtitle: Text(
-                          formatoTiempo(c.duracionSegundos),
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(sheetContext),
                         ),
-                        onChanged: (_) {
-                          if (enPlaylist) {
-                            playlistsViewModel.quitarCancion(p.id, c.id);
-                          } else {
-                            playlistsViewModel.agregarCancion(p.id, c.id);
-                          }
-                        },
-                      );
-                    },
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: catalogo.canciones.length,
+                      itemBuilder: (ctx, i) {
+                        final c = catalogo.canciones[i];
+                        final enPlaylist = actual.cancionIds.contains(c.id);
+                        return CheckboxListTile(
+                          value: enPlaylist,
+                          activeColor: colorAcento,
+                          title: Text(c.titulo),
+                          subtitle: Text(
+                            formatoTiempo(c.duracionSegundos),
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                          ),
+                          onChanged: (_) {
+                            if (enPlaylist) {
+                              playlistsViewModel.quitarCancion(p.id, c.id);
+                            } else {
+                              playlistsViewModel.agregarCancion(p.id, c.id);
+                            }
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -158,9 +162,9 @@ class PantallaPlaylist extends StatelessWidget {
                 color: colorTarjeta,
                 onSelected: (opcion) {
                   if (opcion == 'renombrar') {
-                    _dialogoRenombrar(context, p);
+                    unawaited(_dialogoRenombrar(context, p));
                   } else if (opcion == 'eliminar') {
-                    _confirmarEliminar(context, p);
+                    unawaited(_confirmarEliminar(context, p));
                   }
                 },
                 itemBuilder: (_) => const [
