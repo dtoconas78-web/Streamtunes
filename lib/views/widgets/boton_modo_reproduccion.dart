@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 
 // Botón del modo de reproducción: muestra el modo actual (en orden, aleatoria

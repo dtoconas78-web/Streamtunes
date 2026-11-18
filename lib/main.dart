@@ -4,7 +4,6 @@ import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
 import 'package:streamtunes_demo/theme/tema.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
-import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/perfil_artista_screen.dart';
 import 'package:streamtunes_demo/views/screens/explorar_screen.dart';
 import 'package:streamtunes_demo/views/screens/login_screen.dart';

@@ -1,9 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:streamtunes_demo/data/repositorio_artistas.dart';
+import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/viewmodels/seguimiento_viewmodel.dart';
 
 void main() {
   test('seguir y dejar de seguir notifican y actualizan las listas', () {
-    final s = SeguimientoViewModel();
+    final s = SeguimientoViewModel(
+      repositorioArtistas: RepositorioArtistasMemoria(),
+      repositorioCatalogo: RepositorioCatalogoMemoria(),
+    );
     var notificaciones = 0;
     s.addListener(() => notificaciones++);
 
@@ -26,7 +31,10 @@ void main() {
   });
 
   test('alternar cambia el estado de seguimiento', () {
-    final s = SeguimientoViewModel();
+    final s = SeguimientoViewModel(
+      repositorioArtistas: RepositorioArtistasMemoria(),
+      repositorioCatalogo: RepositorioCatalogoMemoria(),
+    );
     expect(s.sigo('mateo-cabral'), isFalse);
     s.alternar('mateo-cabral');
     expect(s.sigo('mateo-cabral'), isTrue);
@@ -35,7 +43,10 @@ void main() {
   });
 
   test('seguir álbumes: solo los seguidos aparecen en albumesSeguidos', () {
-    final s = SeguimientoViewModel();
+    final s = SeguimientoViewModel(
+      repositorioArtistas: RepositorioArtistasMemoria(),
+      repositorioCatalogo: RepositorioCatalogoMemoria(),
+    );
     var notificaciones = 0;
     s.addListener(() => notificaciones++);
 

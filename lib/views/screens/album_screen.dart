@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
-import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
-import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
-import 'package:streamtunes_demo/viewmodels/seguimiento_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/widgets/boton_modo_reproduccion.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 

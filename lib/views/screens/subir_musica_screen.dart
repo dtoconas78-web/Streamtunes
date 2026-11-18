@@ -7,7 +7,7 @@ import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/constantes.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
-import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 
 // Un audio elegido que todavía no se publicó. Los datos del archivo son

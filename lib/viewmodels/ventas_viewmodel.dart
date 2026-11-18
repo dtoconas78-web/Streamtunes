@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
+import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
 
+// Ventas y donaciones del artista. Los movimientos viven en el
+// [RepositorioMovimientos] inyectado, que es observable: este VM se suscribe
+// UNA SOLA VEZ en el constructor y reemite los cambios, así que una compra
+// hecha desde otro VM (EntradasViewModel) también se refleja acá sin que los
+// VMs se conozcan entre sí.
 class VentasViewModel extends ChangeNotifier {
-  final List<Movimiento> _movimientos = List.of(datos.movimientos);
+  VentasViewModel({required this._repositorio}) {
+    _repositorio.addListener(notifyListeners);
+  }
 
-  // Vista de solo lectura: los movimientos se agregan con
-  // [registrarVenta] / [registrarDonacion].
-  List<Movimiento> get movimientos => List.unmodifiable(_movimientos);
+  final RepositorioMovimientos _repositorio;
+
+  // Vista de solo lectura: los movimientos se agregan con [registrarVenta] /
+  // [registrarDonacion] (o desde otros VMs vía el repo, que notifica).
+  List<Movimiento> get movimientos => _repositorio.movimientos;
   double get totalVentas {
     double total = 0;
-    for (final m in _movimientos) {
+    for (final m in _repositorio.movimientos) {
       if (m.tipo == TipoMovimiento.venta) {
         total += m.monto;
       }
@@ -20,7 +29,7 @@ class VentasViewModel extends ChangeNotifier {
 
   double get totalDonaciones {
     double total = 0;
-    for (final m in _movimientos) {
+    for (final m in _repositorio.movimientos) {
       if (m.tipo == TipoMovimiento.donacion) {
         total += m.monto;
       }
@@ -29,7 +38,9 @@ class VentasViewModel extends ChangeNotifier {
   }
 
   void registrarVenta(String detalle, double monto) {
-    _movimientos.add(
+    // No se notifica acá: el repo ya notificó y este VM reemite por la
+    // suscripción (una sola notificación por movimiento).
+    _repositorio.registrar(
       Movimiento(
         tipo: TipoMovimiento.venta,
         detalle: detalle,
@@ -37,11 +48,10 @@ class VentasViewModel extends ChangeNotifier {
         fecha: DateTime.now(),
       ),
     );
-    notifyListeners();
   }
 
   void registrarDonacion(String detalle, double monto) {
-    _movimientos.add(
+    _repositorio.registrar(
       Movimiento(
         tipo: TipoMovimiento.donacion,
         detalle: detalle,
@@ -49,8 +59,11 @@ class VentasViewModel extends ChangeNotifier {
         fecha: DateTime.now(),
       ),
     );
-    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _repositorio.removeListener(notifyListeners);
+    super.dispose();
   }
 }
-
-final VentasViewModel ventasViewModel = VentasViewModel();

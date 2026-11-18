@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
-import 'package:streamtunes_demo/viewmodels/ventas_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';

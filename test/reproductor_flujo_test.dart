@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:streamtunes_demo/main.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
-import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/reproductor_screen.dart';
 import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 

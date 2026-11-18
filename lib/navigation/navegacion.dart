@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
-import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 
 // Llave del Navigator: permite abrir pantallas desde el mini-player,
 // que está por encima del Navigator y no tiene su propio contexto de navegación.

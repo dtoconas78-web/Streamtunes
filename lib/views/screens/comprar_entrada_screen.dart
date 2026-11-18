@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/utils/constantes.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';

@@ -1,30 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
+import 'package:streamtunes_demo/data/repositorio_artistas.dart';
+import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/models/artista.dart';
-import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 
 // Regla de StreamTunes: para donarle a un artista, primero lo seguís.
 // Este viewmodel guarda a quiénes sigue el oyente de esta sesión:
 // artistas (para donar) y álbumes (aparecen en la Biblioteca al seguirlos).
+// Los datos de artistas y álbumes vienen de los repositorios inyectados
+// (albumesSeguidos recorre el catálogo real, no una copia).
 class SeguimientoViewModel extends ChangeNotifier {
+  SeguimientoViewModel({
+    required this._repositorioArtistas,
+    required this._repositorioCatalogo,
+  });
+
+  final RepositorioArtistas _repositorioArtistas;
+  final RepositorioCatalogo _repositorioCatalogo;
+
   final Set<String> _idsSeguidos = {};
   final Set<String> _albumesSeguidos = {};
 
   bool sigo(String id) => _idsSeguidos.contains(id);
 
-  Artista? porId(String id) {
-    for (final a in datos.artistas) {
-      if (a.id == id) return a;
-    }
-    return null;
-  }
+  Artista? porId(String id) => _repositorioArtistas.porId(id);
 
   List<Artista> get seguidos =>
-      datos.artistas.where((a) => sigo(a.id)).toList();
+      _repositorioArtistas.todos.where((a) => sigo(a.id)).toList();
 
   List<Artista> get noSeguidos =>
-      datos.artistas.where((a) => !sigo(a.id)).toList();
+      _repositorioArtistas.todos.where((a) => !sigo(a.id)).toList();
 
   void seguir(String id) {
     if (_idsSeguidos.add(id)) notifyListeners();
@@ -48,7 +53,7 @@ class SeguimientoViewModel extends ChangeNotifier {
 
   // Solo los álbumes seguidos aparecen en la Biblioteca.
   List<Album> get albumesSeguidos => [
-    for (final a in catalogo.albumes)
+    for (final a in _repositorioCatalogo.albumes)
       if (_albumesSeguidos.contains(a.id)) a,
   ];
 
@@ -61,6 +66,3 @@ class SeguimientoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 }
-
-// Instancia compartida por toda la app.
-final SeguimientoViewModel seguimientoViewModel = SeguimientoViewModel();

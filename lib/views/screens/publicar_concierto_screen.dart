@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
-import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 
 // Publicar un concierto desde el artista: aparece al toque en

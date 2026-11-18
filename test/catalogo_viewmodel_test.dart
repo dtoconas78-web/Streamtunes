@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 
@@ -16,7 +17,7 @@ Cancion _cancion(String titulo, {required String id}) => Cancion(
 
 void main() {
   test('publicar una canción suelta la agrega y notifica', () {
-    final c = CatalogoViewModel();
+    final c = CatalogoViewModel(repositorio: RepositorioCatalogoMemoria());
     final antes = c.canciones.length;
     final albumesAntes = c.albumes.length;
     var notificaciones = 0;
@@ -34,7 +35,7 @@ void main() {
   });
 
   test('publicar un álbum agrega las canciones y el álbum con sus índices', () {
-    final c = CatalogoViewModel();
+    final c = CatalogoViewModel(repositorio: RepositorioCatalogoMemoria());
     final antes = c.canciones.length;
 
     c.publicar(

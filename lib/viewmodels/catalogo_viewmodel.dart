@@ -1,25 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
+import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 
-// Dueño del catálogo (canciones y álbumes). La UI ya no muta las listas
-// globales de datos_ejemplo a mano: pasa por acá y las pantallas se
-// actualizan solas con ListenableBuilder.
+// Dueño del catálogo (canciones y álbumes). Los datos viven en el
+// [RepositorioCatalogo] inyectado (ver lib/inyeccion.dart): la UI no toca
+// datos_ejemplo ni las listas del repo a mano, pasa por acá y las pantallas
+// se actualizan solas con ListenableBuilder.
 class CatalogoViewModel extends ChangeNotifier {
-  CatalogoViewModel({
-    List<Cancion>? cancionesIniciales,
-    List<Album>? albumesIniciales,
-  }) : _canciones = List.of(cancionesIniciales ?? datos.canciones),
-       _albumes = List.of(albumesIniciales ?? datos.albumes);
+  CatalogoViewModel({required this._repositorio});
 
-  final List<Cancion> _canciones;
-  final List<Album> _albumes;
+  final RepositorioCatalogo _repositorio;
+  int _contadorAlbumes = 0;
 
   // Vistas de solo lectura: para publicar se usa [publicar].
-  List<Cancion> get canciones => List.unmodifiable(_canciones);
-  List<Album> get albumes => List.unmodifiable(_albumes);
-  int _contadorAlbumes = 0;
+  List<Cancion> get canciones => _repositorio.canciones;
+  List<Album> get albumes => _repositorio.albumes;
 
   // Publica canciones nuevas (sueltas o como álbum) y notifica.
   void publicar({
@@ -28,10 +24,10 @@ class CatalogoViewModel extends ChangeNotifier {
     String? anioAlbum,
     required Color colorPortada,
   }) {
-    _canciones.addAll(nuevas);
+    _repositorio.agregarCanciones(nuevas);
     if (tituloAlbum != null) {
       _contadorAlbumes++;
-      _albumes.add(
+      _repositorio.agregarAlbum(
         Album(
           id: 'album-publicado-$_contadorAlbumes',
           titulo: tituloAlbum,
@@ -44,6 +40,3 @@ class CatalogoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 }
-
-// Instancia compartida por toda la app.
-final CatalogoViewModel catalogo = CatalogoViewModel();

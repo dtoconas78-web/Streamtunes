@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart';
+import 'package:streamtunes_demo/data/repositorio_entradas.dart';
+import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/models/entrada.dart';
-import 'package:streamtunes_demo/viewmodels/ventas_viewmodel.dart';
+import 'package:streamtunes_demo/models/movimiento.dart';
 
+// Entradas del oyente y conciertos disponibles. Los datos viven en los
+// repositorios inyectados; al comprar, el movimiento económico se registra
+// en el repositorio de movimientos (que es observable), así que VentasViewModel
+// se entera sin que estos dos VMs se conozcan.
 class EntradasViewModel extends ChangeNotifier {
-  final List<Entrada> _entradasCompradas = List.of(entradas);
-  final List<Concierto> _conciertosDisponibles = List.of(conciertos);
+  EntradasViewModel({
+    required this._repositorioEntradas,
+    required this._repositorioMovimientos,
+  });
+
+  final RepositorioEntradas _repositorioEntradas;
+  final RepositorioMovimientos _repositorioMovimientos;
 
   // Vistas de solo lectura: las altas/bajas pasan por [publicarConcierto] y
   // [comprar].
-  List<Entrada> get entradasCompradas => List.unmodifiable(_entradasCompradas);
+  List<Entrada> get entradasCompradas => _repositorioEntradas.entradasCompradas;
   List<Concierto> get conciertosDisponibles =>
-      List.unmodifiable(_conciertosDisponibles);
+      _repositorioEntradas.conciertosDisponibles;
 
   // El artista publica un concierto: aparece en "Comprar entrada" del oyente.
   void publicarConcierto({
@@ -22,7 +32,7 @@ class EntradasViewModel extends ChangeNotifier {
     required double precio,
     required int disponibles,
   }) {
-    _conciertosDisponibles.add(
+    _repositorioEntradas.agregarConcierto(
       Concierto(
         nombre: nombre,
         lugar: lugar,
@@ -38,9 +48,10 @@ class EntradasViewModel extends ChangeNotifier {
     if (cantidad <= 0 || cantidad > concierto.disponibles) {
       return false;
     }
-    final posicion = _conciertosDisponibles.indexOf(concierto);
-    if (posicion < 0) return false;
-    _entradasCompradas.add(
+    if (!_repositorioEntradas.descontarDisponibles(concierto, cantidad)) {
+      return false;
+    }
+    _repositorioEntradas.agregarEntrada(
       Entrada(
         concierto: concierto.nombre,
         lugar: concierto.lugar,
@@ -49,17 +60,17 @@ class EntradasViewModel extends ChangeNotifier {
         cantidad: cantidad,
       ),
     );
-    // El concierto es inmutable: se reemplaza por una copia actualizada.
-    _conciertosDisponibles[posicion] = concierto.conDisponibles(
-      concierto.disponibles - cantidad,
-    );
-    ventasViewModel.registrarVenta(
-      '${concierto.nombre} x$cantidad',
-      concierto.precio * cantidad,
+    // Venta registrada en el repo compartido: VentasViewModel la levanta
+    // porque el repo notifica sus cambios.
+    _repositorioMovimientos.registrar(
+      Movimiento(
+        tipo: TipoMovimiento.venta,
+        detalle: '${concierto.nombre} x$cantidad',
+        monto: concierto.precio * cantidad,
+        fecha: DateTime.now(),
+      ),
     );
     notifyListeners();
     return true;
   }
 }
-
-final EntradasViewModel entradasViewModel = EntradasViewModel();

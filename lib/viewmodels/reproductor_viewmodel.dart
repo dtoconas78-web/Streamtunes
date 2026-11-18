@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
-import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 
 // Cómo se recorre la cola: en orden, aleatorio o repitiendo solo la canción
 // elegida.
@@ -29,6 +29,12 @@ extension ModoReproduccionEtiqueta on ModoReproduccion {
 // Estado encapsulado: los campos son privados y se leen por getters de solo
 // lectura; todo cambio pasa por los métodos de abajo (que notifican).
 class ControladorReproduccion extends ChangeNotifier {
+  // El catálogo se lee del repositorio inyectado (mismo que usa CatalogoViewModel,
+  // ver lib/inyeccion.dart), así los índices de la cola siempre apuntan bien.
+  ControladorReproduccion({required this._repositorioCatalogo});
+
+  final RepositorioCatalogo _repositorioCatalogo;
+
   int? _indiceActual; // null = todavía no se eligió ninguna canción
   int _posicion = 0; // segundos reproducidos de la canción actual
   bool _reproduciendo = false;
@@ -52,14 +58,15 @@ class ControladorReproduccion extends ChangeNotifier {
   ModoReproduccion get modo => _modo;
 
   bool get hayCancion => _indiceActual != null;
-  Cancion? get cancion =>
-      _indiceActual == null ? null : catalogo.canciones[_indiceActual!];
+  Cancion? get cancion => _indiceActual == null
+      ? null
+      : _repositorioCatalogo.canciones[_indiceActual!];
   int get total => cancion == null ? 0 : cancion!.duracionSegundos;
   bool get leGusta =>
       _indiceActual != null && _meGustas.contains(_indiceActual);
 
   int get _largoCola =>
-      _cola.isEmpty ? catalogo.canciones.length : _cola.length;
+      _cola.isEmpty ? _repositorioCatalogo.canciones.length : _cola.length;
 
   // Posición de la canción actual dentro de la cola (0 si no está).
   int _posEnCola() {
@@ -214,6 +221,3 @@ class ControladorReproduccion extends ChangeNotifier {
     super.dispose();
   }
 }
-
-// Una única instancia compartida por toda la app.
-final ControladorReproduccion reproductor = ControladorReproduccion();

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
-import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 
 // Barra chica que acompaña en todas las pantallas mientras haya una canción

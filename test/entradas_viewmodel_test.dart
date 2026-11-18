@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 
 void main() {
   test('publicarConcierto agrega el concierto y notifica', () {
