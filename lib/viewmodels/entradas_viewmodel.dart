@@ -4,6 +4,7 @@ import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/models/entrada.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
+import 'package:streamtunes_demo/utils/reloj.dart';
 
 // Entradas del oyente y conciertos disponibles. Los datos viven en los
 // repositorios inyectados; al comprar, el movimiento económico se registra
@@ -13,10 +14,14 @@ class EntradasViewModel extends ChangeNotifier {
   EntradasViewModel({
     required this._repositorioEntradas,
     required this._repositorioMovimientos,
+    this._reloj = const RelojDelSistema(),
   });
 
   final RepositorioEntradas _repositorioEntradas;
   final RepositorioMovimientos _repositorioMovimientos;
+  // Reloj para sellar la fecha de los movimientos económicos (lógica de
+  // negocio): en tests se inyecta un RelojFijo para fechas deterministas.
+  final Reloj _reloj;
 
   // Vistas de solo lectura: las altas/bajas pasan por [publicarConcierto] y
   // [comprar].
@@ -67,7 +72,7 @@ class EntradasViewModel extends ChangeNotifier {
         tipo: TipoMovimiento.venta,
         detalle: '${concierto.nombre} x$cantidad',
         monto: concierto.precio * cantidad,
-        fecha: DateTime.now(),
+        fecha: _reloj.ahora(),
       ),
     );
     notifyListeners();

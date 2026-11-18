@@ -13,6 +13,7 @@ import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/playlists_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/utils/reloj.dart';
 import 'package:streamtunes_demo/viewmodels/seguimiento_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/ventas_viewmodel.dart';
 
@@ -42,6 +43,10 @@ final RepositorioEntradas repositorioEntradas = RepositorioEntradasMemoria();
 final RepositorioMovimientos repositorioMovimientos =
     RepositorioMovimientosMemoria();
 
+// Reloj inyectado en los VMs que sellan fechas de lógica de negocio
+// (movimientos económicos). En tests se puede inyectar un RelojFijo.
+final Reloj reloj = RelojDelSistema();
+
 // --- ViewModels con sus dependencias inyectadas ---
 // Ojo: catalogo y reproductor comparten el MISMO repositorio de catálogo,
 // así los índices de la cola de reproducción siempre apuntan al catálogo real.
@@ -58,9 +63,11 @@ final SeguimientoViewModel seguimientoViewModel = SeguimientoViewModel(
 final EntradasViewModel entradasViewModel = EntradasViewModel(
   repositorioEntradas: repositorioEntradas,
   repositorioMovimientos: repositorioMovimientos,
+  reloj: reloj,
 );
 final VentasViewModel ventasViewModel = VentasViewModel(
   repositorio: repositorioMovimientos,
+  reloj: reloj,
 );
 
 final PlaylistsViewModel playlistsViewModel = PlaylistsViewModel();

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
+import 'package:streamtunes_demo/utils/reloj.dart';
 
 // Ventas y donaciones del artista. Los movimientos viven en el
 // [RepositorioMovimientos] inyectado, que es observable: este VM se suscribe
@@ -8,11 +9,17 @@ import 'package:streamtunes_demo/models/movimiento.dart';
 // hecha desde otro VM (EntradasViewModel) también se refleja acá sin que los
 // VMs se conozcan entre sí.
 class VentasViewModel extends ChangeNotifier {
-  VentasViewModel({required this._repositorio}) {
+  VentasViewModel({
+    required this._repositorio,
+    this._reloj = const RelojDelSistema(),
+  }) {
     _repositorio.addListener(notifyListeners);
   }
 
   final RepositorioMovimientos _repositorio;
+  // Reloj para sellar la fecha de los movimientos económicos (lógica de
+  // negocio): en tests se inyecta un RelojFijo para fechas deterministas.
+  final Reloj _reloj;
 
   // Vista de solo lectura: los movimientos se agregan con [registrarVenta] /
   // [registrarDonacion] (o desde otros VMs vía el repo, que notifica).
@@ -45,7 +52,7 @@ class VentasViewModel extends ChangeNotifier {
         tipo: TipoMovimiento.venta,
         detalle: detalle,
         monto: monto,
-        fecha: DateTime.now(),
+        fecha: _reloj.ahora(),
       ),
     );
   }
@@ -56,7 +63,7 @@ class VentasViewModel extends ChangeNotifier {
         tipo: TipoMovimiento.donacion,
         detalle: detalle,
         monto: monto,
-        fecha: DateTime.now(),
+        fecha: _reloj.ahora(),
       ),
     );
   }

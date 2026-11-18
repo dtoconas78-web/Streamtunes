@@ -22,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _mostrarFormularioEmail = false;
-  bool _cargando = false;
   RolUsuario _rol = RolUsuario.oyente;
 
   @override
@@ -38,35 +37,36 @@ class _LoginScreenState extends State<LoginScreen> {
         .showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
-  // Envuelve las llamadas al servicio (simulado hoy, real después) con carga.
-  Future<void> _ejecutar(Future<void> Function() accion) async {
-    if (_cargando) return;
-    setState(() => _cargando = true);
-    try {
-      await accion();
-    } catch (e) {
-      _error(descripcionErrorAuth(e));
-    }
-    if (mounted) setState(() => _cargando = false);
+  // El estado de carga y el error viven en el AuthViewModel; acá solo se
+  // traduce el error crudo con descripcionErrorAuth, conservando los mensajes
+  // específicos de Firebase/Google. Como el VM limpia el error al comenzar
+  // cada operación, nunca mostramos un error viejo.
+  void _mostrarErrorSiHubo() {
+    final e = authViewModel.ultimoError;
+    if (e != null && mounted) _error(descripcionErrorAuth(e));
   }
 
-  void _ingresarConEmail() {
+  Future<void> _ingresarConEmail() async {
     if (!_formKey.currentState!.validate()) return;
-    _ejecutar(
-      () => authViewModel.loginConEmail(
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text,
-        rol: _rol,
-      ),
+    await authViewModel.loginConEmail(
+      email: _emailCtrl.text.trim(),
+      password: _passwordCtrl.text,
+      rol: _rol,
     );
+    _mostrarErrorSiHubo();
   }
 
   // Google no devuelve el rol: se elige antes de entrar.
   Future<void> _ingresarConGoogle() async {
     final rol = await elegirRol(context, titulo: '¿Cómo entrás con Google?');
-    if (rol != null) {
-      await _ejecutar(() => authViewModel.loginConGoogle(rol: rol));
-    }
+    if (rol == null) return;
+    await authViewModel.loginConGoogle(rol: rol);
+    _mostrarErrorSiHubo();
+  }
+
+  Future<void> _entrarComoInvitado() async {
+    await authViewModel.entrarComoInvitado();
+    _mostrarErrorSiHubo();
   }
 
   @override
@@ -77,108 +77,113 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.music_note, size: 80, color: colorAcento),
-                const SizedBox(height: 24),
-                const Text(
-                  'StreamTunes',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+            child: ListenableBuilder(
+              listenable: authViewModel,
+              builder: (context, _) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.music_note, size: 80, color: colorAcento),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'StreamTunes',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Música gratis. Apoyo directo al artista.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-                const SizedBox(height: 32),
-                if (_cargando)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: CircularProgressIndicator(color: colorAcento),
-                  )
-                else ...[
-                  BotonGoogle(
-                    texto: 'Continuar con Google',
-                    onPressed: _ingresarConGoogle,
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Música gratis. Apoyo directo al artista.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
-                  const SizedBox(height: 16),
-                  const Row(
-                    children: [
-                      Expanded(child: Divider(color: Colors.grey)),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12),
-                        child: Text('o', style: TextStyle(color: Colors.grey)),
-                      ),
-                      Expanded(child: Divider(color: Colors.grey)),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (_mostrarFormularioEmail)
-                    FormularioEmail(
-                      formKey: _formKey,
-                      emailCtrl: _emailCtrl,
-                      passwordCtrl: _passwordCtrl,
-                      rol: _rol,
-                      onRolChanged: (rol) => setState(() => _rol = rol),
-                      onIngresar: _ingresarConEmail,
+                  const SizedBox(height: 32),
+                  if (authViewModel.cargando)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: CircularProgressIndicator(color: colorAcento),
                     )
-                  else
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: colorAcento,
-                          side: const BorderSide(color: colorAcento),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
+                  else ...[
+                    BotonGoogle(
+                      texto: 'Continuar con Google',
+                      onPressed: _ingresarConGoogle,
+                    ),
+                    const SizedBox(height: 16),
+                    const Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.grey)),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            'o',
+                            style: TextStyle(color: Colors.grey),
                           ),
                         ),
-                        onPressed: () =>
-                            setState(() => _mostrarFormularioEmail = true),
-                        child: const Text('Continuar con email'),
-                      ),
+                        Expanded(child: Divider(color: Colors.grey)),
+                      ],
                     ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () =>
-                        _ejecutar(authViewModel.entrarComoInvitado),
-                    child: const Text(
-                      'Entrar como invitado',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                  const Text(
-                    'Como invitado solo podés escuchar gratis.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 24),
-                  TextButton(
-                    onPressed: () => irA(context, Rutas.registro),
-                    child: RichText(
-                      text: const TextSpan(
-                        text: '¿No tenés cuenta? ',
-                        style: TextStyle(color: Colors.grey),
-                        children: [
-                          TextSpan(
-                            text: 'Crear cuenta gratis',
-                            style: TextStyle(
-                              color: colorAcento,
-                              fontWeight: FontWeight.bold,
+                    const SizedBox(height: 16),
+                    if (_mostrarFormularioEmail)
+                      FormularioEmail(
+                        formKey: _formKey,
+                        emailCtrl: _emailCtrl,
+                        passwordCtrl: _passwordCtrl,
+                        rol: _rol,
+                        onRolChanged: (rol) => setState(() => _rol = rol),
+                        onIngresar: _ingresarConEmail,
+                      )
+                    else
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: colorAcento,
+                            side: const BorderSide(color: colorAcento),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                        ],
+                          onPressed: () =>
+                              setState(() => _mostrarFormularioEmail = true),
+                          child: const Text('Continuar con email'),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: _entrarComoInvitado,
+                      child: const Text(
+                        'Entrar como invitado',
+                        style: TextStyle(color: Colors.grey),
                       ),
                     ),
-                  ),
+                    const Text(
+                      'Como invitado solo podés escuchar gratis.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 24),
+                    TextButton(
+                      onPressed: () => irA(context, Rutas.registro),
+                      child: RichText(
+                        text: const TextSpan(
+                          text: '¿No tenés cuenta? ',
+                          style: TextStyle(color: Colors.grey),
+                          children: [
+                            TextSpan(
+                              text: 'Crear cuenta gratis',
+                              style: TextStyle(
+                                color: colorAcento,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

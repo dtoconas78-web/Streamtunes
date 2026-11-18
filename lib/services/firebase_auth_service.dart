@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
@@ -90,15 +91,42 @@ class FirebaseAuthService implements AuthService {
   }
 
   /// Cierra la sesión en Firebase y en Google (el invitado no usa Firebase).
+  ///
+  /// Las dos operaciones se intentan SIEMPRE de forma independiente: que falle
+  /// Google no impide cerrar Firebase y viceversa. Si falla Firebase, el error
+  /// se comunica con throw porque la sesión remota NO quedó cerrada (el llamador
+  /// lo diagnostica; nunca se afirma que se cerró). Si solo falla Google,
+  /// alcanza con diagnosticarlo con debugPrint. Los mensajes de error no
+  /// exponen credenciales ni datos sensibles.
   @override
   Future<void> cerrarSesion() async {
+    Object? errorGoogle;
     try {
-      await _google.signOut();
-    } catch (_) {
-      // Si nunca se logueó con Google, no pasa nada.
+      await signOutGoogle();
+    } catch (e) {
+      errorGoogle = e;
+      // Ej: nunca se logueó con Google. No bloquea el cierre en Firebase.
+      debugPrint('signOut de Google falló (continúa con Firebase): $e');
     }
-    await _auth.signOut();
+    Object? errorFirebase;
+    try {
+      await signOutFirebase();
+    } catch (e) {
+      errorFirebase = e;
+    }
+    if (errorFirebase != null) {
+      throw StateError(
+        'No se pudo cerrar la sesión en Firebase: $errorFirebase'
+        '${errorGoogle != null ? '; además falló Google: $errorGoogle' : ''}',
+      );
+    }
   }
+
+  // Se facturan como métodos aparte para poder probar [cerrarSesion] sin
+  // tocar Firebase/Google reales (los tests los sobreescriben).
+  Future<void> signOutGoogle() => _google.signOut();
+
+  Future<void> signOutFirebase() => _auth.signOut();
 }
 
 // Instancia compartida (lazy: no toca Firebase hasta usarse).

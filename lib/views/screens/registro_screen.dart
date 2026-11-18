@@ -24,7 +24,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
   final _passwordCtrl = TextEditingController();
   final _repetirCtrl = TextEditingController();
   RolUsuario _rol = RolUsuario.oyente;
-  bool _cargando = false;
 
   @override
   void dispose() {
@@ -41,42 +40,41 @@ class _RegistroScreenState extends State<RegistroScreen> {
         .showSnackBar(SnackBar(content: Text(mensaje)));
   }
 
-  // Con backend real, si la cuenta de Google todavía no existe se crea acá
-  // (mismo flujo: FirebaseAuth crea la cuenta con el credential de Google).
+  // El estado de carga y el error viven en el AuthViewModel; acá solo se
+  // traduce el error crudo con descripcionErrorAuth, conservando los mensajes
+  // específicos. La pantalla solo se saca del stack si el registro tuvo éxito.
   Future<void> _registrarConGoogle() async {
-    if (_cargando) return;
     final rol = await elegirRol(
       context,
       titulo: '¿Cómo te registrás con Google?',
     );
     if (rol == null) return;
-    setState(() => _cargando = true);
-    try {
-      await authViewModel.loginConGoogle(rol: rol);
-      if (mounted) Navigator.popUntil(context, (route) => route.isFirst);
-    } catch (e) {
-      if (!mounted) return;
+    await authViewModel.loginConGoogle(rol: rol);
+    if (!mounted) return;
+    final e = authViewModel.ultimoError;
+    if (e != null) {
       _error(descripcionErrorAuth(e));
-      setState(() => _cargando = false);
+      return;
     }
+    Navigator.popUntil(context, (route) => route.isFirst);
   }
 
   Future<void> _registrar() async {
-    if (!_formKey.currentState!.validate() || _cargando) return;
-    setState(() => _cargando = true);
-    try {
-      await authViewModel.registrar(
-        nombre: _nombreCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text,
-        rol: _rol,
-      );
-      if (mounted) Navigator.popUntil(context, (route) => route.isFirst);
-    } catch (e) {
-      if (!mounted) return;
+    if (!_formKey.currentState!.validate()) return;
+    await authViewModel.registrar(
+      nombre: _nombreCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      password: _passwordCtrl.text,
+      rol: _rol,
+    );
+    if (!mounted) return;
+    final e = authViewModel.ultimoError;
+    if (e != null) {
       _error(descripcionErrorAuth(e));
-      setState(() => _cargando = false);
+      return;
     }
+    // Solo después de un registro exitoso.
+    Navigator.popUntil(context, (route) => route.isFirst);
   }
 
   @override
@@ -86,117 +84,120 @@ class _RegistroScreenState extends State<RegistroScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Es gratis y para siempre',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Escuchás toda la música gratis. Con cuenta además podés guardar canciones, crear listas, comprar entradas y apoyar directo al artista.',
-                style: TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-              const SizedBox(height: 24),
-              if (_cargando)
-                const Center(
-                  child: CircularProgressIndicator(color: colorAcento),
-                )
-              else ...[
-                BotonGoogle(
-                  texto: 'Registrarse con Google',
-                  onPressed: _registrarConGoogle,
+          child: ListenableBuilder(
+            listenable: authViewModel,
+            builder: (context, _) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Es gratis y para siempre',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
-                const Row(
-                  children: [
-                    Expanded(child: Divider(color: Colors.grey)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        'o con tu email',
-                        style: TextStyle(color: Colors.grey),
+                const SizedBox(height: 8),
+                const Text(
+                  'Escuchás toda la música gratis. Con cuenta además podés guardar canciones, crear listas, comprar entradas y apoyar directo al artista.',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+                const SizedBox(height: 24),
+                if (authViewModel.cargando)
+                  const Center(
+                    child: CircularProgressIndicator(color: colorAcento),
+                  )
+                else ...[
+                  BotonGoogle(
+                    texto: 'Registrarse con Google',
+                    onPressed: _registrarConGoogle,
+                  ),
+                  const SizedBox(height: 16),
+                  const Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.grey)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'o con tu email',
+                          style: TextStyle(color: Colors.grey),
+                        ),
                       ),
-                    ),
-                    Expanded(child: Divider(color: Colors.grey)),
-                  ],
+                      Expanded(child: Divider(color: Colors.grey)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _nombreCtrl,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: decoracionFormulario('Nombre'),
+                        validator: validarNombre,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _emailCtrl,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: decoracionFormulario('Email'),
+                        validator: validarEmail,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _passwordCtrl,
+                        obscureText: true,
+                        decoration: decoracionFormulario('Contraseña'),
+                        validator: validarPassword,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _repetirCtrl,
+                        obscureText: true,
+                        decoration: decoracionFormulario('Repetir contraseña'),
+                        validator: (v) =>
+                            validarRepeticion(v, _passwordCtrl.text),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Quiero usar StreamTunes como:',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ChoiceChip(
+                              label: const Text('Artista'),
+                              selected: _rol == RolUsuario.artista,
+                              onSelected: (_) =>
+                                  setState(() => _rol = RolUsuario.artista),
+                              selectedColor: colorAcento,
+                              backgroundColor: colorTarjeta,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ChoiceChip(
+                              label: const Text('Oyente'),
+                              selected: _rol == RolUsuario.oyente,
+                              onSelected: (_) =>
+                                  setState(() => _rol = RolUsuario.oyente),
+                              selectedColor: colorAcento,
+                              backgroundColor: colorTarjeta,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      BotonPrincipal(
+                        texto: 'Crear cuenta gratis',
+                        onPressed: _registrar,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 16),
               ],
-              Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TextFormField(
-                      controller: _nombreCtrl,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: decoracionFormulario('Nombre'),
-                      validator: validarNombre,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _emailCtrl,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: decoracionFormulario('Email'),
-                      validator: validarEmail,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _passwordCtrl,
-                      obscureText: true,
-                      decoration: decoracionFormulario('Contraseña'),
-                      validator: validarPassword,
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _repetirCtrl,
-                      obscureText: true,
-                      decoration: decoracionFormulario('Repetir contraseña'),
-                      validator: (v) =>
-                          validarRepeticion(v, _passwordCtrl.text),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Quiero usar StreamTunes como:',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ChoiceChip(
-                            label: const Text('Artista'),
-                            selected: _rol == RolUsuario.artista,
-                            onSelected: (_) =>
-                                setState(() => _rol = RolUsuario.artista),
-                            selectedColor: colorAcento,
-                            backgroundColor: colorTarjeta,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ChoiceChip(
-                            label: const Text('Oyente'),
-                            selected: _rol == RolUsuario.oyente,
-                            onSelected: (_) =>
-                                setState(() => _rol = RolUsuario.oyente),
-                            selectedColor: colorAcento,
-                            backgroundColor: colorTarjeta,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    BotonPrincipal(
-                      texto: 'Crear cuenta gratis',
-                      onPressed: _registrar,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
