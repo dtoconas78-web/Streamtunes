@@ -6,16 +6,24 @@ import 'package:streamtunes_demo/services/auth_service.dart';
 /// Auth real con Firebase: Google Sign-In + Firebase Auth (y email/clave).
 ///
 /// Solo se usa cuando Firebase se inicializó bien (ver firebase_inicial.dart);
-/// si no, la app usa AuthService (simulado) y los tests nunca tocan Firebase.
+/// si no, la app usa AuthServiceSimulado y los tests nunca tocan Firebase.
 ///
 /// El rol (artista/oyente) NO lo da Google: la app lo eligió antes de llamar
 /// (ver elegir_rol.dart). Cuando llegue Firestore (paso 3), el perfil con el
 /// rol se guarda ahí al primer login; por ahora el rol elegido se usa directo.
-class FirebaseAuthService extends AuthService {
+class FirebaseAuthService implements AuthService {
   // Ojo: estos getters solo se tocan cuando Firebase está inicializado.
   FirebaseAuth get _auth => FirebaseAuth.instance;
   GoogleSignIn get _google => GoogleSignIn.instance;
   bool _googleInit = false;
+
+  // El invitado es siempre una cuenta LOCAL de demo: no inicia sesión en
+  // Firebase (igual que antes de existir el contrato). Cuando se quiera, se
+  // migra a FirebaseAuth.instance.signInAnonymously().
+  final AuthServiceSimulado _invitado = AuthServiceSimulado();
+
+  @override
+  Future<Usuario> crearInvitado() => _invitado.crearInvitado();
 
   // google_sign_in v7 exige llamar initialize() exactamente una vez (y esperar
   // el future) antes de cualquier otro método; sin esto el comportamiento es
@@ -82,6 +90,7 @@ class FirebaseAuthService extends AuthService {
   }
 
   /// Cierra la sesión en Firebase y en Google (el invitado no usa Firebase).
+  @override
   Future<void> cerrarSesion() async {
     try {
       await _google.signOut();

@@ -10,11 +10,15 @@ class CatalogoViewModel extends ChangeNotifier {
   CatalogoViewModel({
     List<Cancion>? cancionesIniciales,
     List<Album>? albumesIniciales,
-  }) : canciones = List.of(cancionesIniciales ?? datos.canciones),
-       albumes = List.of(albumesIniciales ?? datos.albumes);
+  }) : _canciones = List.of(cancionesIniciales ?? datos.canciones),
+       _albumes = List.of(albumesIniciales ?? datos.albumes);
 
-  final List<Cancion> canciones;
-  final List<Album> albumes;
+  final List<Cancion> _canciones;
+  final List<Album> _albumes;
+
+  // Vistas de solo lectura: para publicar se usa [publicar].
+  List<Cancion> get canciones => List.unmodifiable(_canciones);
+  List<Album> get albumes => List.unmodifiable(_albumes);
   int _contadorAlbumes = 0;
 
   // Publica canciones nuevas (sueltas o como álbum) y notifica.
@@ -24,10 +28,10 @@ class CatalogoViewModel extends ChangeNotifier {
     String? anioAlbum,
     required Color colorPortada,
   }) {
-    canciones.addAll(nuevas);
+    _canciones.addAll(nuevas);
     if (tituloAlbum != null) {
       _contadorAlbumes++;
-      albumes.add(
+      _albumes.add(
         Album(
           id: 'album-publicado-$_contadorAlbumes',
           titulo: tituloAlbum,

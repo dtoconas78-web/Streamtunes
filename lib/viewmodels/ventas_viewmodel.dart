@@ -3,10 +3,14 @@ import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
 import 'package:streamtunes_demo/models/movimiento.dart';
 
 class VentasViewModel extends ChangeNotifier {
-  final List<Movimiento> movimientos = List.of(datos.movimientos);
+  final List<Movimiento> _movimientos = List.of(datos.movimientos);
+
+  // Vista de solo lectura: los movimientos se agregan con
+  // [registrarVenta] / [registrarDonacion].
+  List<Movimiento> get movimientos => List.unmodifiable(_movimientos);
   double get totalVentas {
     double total = 0;
-    for (final m in movimientos) {
+    for (final m in _movimientos) {
       if (m.tipo == TipoMovimiento.venta) {
         total += m.monto;
       }
@@ -16,7 +20,7 @@ class VentasViewModel extends ChangeNotifier {
 
   double get totalDonaciones {
     double total = 0;
-    for (final m in movimientos) {
+    for (final m in _movimientos) {
       if (m.tipo == TipoMovimiento.donacion) {
         total += m.monto;
       }
@@ -25,7 +29,7 @@ class VentasViewModel extends ChangeNotifier {
   }
 
   void registrarVenta(String detalle, double monto) {
-    movimientos.add(
+    _movimientos.add(
       Movimiento(
         tipo: TipoMovimiento.venta,
         detalle: detalle,
@@ -37,7 +41,7 @@ class VentasViewModel extends ChangeNotifier {
   }
 
   void registrarDonacion(String detalle, double monto) {
-    movimientos.add(
+    _movimientos.add(
       Movimiento(
         tipo: TipoMovimiento.donacion,
         detalle: detalle,

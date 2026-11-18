@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
-import 'package:streamtunes_demo/services/firebase_auth_service.dart';
-import 'package:streamtunes_demo/services/firebase_inicial.dart';
 
-// Servicio de auth activo: Firebase si se inicializó bien; si no, el simulado.
-// Así la app funciona igual en modo demo (tests, sin configurar Firebase).
-AuthService get _servicioAuth =>
-    firebaseInicializado ? firebaseAuthService : authService;
-
+// ViewModel de autenticación: depende SOLO del contrato [AuthService], que se
+// inyecta por constructor. Qué implementación concreta se usa (Firebase o
+// simulado) se decide en un único lugar: lib/inyeccion.dart. Los tests pueden
+// pasar un AuthService falso para probar el VM aislado del singleton global.
 class AuthViewModel extends ChangeNotifier {
+  AuthViewModel({required this._servicio});
+
+  final AuthService _servicio;
+
   Usuario? _usuario;
 
   Usuario? get usuario => _usuario;
@@ -27,10 +28,9 @@ class AuthViewModel extends ChangeNotifier {
 
   void logout() {
     _usuario = null;
-    // Si hay Firebase, también se cierra la sesión allá (fire and forget).
-    if (firebaseInicializado) {
-      firebaseAuthService.cerrarSesion();
-    }
+    // También se cierra la sesión en el proveedor inyectado (fire and
+    // forget; en el simulado es un no-op).
+    _servicio.cerrarSesion();
     notifyListeners();
   }
 
@@ -40,7 +40,7 @@ class AuthViewModel extends ChangeNotifier {
     required RolUsuario rol,
   }) async {
     login(
-      await _servicioAuth.ingresarConEmail(
+      await _servicio.ingresarConEmail(
         email: email,
         password: password,
         rol: rol,
@@ -49,7 +49,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> loginConGoogle({required RolUsuario rol}) async {
-    login(await _servicioAuth.ingresarConGoogle(rol: rol));
+    login(await _servicio.ingresarConGoogle(rol: rol));
   }
 
   Future<void> registrar({
@@ -59,7 +59,7 @@ class AuthViewModel extends ChangeNotifier {
     required RolUsuario rol,
   }) async {
     login(
-      await _servicioAuth.registrar(
+      await _servicio.registrar(
         nombre: nombre,
         email: email,
         password: password,
@@ -69,8 +69,6 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> entrarComoInvitado() async {
-    login(await authService.crearInvitado());
+    login(await _servicio.crearInvitado());
   }
 }
-
-final AuthViewModel authViewModel = AuthViewModel();

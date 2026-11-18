@@ -5,8 +5,14 @@ import 'package:streamtunes_demo/models/entrada.dart';
 import 'package:streamtunes_demo/viewmodels/ventas_viewmodel.dart';
 
 class EntradasViewModel extends ChangeNotifier {
-  final List<Entrada> entradasCompradas = List.of(entradas);
-  final List<Concierto> conciertosDisponibles = List.of(conciertos);
+  final List<Entrada> _entradasCompradas = List.of(entradas);
+  final List<Concierto> _conciertosDisponibles = List.of(conciertos);
+
+  // Vistas de solo lectura: las altas/bajas pasan por [publicarConcierto] y
+  // [comprar].
+  List<Entrada> get entradasCompradas => List.unmodifiable(_entradasCompradas);
+  List<Concierto> get conciertosDisponibles =>
+      List.unmodifiable(_conciertosDisponibles);
 
   // El artista publica un concierto: aparece en "Comprar entrada" del oyente.
   void publicarConcierto({
@@ -16,7 +22,7 @@ class EntradasViewModel extends ChangeNotifier {
     required double precio,
     required int disponibles,
   }) {
-    conciertosDisponibles.add(
+    _conciertosDisponibles.add(
       Concierto(
         nombre: nombre,
         lugar: lugar,
@@ -32,9 +38,9 @@ class EntradasViewModel extends ChangeNotifier {
     if (cantidad <= 0 || cantidad > concierto.disponibles) {
       return false;
     }
-    final posicion = conciertosDisponibles.indexOf(concierto);
+    final posicion = _conciertosDisponibles.indexOf(concierto);
     if (posicion < 0) return false;
-    entradasCompradas.add(
+    _entradasCompradas.add(
       Entrada(
         concierto: concierto.nombre,
         lugar: concierto.lugar,
@@ -44,7 +50,7 @@ class EntradasViewModel extends ChangeNotifier {
       ),
     );
     // El concierto es inmutable: se reemplaza por una copia actualizada.
-    conciertosDisponibles[posicion] = concierto.conDisponibles(
+    _conciertosDisponibles[posicion] = concierto.conDisponibles(
       concierto.disponibles - cantidad,
     );
     ventasViewModel.registrarVenta(

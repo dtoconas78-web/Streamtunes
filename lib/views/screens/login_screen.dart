@@ -3,7 +3,7 @@ import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/errores_auth.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
-import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/views/widgets/boton_google.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';

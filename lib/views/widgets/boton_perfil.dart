@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
-import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 
 // Círculo con la inicial del perfil en la barra superior. Al tocarlo abre
 // un desplegable debajo con: Perfil, Configuración y Cerrar sesión.

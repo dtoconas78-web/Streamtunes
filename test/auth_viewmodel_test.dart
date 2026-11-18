@@ -1,7 +1,48 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
+import 'package:streamtunes_demo/services/auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
+
+// AuthService falso: sirve para comprobar que el ViewModel depende SOLO del
+// contrato inyectado y no del singleton global ni de ninguna implementación
+// concreta.
+class _AuthServiceFalso implements AuthService {
+  int vecesCerrarSesion = 0;
+
+  @override
+  Future<Usuario> ingresarConEmail({
+    required String email,
+    required String password,
+    required RolUsuario rol,
+  }) async => Usuario(id: 'fake-email', nombre: 'Fake', email: email, rol: rol);
+
+  @override
+  Future<Usuario> ingresarConGoogle({required RolUsuario rol}) async =>
+      Usuario(id: 'fake-google', nombre: 'Fake', email: 'fake@g.com', rol: rol);
+
+  @override
+  Future<Usuario> registrar({
+    required String nombre,
+    required String email,
+    required String password,
+    required RolUsuario rol,
+  }) async => Usuario(id: 'fake-reg', nombre: nombre, email: email, rol: rol);
+
+  @override
+  Future<Usuario> crearInvitado() async => Usuario(
+    id: 'fake-invitado',
+    nombre: 'Invitado',
+    email: '',
+    rol: RolUsuario.invitado,
+  );
+
+  @override
+  Future<void> cerrarSesion() async {
+    vecesCerrarSesion++;
+  }
+}
 
 void main() {
   setUp(() => authViewModel.logout());
@@ -55,6 +96,30 @@ void main() {
       // El id "google_..." es del servicio simulado, no de Firebase (uid real).
       expect(authViewModel.usuario?.id, startsWith('google_'));
       expect(authViewModel.esOyente, isTrue);
+    },
+  );
+
+  test(
+    'el VM usa solo el AuthService inyectado (independiente del singleton)',
+    () async {
+      final servicio = _AuthServiceFalso();
+      final vm = AuthViewModel(servicio: servicio);
+
+      await vm.loginConEmail(
+        email: 'fake@b.com',
+        password: '123456',
+        rol: RolUsuario.artista,
+      );
+      expect(vm.estaLogueado, isTrue);
+      expect(vm.esArtista, isTrue);
+      expect(vm.usuario?.id, 'fake-email');
+
+      vm.logout();
+      expect(vm.estaLogueado, isFalse);
+      expect(servicio.vecesCerrarSesion, 1);
+
+      // El singleton global no se tocó.
+      expect(authViewModel.estaLogueado, isFalse);
     },
   );
 }
