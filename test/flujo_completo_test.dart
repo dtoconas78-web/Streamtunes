@@ -15,6 +15,9 @@ import 'package:streamtunes_demo/views/screens/publicar_concierto_screen.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 
+// Suite E2E de flujos completos. Acá viven las regresiones que antes estaban
+// sueltas en repro_scratch_test.dart: si alguno de estos tests falla, se rompió
+// un flujo real de la app.
 void main() {
   setUp(() {
     authViewModel.logout();
@@ -35,7 +38,21 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('REPRO 1: sheet de donar se cierra arrastrando abajo', (
+  Future<void> entrarComoArtista(WidgetTester tester) async {
+    await tester.pumpWidget(const MiApp());
+    await tester.pump();
+    authViewModel.login(
+      const Usuario(
+        id: 'a1',
+        nombre: 'Mateo',
+        email: 'mateo@example.com',
+        rol: RolUsuario.artista,
+      ),
+    );
+    await tester.pump();
+  }
+
+  testWidgets('regresión: el sheet de donar se cierra arrastrando abajo', (
     tester,
   ) async {
     await entrarComoOyente(tester);
@@ -64,7 +81,7 @@ void main() {
     expect(find.textContaining('Donaste', findRichText: true), findsOneWidget);
   });
 
-  testWidgets('REPRO 2: crear playlist con nombre y tocar Crear', (
+  testWidgets('regresión: crear playlist con nombre y tocar Crear', (
     tester,
   ) async {
     await entrarComoOyente(tester);
@@ -79,7 +96,7 @@ void main() {
     expect(find.text('Mi playlist'), findsWidgets);
   });
 
-  testWidgets('REPRO 3: reproducir playlist abre mini reproductor', (
+  testWidgets('regresión: reproducir playlist abre el mini reproductor', (
     tester,
   ) async {
     await entrarComoOyente(tester);
@@ -101,7 +118,7 @@ void main() {
     reproductor.detener();
   });
 
-  testWidgets('REPRO 5: reproducir álbum abre mini reproductor', (
+  testWidgets('regresión: reproducir álbum abre el mini reproductor', (
     tester,
   ) async {
     await entrarComoOyente(tester);
@@ -117,23 +134,24 @@ void main() {
     reproductor.detener();
   });
 
-  testWidgets('REPRO 4: inicio con tamaño de teléfono físico y texto grande', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1.0;
-    tester.binding.platformDispatcher.textScaleFactorTestValue = 1.15;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-      tester.binding.platformDispatcher.clearTextScaleFactorTestValue();
-    });
-    await entrarComoOyente(tester);
-    await tester.pumpAndSettle();
-  });
+  testWidgets(
+    'regresión: inicio con tamaño de teléfono físico y texto grande',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      tester.binding.platformDispatcher.textScaleFactorTestValue = 1.15;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        tester.binding.platformDispatcher.clearTextScaleFactorTestValue();
+      });
+      await entrarComoOyente(tester);
+      await tester.pumpAndSettle();
+    },
+  );
 
   testWidgets(
-    'REPRO 6: artista publica concierto (tamaño teléfono, texto grande)',
+    'regresión: el artista publica un concierto (teléfono chico, texto grande)',
     (tester) async {
       tester.view.physicalSize = const Size(390, 700);
       tester.view.devicePixelRatio = 1.0;
@@ -143,17 +161,7 @@ void main() {
         tester.view.resetDevicePixelRatio();
         tester.binding.platformDispatcher.clearTextScaleFactorTestValue();
       });
-      await tester.pumpWidget(const MiApp());
-      await tester.pump();
-      authViewModel.login(
-        const Usuario(
-          id: 'a1',
-          nombre: 'Mateo',
-          email: 'mateo@example.com',
-          rol: RolUsuario.artista,
-        ),
-      );
-      await tester.pump();
+      await entrarComoArtista(tester);
       navegadorKey.currentState!.pushNamed(Rutas.publicarConcierto);
       await tester.pumpAndSettle();
       Future<void> escribir(int i, String texto) async {
@@ -181,22 +189,6 @@ void main() {
       await tester.pump();
       await tester.tap(find.byType(BotonPrincipal));
       await tester.pumpAndSettle();
-      debugPrint(
-        'errores visibles: '
-        '${find.text('Elegí la fecha del concierto').evaluate().length}, '
-        '${find.text('Escribí un precio válido').evaluate().length}',
-      );
-      debugPrint(
-        'conciertos: ${entradasViewModel.conciertosDisponibles.map((c) => c.nombre).toList()}',
-      );
-      debugPrint(
-        'snackbar publicado: '
-        '${find.textContaining('publicado', findRichText: true).evaluate().length}',
-      );
-      debugPrint(
-        'snackbar fecha: '
-        '${find.text('Elegí la fecha del concierto').evaluate().length}',
-      );
       expect(
         entradasViewModel.conciertosDisponibles.any(
           (c) => c.nombre == 'Show en vivo',
@@ -207,45 +199,37 @@ void main() {
     },
   );
 
-  testWidgets('REPRO 7: barrido de pantallas de artista a 320x568 texto 1.3', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(320, 568);
-    tester.view.devicePixelRatio = 1.0;
-    tester.binding.platformDispatcher.textScaleFactorTestValue = 1.3;
-    addTearDown(() {
-      tester.view.resetPhysicalSize();
-      tester.view.resetDevicePixelRatio();
-      tester.binding.platformDispatcher.clearTextScaleFactorTestValue();
-    });
-    await tester.pumpWidget(const MiApp());
-    await tester.pump();
-    authViewModel.login(
-      const Usuario(
-        id: 'a1',
-        nombre: 'Mateo',
-        email: 'mateo@example.com',
-        rol: RolUsuario.artista,
-      ),
-    );
-    await tester.pumpAndSettle();
-    for (final ruta in [
-      Rutas.ventas,
-      Rutas.publicarConcierto,
-      Rutas.subirMusica,
-      Rutas.editarPerfil,
-      Rutas.verificacion,
-    ]) {
-      navegadorKey.currentState!.pushNamed(ruta);
+  testWidgets(
+    'regresión: barrido de pantallas de artista a 320x568 con texto 1.3',
+    (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      tester.binding.platformDispatcher.textScaleFactorTestValue = 1.3;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        tester.binding.platformDispatcher.clearTextScaleFactorTestValue();
+      });
+      await entrarComoArtista(tester);
       await tester.pumpAndSettle();
-      navegadorKey.currentState!.pop();
+      for (final ruta in [
+        Rutas.ventas,
+        Rutas.publicarConcierto,
+        Rutas.subirMusica,
+        Rutas.editarPerfil,
+        Rutas.verificacion,
+      ]) {
+        navegadorKey.currentState!.pushNamed(ruta);
+        await tester.pumpAndSettle();
+        navegadorKey.currentState!.pop();
+        await tester.pumpAndSettle();
+      }
+      // y la pantalla de álbum (ruta del oyente, pero renderizable igual)
+      navegadorKey.currentState!.pushNamed(
+        Rutas.album,
+        arguments: catalogo.albumes.first,
+      );
       await tester.pumpAndSettle();
-    }
-    // y la pantalla de álbum (ruta del oyente, pero renderizable igual)
-    navegadorKey.currentState!.pushNamed(
-      Rutas.album,
-      arguments: catalogo.albumes.first,
-    );
-    await tester.pumpAndSettle();
-  });
+    },
+  );
 }
