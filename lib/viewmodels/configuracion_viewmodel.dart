@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 // Preferencias simples del oyente (en memoria; con backend van a la cuenta).
 class ConfiguracionViewModel extends ChangeNotifier {
@@ -29,6 +29,3 @@ class ConfiguracionViewModel extends ChangeNotifier {
     notifyListeners();
   }
 }
-
-// Instancia compartida por toda la app.
-final ConfiguracionViewModel configuracionViewModel = ConfiguracionViewModel();

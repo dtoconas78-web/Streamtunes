@@ -4,7 +4,7 @@ import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
-import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/estado_verificacion_ui.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
@@ -159,7 +159,7 @@ class _PantallaAState extends State<PantallaA>
                               listenable: seguimientoViewModel,
                               builder: (context, _) {
                                 final sigo = seguimientoViewModel.sigo(
-                                  'mateo-cabral',
+                                  perfil.artista.id,
                                 );
                                 return ElevatedButton(
                                   style: ElevatedButton.styleFrom(
@@ -182,7 +182,7 @@ class _PantallaAState extends State<PantallaA>
                                   ),
                                   onPressed: () {
                                     seguimientoViewModel.alternar(
-                                      'mateo-cabral',
+                                      perfil.artista.id,
                                     );
                                     ScaffoldMessenger.of(context)
                                         .hideCurrentSnackBar();
@@ -190,7 +190,7 @@ class _PantallaAState extends State<PantallaA>
                                       SnackBar(
                                         content: Text(
                                           seguimientoViewModel.sigo(
-                                                'mateo-cabral',
+                                                perfil.artista.id,
                                               )
                                               ? 'Ahora seguís a Mateo Cabral. Ya podés donarle.'
                                               : 'Dejaste de seguir a Mateo Cabral',
@@ -231,14 +231,14 @@ class _PantallaAState extends State<PantallaA>
                                   onPressed: () =>
                                       irA(context, Rutas.verificacion),
                                   icon: Icon(
-                                    perfil.iconoVerificacion,
+                                    perfil.estadoVerificacion.icono,
                                     size: 16,
-                                    color: perfil.colorVerificacion,
+                                    color: perfil.estadoVerificacion.color,
                                   ),
                                   label: Text(
-                                    perfil.etiquetaVerificacion,
+                                    perfil.estadoVerificacion.etiqueta,
                                     style: TextStyle(
-                                      color: perfil.colorVerificacion,
+                                      color: perfil.estadoVerificacion.color,
                                     ),
                                   ),
                                 ),

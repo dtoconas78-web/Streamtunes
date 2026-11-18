@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
-import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 
 // Pantalla Solicitar verificación: datos, documento y cuenta de cobro.

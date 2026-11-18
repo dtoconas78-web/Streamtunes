@@ -4,6 +4,7 @@ import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/modo_reproduccion_ui.dart';
 import 'package:streamtunes_demo/views/widgets/requiere_registro.dart';
 
 // Pantalla Reproductor: portada, controles y barra de progreso.

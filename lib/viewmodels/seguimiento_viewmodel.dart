@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/data/repositorio_artistas.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/models/album.dart';

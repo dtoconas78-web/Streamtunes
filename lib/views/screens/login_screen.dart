@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/errores_auth.dart';
-import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/views/widgets/boton_google.dart';
-import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 import 'package:streamtunes_demo/views/widgets/elegir_rol.dart';
+import 'package:streamtunes_demo/views/widgets/formulario_email.dart';
 
 // Pantalla de acceso: entrar con Google, con email o como invitado.
 // El home de main.dart reacciona solo al login: acá no se navega a mano.
@@ -70,62 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Widget _selectorRol() {
-    return Row(
-      children: [
-        Expanded(
-          child: ChoiceChip(
-            label: const Text('Artista'),
-            selected: _rol == RolUsuario.artista,
-            onSelected: (_) => setState(() => _rol = RolUsuario.artista),
-            selectedColor: colorAcento,
-            backgroundColor: colorTarjeta,
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ChoiceChip(
-            label: const Text('Oyente'),
-            selected: _rol == RolUsuario.oyente,
-            onSelected: (_) => setState(() => _rol = RolUsuario.oyente),
-            selectedColor: colorAcento,
-            backgroundColor: colorTarjeta,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _formularioEmail() {
-    return Form(
-      key: _formKey,
-      child: Column(
-        children: [
-          TextFormField(
-            controller: _emailCtrl,
-            keyboardType: TextInputType.emailAddress,
-            decoration: decoracionFormulario('Email'),
-            validator: validarEmail,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _passwordCtrl,
-            obscureText: true,
-            decoration: decoracionFormulario('Contraseña'),
-            validator: validarPassword,
-          ),
-          const SizedBox(height: 16),
-          _selectorRol(),
-          const SizedBox(height: 20),
-          BotonPrincipal(
-            texto: 'Ingresar con email',
-            onPressed: _ingresarConEmail,
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,7 +120,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
                   if (_mostrarFormularioEmail)
-                    _formularioEmail()
+                    FormularioEmail(
+                      formKey: _formKey,
+                      emailCtrl: _emailCtrl,
+                      passwordCtrl: _passwordCtrl,
+                      rol: _rol,
+                      onRolChanged: (rol) => setState(() => _rol = rol),
+                      onIngresar: _ingresarConEmail,
+                    )
                   else
                     SizedBox(
                       width: double.infinity,

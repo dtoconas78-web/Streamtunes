@@ -2,12 +2,16 @@ import 'package:streamtunes_demo/data/repositorio_artistas.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
+import 'package:streamtunes_demo/models/artista.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/configuracion_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/playlists_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/seguimiento_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/ventas_viewmodel.dart';
@@ -58,3 +62,22 @@ final EntradasViewModel entradasViewModel = EntradasViewModel(
 final VentasViewModel ventasViewModel = VentasViewModel(
   repositorio: repositorioMovimientos,
 );
+
+final PlaylistsViewModel playlistsViewModel = PlaylistsViewModel();
+final ConfiguracionViewModel configuracionViewModel = ConfiguracionViewModel();
+
+// Identidad del artista de esta sesión: SIEMPRE sale del repositorio.
+// Si porId no lo encuentra, se falla con error explícito en vez de inventar
+// un artista desconectado (en el demo, la semilla datos_ejemplo lo incluye).
+Artista _artistaSesion() {
+  final artista = repositorioArtistas.porId('mateo-cabral');
+  if (artista == null) {
+    throw StateError(
+      'RepositorioArtistas no contiene al artista "mateo-cabral": '
+      'revisar la semilla de datos_ejemplo.dart.',
+    );
+  }
+  return artista;
+}
+
+final PerfilUsuario perfil = PerfilUsuario(artista: _artistaSesion());

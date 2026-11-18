@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
@@ -22,7 +22,7 @@ class CatalogoViewModel extends ChangeNotifier {
     required List<Cancion> nuevas,
     String? tituloAlbum,
     String? anioAlbum,
-    required Color colorPortada,
+    required int colorPortada,
   }) {
     _repositorio.agregarCanciones(nuevas);
     if (tituloAlbum != null) {
@@ -32,7 +32,7 @@ class CatalogoViewModel extends ChangeNotifier {
           id: 'album-publicado-$_contadorAlbumes',
           titulo: tituloAlbum,
           anio: anioAlbum ?? '',
-          colorPortada: colorPortada.toARGB32(),
+          colorPortada: colorPortada,
           cancionIds: [for (final c in nuevas) c.id],
         ),
       );

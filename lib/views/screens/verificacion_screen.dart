@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/estado_verificacion_ui.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
@@ -24,8 +26,8 @@ class PantallaVerificacion extends StatelessWidget {
             switch (perfil.estadoVerificacion) {
               case EstadoVerificacion.noSolicitada:
                 return _VistaEstado(
-                  icono: perfil.iconoVerificacion,
-                  color: perfil.colorVerificacion,
+                  icono: perfil.estadoVerificacion.icono,
+                  color: perfil.estadoVerificacion.color,
                   titulo: 'Verificá tu perfil',
                   mensaje: 'Para publicar conciertos y cobrar entradas necesitamos confirmar tu identidad y dónde vas a cobrar. Subir música sigue siendo libre.',
                   hijos: [
@@ -56,8 +58,8 @@ class PantallaVerificacion extends StatelessWidget {
 
               case EstadoVerificacion.pendiente:
                 return _VistaEstado(
-                  icono: perfil.iconoVerificacion,
-                  color: perfil.colorVerificacion,
+                  icono: perfil.estadoVerificacion.icono,
+                  color: perfil.estadoVerificacion.color,
                   titulo: 'Solicitud en revisión',
                   mensaje: 'Recibimos tus datos. Te vamos a avisar cuando haya una respuesta.',
                   hijos: [
@@ -116,8 +118,8 @@ class PantallaVerificacion extends StatelessWidget {
 
               case EstadoVerificacion.rechazada:
                 return _VistaEstado(
-                  icono: perfil.iconoVerificacion,
-                  color: perfil.colorVerificacion,
+                  icono: perfil.estadoVerificacion.icono,
+                  color: perfil.estadoVerificacion.color,
                   titulo: 'Solicitud rechazada',
                   mensaje: 'Motivo: ${perfil.motivoRechazo}',
                   hijos: [
@@ -130,8 +132,8 @@ class PantallaVerificacion extends StatelessWidget {
 
               case EstadoVerificacion.verificada:
                 return _VistaEstado(
-                  icono: perfil.iconoVerificacion,
-                  color: perfil.colorVerificacion,
+                  icono: perfil.estadoVerificacion.icono,
+                  color: perfil.estadoVerificacion.color,
                   titulo: 'Perfil verificado',
                   mensaje: 'Tu perfil tiene la insignia de verificado. Vas a poder publicar conciertos y cobrar entradas cuando esa sección esté disponible.',
                 );

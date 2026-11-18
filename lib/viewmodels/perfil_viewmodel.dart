@@ -1,18 +1,31 @@
-import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:flutter/foundation.dart';
+import 'package:streamtunes_demo/models/artista.dart';
 
 // Estados por los que pasa una solicitud de verificación.
 enum EstadoVerificacion { noSolicitada, pendiente, verificada, rechazada }
 
+// Perfil del artista logueado en esta sesión. La identidad (id + nombre)
+// viene del [Artista] inyectado (semilla: RepositorioArtistas, ver
+// lib/inyeccion.dart); los datos editables (país, bio) viven acá.
+//
+// Ojo: RepositorioArtistas es de solo lectura en esta etapa, así que
+// [guardar] reemplaza la copia local del VM (mismo id, nombre nuevo) y el
+// repo NO se reescribe; con backend, ambos van a la misma fuente.
+//
+// La presentación visual del estado (etiqueta/ícono/color) vive en la capa
+// de vistas: lib/views/widgets/estado_verificacion_ui.dart.
 class PerfilUsuario extends ChangeNotifier {
-  String _nombre = 'Mateo Cabral';
+  PerfilUsuario({required this._artista});
+
+  Artista _artista;
   String _pais = 'Argentina';
   String _bio =
       'Artista independiente de Mendoza. Hace música desde 2019, mezclando rock alternativo con sonidos electrónicos.';
 
   // Getters de solo lectura: los cambios pasan por [guardar],
   // [enviarSolicitud] y [simularResultado] (que notifican).
-  String get nombre => _nombre;
+  Artista get artista => _artista;
+  String get nombre => _artista.nombre;
   String get pais => _pais;
   String get bio => _bio;
 
@@ -21,7 +34,7 @@ class PerfilUsuario extends ChangeNotifier {
     required String pais,
     required String bio,
   }) {
-    _nombre = nombre;
+    _artista = Artista(id: _artista.id, nombre: nombre);
     _pais = pais;
     _bio = bio;
     notifyListeners();
@@ -34,28 +47,6 @@ class PerfilUsuario extends ChangeNotifier {
   String get motivoRechazo => _motivoRechazo;
 
   bool get esVerificado => _estadoVerificacion == EstadoVerificacion.verificada;
-
-  // Texto, ícono y color del botón de verificación en el perfil.
-  String get etiquetaVerificacion => switch (_estadoVerificacion) {
-    EstadoVerificacion.noSolicitada => 'Verificar perfil',
-    EstadoVerificacion.pendiente => 'En revisión',
-    EstadoVerificacion.verificada => 'Verificado',
-    EstadoVerificacion.rechazada => 'Verificación rechazada',
-  };
-
-  IconData get iconoVerificacion => switch (_estadoVerificacion) {
-    EstadoVerificacion.noSolicitada => Icons.verified_outlined,
-    EstadoVerificacion.pendiente => Icons.hourglass_top,
-    EstadoVerificacion.verificada => Icons.verified,
-    EstadoVerificacion.rechazada => Icons.error_outline,
-  };
-
-  Color get colorVerificacion => switch (_estadoVerificacion) {
-    EstadoVerificacion.noSolicitada => colorAcento,
-    EstadoVerificacion.pendiente => Colors.amber,
-    EstadoVerificacion.verificada => colorVerificado,
-    EstadoVerificacion.rechazada => Colors.redAccent,
-  };
 
   // Se llama al enviar el formulario. Los datos del formulario NO se guardan
   // acá a propósito: documento y cuenta de cobro son sensibles y tienen que ir
@@ -76,5 +67,3 @@ class PerfilUsuario extends ChangeNotifier {
     notifyListeners();
   }
 }
-
-final PerfilUsuario perfil = PerfilUsuario();

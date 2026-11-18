@@ -4,7 +4,6 @@ import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
-import 'package:streamtunes_demo/viewmodels/playlists_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/boton_modo_reproduccion.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';

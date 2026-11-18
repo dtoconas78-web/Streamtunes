@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/modo_reproduccion_ui.dart';
 
 // Botón del modo de reproducción: muestra el modo actual (en orden, aleatoria
 // o solo esta canción) con ícono, texto y color distintos, y al tocarlo cicla

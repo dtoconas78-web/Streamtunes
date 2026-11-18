@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/constantes.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
-import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 
 // Pantalla Editar perfil: foto, nombre, país y "sobre mí".
 class PantallaEditarPerfil extends StatefulWidget {

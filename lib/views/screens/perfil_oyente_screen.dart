@@ -3,7 +3,6 @@ import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
-import 'package:streamtunes_demo/viewmodels/playlists_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
 // Perfil del oyente: datos de la cuenta y resumen de su actividad

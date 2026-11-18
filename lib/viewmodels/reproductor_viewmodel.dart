@@ -1,26 +1,14 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 
 // Cómo se recorre la cola: en orden, aleatorio o repitiendo solo la canción
-// elegida.
+// elegida. La presentación visual (ícono/etiqueta) vive en la capa de vistas:
+// lib/views/widgets/modo_reproduccion_ui.dart.
 enum ModoReproduccion { enOrden, aleatorio, repetirUna }
-
-extension ModoReproduccionEtiqueta on ModoReproduccion {
-  String get etiqueta => switch (this) {
-    ModoReproduccion.enOrden => 'En orden',
-    ModoReproduccion.aleatorio => 'Aleatoria',
-    ModoReproduccion.repetirUna => 'Solo esta canción',
-  };
-  IconData get icono => switch (this) {
-    ModoReproduccion.enOrden => Icons.repeat,
-    ModoReproduccion.aleatorio => Icons.shuffle,
-    ModoReproduccion.repetirUna => Icons.repeat_one,
-  };
-}
 
 // Controlador de reproducción: guarda qué suena, en qué segundo y si está en pausa.
 // Vive fuera de las pantallas, por eso la música sigue al navegar.

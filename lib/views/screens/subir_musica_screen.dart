@@ -6,24 +6,9 @@ import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/constantes.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
-import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
-
-// Un audio elegido que todavía no se publicó. Los datos del archivo son
-// simulados hasta conectar un selector de archivos real.
-class _PistaBorrador {
-  final String archivo;
-  final int segundos;
-  final double mb;
-  final TextEditingController titulo = TextEditingController();
-
-  _PistaBorrador({
-    required this.archivo,
-    required this.segundos,
-    required this.mb,
-  });
-}
+import 'package:streamtunes_demo/views/widgets/seccion_audio.dart';
 
 // Pantalla Subir música: una canción suelta o un álbum.
 class PantallaSubirMusica extends StatefulWidget {
@@ -39,7 +24,7 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
   final _anioCtrl = TextEditingController(text: DateTime.now().year.toString());
   final _descripcionCtrl = TextEditingController();
   final _azar = Random();
-  final List<_PistaBorrador> _pistas = [];
+  final List<PistaBorrador> _pistas = [];
   int _contadorArchivos = 0;
 
   bool _esAlbum = false;
@@ -65,13 +50,13 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
 
   // Libera el controlador después del próximo frame, cuando el campo
   // de texto ya salió de pantalla.
-  void _descartar(_PistaBorrador pista) {
+  void _descartar(PistaBorrador pista) {
     WidgetsBinding.instance.addPostFrameCallback((_) => pista.titulo.dispose());
   }
 
   void _cambiarModo(bool esAlbum) {
     if (esAlbum == _esAlbum) return;
-    final descartadas = List<_PistaBorrador>.from(_pistas);
+    final descartadas = List<PistaBorrador>.from(_pistas);
     setState(() {
       _esAlbum = esAlbum;
       // Al cambiar de modo se vacía la lista de audios para no mezclarlos.
@@ -90,7 +75,7 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
     _contadorArchivos++;
     setState(() {
       _pistas.add(
-        _PistaBorrador(
+        PistaBorrador(
           archivo: 'audio_$_contadorArchivos.mp3',
           segundos: 120 + _azar.nextInt(181),
           mb: 3 + _azar.nextDouble() * 6,
@@ -153,7 +138,7 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
       nuevas: nuevas,
       tituloAlbum: _esAlbum ? titulo : null,
       anioAlbum: _anioCtrl.text.trim(),
-      colorPortada: _colorPortada,
+      colorPortada: _colorPortada.toARGB32(),
     );
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -177,23 +162,6 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
     );
   }
 
-  // Nombre del archivo, duración y peso.
-  Widget _infoArchivo(_PistaBorrador pista) {
-    return Row(
-      children: [
-        const Icon(Icons.audio_file, color: colorAcento, size: 20),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            '${pista.archivo}, ${formatoTiempo(pista.segundos)}, ${pista.mb.toStringAsFixed(1)} MB',
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _error(String texto) {
     return Padding(
       padding: const EdgeInsets.only(left: 12, top: 6),
@@ -204,120 +172,6 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
           color: Theme.of(context).colorScheme.error,
         ),
       ),
-    );
-  }
-
-  // Sección de audio cuando se sube una sola canción.
-  Widget _audioCancion() {
-    if (_pistas.isEmpty) {
-      return SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: colorAcento,
-            side: const BorderSide(color: colorAcento),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
-          icon: const Icon(Icons.upload_file),
-          label: const Text('Seleccionar audio'),
-          onPressed: _agregarPista,
-        ),
-      );
-    }
-    return Container(
-      padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
-      decoration: BoxDecoration(
-        color: colorTarjeta,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(child: _infoArchivo(_pistas.first)),
-          IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: 'Quitar audio',
-            onPressed: () => _quitarPista(0),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Sección de audio cuando se sube un álbum: una tarjeta por canción.
-  Widget _audioAlbum() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (int i = 0; i < _pistas.length; i++)
-          Container(
-            key: ObjectKey(_pistas[i]),
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 14),
-                      child: CircleAvatar(
-                        radius: 12,
-                        backgroundColor: colorAcento,
-                        child: Text(
-                          '${i + 1}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _pistas[i].titulo,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: decoracionFormulario(
-                          'Título de la canción',
-                        ),
-                        validator: (valor) =>
-                            (valor == null || valor.trim().isEmpty)
-                            ? 'Escribí el título'
-                            : null,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline),
-                      tooltip: 'Quitar canción',
-                      onPressed: () => _quitarPista(i),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                _infoArchivo(_pistas[i]),
-              ],
-            ),
-          ),
-        if (_pistas.length < 20)
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colorAcento,
-                side: const BorderSide(color: colorAcento),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              icon: const Icon(Icons.add),
-              label: const Text('Agregar canción'),
-              onPressed: _agregarPista,
-            ),
-          ),
-      ],
     );
   }
 
@@ -366,7 +220,17 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                     const SizedBox(height: 28),
 
                     _tituloSeccion(_esAlbum ? 'Canciones del álbum' : 'Audio'),
-                    _esAlbum ? _audioAlbum() : _audioCancion(),
+                    _esAlbum
+                        ? AudioAlbum(
+                            pistas: _pistas,
+                            onAgregar: _agregarPista,
+                            onQuitar: _quitarPista,
+                          )
+                        : AudioCancion(
+                            pista: _pistas.isEmpty ? null : _pistas.first,
+                            onSeleccionar: _agregarPista,
+                            onQuitar: () => _quitarPista(0),
+                          ),
                     if (_errorAudio)
                       _error(
                         _esAlbum

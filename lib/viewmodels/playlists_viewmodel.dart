@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/models/playlist.dart';
 
 // Playlists del oyente: crear, agregar/quitar canciones y eliminar.
@@ -50,6 +50,3 @@ class PlaylistsViewModel extends ChangeNotifier {
     if (_playlists.length != antes) notifyListeners();
   }
 }
-
-// Instancia compartida por toda la app.
-final PlaylistsViewModel playlistsViewModel = PlaylistsViewModel();

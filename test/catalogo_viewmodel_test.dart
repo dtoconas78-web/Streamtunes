@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
@@ -25,7 +24,7 @@ void main() {
 
     c.publicar(
       nuevas: [_cancion('Nueva', id: 'nueva')],
-      colorPortada: const Color(0xFFFF5500),
+      colorPortada: 0xFFFF5500,
     );
 
     expect(c.canciones.length, antes + 1);
@@ -45,7 +44,7 @@ void main() {
       ],
       tituloAlbum: 'Mi álbum',
       anioAlbum: '2026',
-      colorPortada: const Color(0xFF00BFA5),
+      colorPortada: 0xFF00BFA5,
     );
 
     expect(c.canciones.length, antes + 2);
