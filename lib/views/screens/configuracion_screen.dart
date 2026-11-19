@@ -21,14 +21,23 @@ class PantallaConfiguracion extends StatelessWidget {
               child: Column(
                 children: [
                   SwitchListTile(
-                    value: configuracionViewModel.notificaciones,
+                    // El estado visual se deriva en la vista: capacidad AND
+                    // preferencia. Sin capacidad el switch queda apagado y
+                    // deshabilitado, con el aviso de políticas como subtítulo.
+                    value:
+                        capacidades.notificacionesDisponibles &&
+                        configuracionViewModel.notificaciones,
                     activeThumbColor: colorAcento,
                     title: const Text('Notificaciones'),
-                    subtitle: const Text(
-                      'Nuevos conciertos de los artistas que seguís',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    subtitle: Text(
+                      capacidades.notificacionesDisponibles
+                          ? 'Nuevos conciertos de los artistas que seguís'
+                          : politicas.avisoNotificacionesNoDisponibles,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
-                    onChanged: configuracionViewModel.setNotificaciones,
+                    onChanged: capacidades.notificacionesDisponibles
+                        ? configuracionViewModel.setNotificaciones
+                        : null,
                   ),
                   const Divider(height: 1),
                   SwitchListTile(

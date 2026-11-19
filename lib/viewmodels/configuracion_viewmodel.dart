@@ -2,7 +2,10 @@ import 'package:flutter/foundation.dart';
 
 // Preferencias simples del oyente (en memoria; con backend van a la cuenta).
 class ConfiguracionViewModel extends ChangeNotifier {
-  bool _notificaciones = true;
+  // Las notificaciones parten desactivadas: todavía no existe un mecanismo
+  // implementado (ver Capacidades.notificacionesDisponibles), así que la
+  // preferencia es opt-in: el usuario la activa cuando exista el mecanismo.
+  bool _notificaciones = false;
   bool _reproduccionAutomatica = true;
   bool _modoAleatorioPorDefecto = false;
 

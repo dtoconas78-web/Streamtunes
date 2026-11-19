@@ -3,6 +3,7 @@ import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/models/artista.dart';
+import 'package:streamtunes_demo/plataforma/plataforma.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
@@ -46,6 +47,12 @@ final RepositorioMovimientos repositorioMovimientos =
 // Reloj inyectado en los VMs que sellan fechas de lógica de negocio
 // (movimientos económicos). En tests se puede inyectar un RelojFijo.
 final Reloj reloj = RelojDelSistema();
+
+// Capacidades y políticas de la app (ver lib/plataforma/plataforma.dart):
+// un solo lugar para saber qué está implementado y qué se le explica al
+// usuario cuando algo no lo está.
+final Capacidades capacidades = Capacidades();
+final Politicas politicas = Politicas();
 
 // --- ViewModels con sus dependencias inyectadas ---
 // Ojo: catalogo y reproductor comparten el MISMO repositorio de catálogo,

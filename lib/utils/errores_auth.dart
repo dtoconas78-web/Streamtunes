@@ -38,8 +38,8 @@ String descripcionErrorAuth(Object e) {
         'La app está mal configurada para Google Sign-In (revisar '
             'google-services.json y package name).',
       GoogleSignInExceptionCode.uiUnavailable =>
-        'No se pudo mostrar la ventana de Google (¿emulador sin Google Play '
-            'o sin cuenta agregada?).',
+        'No se pudo abrir la ventana de inicio de sesión de Google. '
+            'Intentá nuevamente.',
       GoogleSignInExceptionCode.userMismatch =>
         'La cuenta seleccionada no coincide con la sesión actual.',
       _ => null,
