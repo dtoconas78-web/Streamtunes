@@ -1,5 +1,12 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
+import 'package:streamtunes_demo/data/fuente_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_artistas.dart';
+import 'package:streamtunes_demo/data/repositorio_artistas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
+import 'package:streamtunes_demo/data/repositorio_catalogo_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/models/artista.dart';
@@ -7,6 +14,7 @@ import 'package:streamtunes_demo/plataforma/plataforma.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
+import 'package:streamtunes_demo/services/firebase_semilla.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/configuracion_viewmodel.dart';
@@ -35,14 +43,56 @@ final AuthService servicioAuth = firebaseInicializado
 /// ViewModel de auth compartido por toda la app, con su servicio inyectado.
 final AuthViewModel authViewModel = AuthViewModel(servicio: servicioAuth);
 
-// --- Repositorios: en memoria, con los datos de ejemplo como semilla ---
-// (datos_ejemplo.dart ya no se toca desde ningún ViewModel; con backend, acá
-// se cambian estas líneas por las implementaciones reales, p. ej. Firestore).
-final RepositorioCatalogo repositorioCatalogo = RepositorioCatalogoMemoria();
-final RepositorioArtistas repositorioArtistas = RepositorioArtistasMemoria();
+// --- Repositorios ---
+// Bloque A (Firestore en tiempo real): con Firebase inicializado, catálogo y
+// artistas vienen de Firestore (snapshots); entradas y movimientos quedan en
+// memoria hasta el Bloque B. Sin Firebase (tests, demo, Windows/Linux) todo
+// queda en memoria con la semilla de datos_ejemplo.dart (que ya no se toca
+// desde ningún ViewModel).
+final FuenteFirestore fuenteFirestore = FuenteFirestoreFirebase();
+
+final RepositorioCatalogo repositorioCatalogo = _crearCatalogo();
+final RepositorioArtistas repositorioArtistas = _crearArtistas();
 final RepositorioEntradas repositorioEntradas = RepositorioEntradasMemoria();
 final RepositorioMovimientos repositorioMovimientos =
     RepositorioMovimientosMemoria();
+
+RepositorioCatalogo _crearCatalogo() {
+  if (!firebaseInicializado) return RepositorioCatalogoMemoria();
+  _dispararSemilla();
+  return RepositorioCatalogoFirestore(fuente: fuenteFirestore);
+}
+
+RepositorioArtistas _crearArtistas() {
+  if (!firebaseInicializado) return RepositorioArtistasMemoria();
+  _dispararSemilla();
+  return RepositorioArtistasFirestore(fuente: fuenteFirestore);
+}
+
+// Semilla idempotente (Bloque A): se dispara UNA SOLA VEZ por arranque y solo
+// con Firebase inicializado. No bloquea la creación de los repositorios ni el
+// hilo principal: corre en segundo plano con sus propios errores capturados,
+// y los repos se enteran de los datos nuevos vía sus snapshots. Si falla, la
+// app sigue con lo que haya en Firestore.
+bool _semillaDisparada = false;
+
+void _dispararSemilla() {
+  if (_semillaDisparada) return;
+  _semillaDisparada = true;
+  unawaited(_sembrar());
+}
+
+Future<void> _sembrar() async {
+  try {
+    debugPrint(
+      'Semilla Firestore: ${await poblarSemillaSiVacia(fuenteFirestore)}',
+    );
+  } catch (e) {
+    debugPrint(
+      'Falló la semilla de Firestore (se usa lo que haya en la nube): $e',
+    );
+  }
+}
 
 // Reloj inyectado en los VMs que sellan fechas de lógica de negocio
 // (movimientos económicos). En tests se puede inyectar un RelojFijo.
@@ -83,15 +133,22 @@ final ConfiguracionViewModel configuracionViewModel = ConfiguracionViewModel();
 // Identidad del artista de esta sesión: SIEMPRE sale del repositorio.
 // Si porId no lo encuentra, se falla con error explícito en vez de inventar
 // un artista desconectado (en el demo, la semilla datos_ejemplo lo incluye).
+// Excepción documentada: con Firestore la caché del repo arranca vacía hasta
+// el primer snapshot, así que hasta entonces se usa la semilla local como
+// identidad provisoria (el repo se actualiza solo cuando llega el snapshot).
 Artista _artistaSesion() {
   final artista = repositorioArtistas.porId('mateo-cabral');
-  if (artista == null) {
-    throw StateError(
-      'RepositorioArtistas no contiene al artista "mateo-cabral": '
-      'revisar la semilla de datos_ejemplo.dart.',
-    );
+  if (artista != null) return artista;
+  if (firebaseInicializado) {
+    final provisorio = datos.artistas
+        .where((a) => a.id == 'mateo-cabral')
+        .firstOrNull;
+    if (provisorio != null) return provisorio;
   }
-  return artista;
+  throw StateError(
+    'RepositorioArtistas no contiene al artista "mateo-cabral": '
+    'revisar la semilla de datos_ejemplo.dart.',
+  );
 }
 
 final PerfilUsuario perfil = PerfilUsuario(artista: _artistaSesion());

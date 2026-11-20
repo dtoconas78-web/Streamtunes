@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/models/entrada.dart';
@@ -5,8 +6,10 @@ import 'package:streamtunes_demo/models/entrada.dart';
 /// Contrato del repositorio de entradas: conciertos publicados por el
 /// artista y entradas compradas por el oyente.
 ///
+/// Es observable (ChangeNotifier): altas y descuentos notifican a los
+/// listeners, y con backend también los cambios remotos (snapshots).
 /// La implementación de demo es en memoria (semilla: datos_ejemplo.dart).
-abstract class RepositorioEntradas {
+abstract class RepositorioEntradas extends ChangeNotifier {
   List<Entrada> get entradasCompradas;
   List<Concierto> get conciertosDisponibles;
 
@@ -25,7 +28,7 @@ abstract class RepositorioEntradas {
 }
 
 /// Implementación en memoria: arranca con los datos de ejemplo.
-class RepositorioEntradasMemoria implements RepositorioEntradas {
+class RepositorioEntradasMemoria extends RepositorioEntradas {
   RepositorioEntradasMemoria({
     List<Entrada>? entradas,
     List<Concierto>? conciertos,
@@ -43,15 +46,20 @@ class RepositorioEntradasMemoria implements RepositorioEntradas {
       List.unmodifiable(_conciertosDisponibles);
 
   @override
-  void agregarConcierto(Concierto concierto) =>
-      _conciertosDisponibles.add(concierto);
+  void agregarConcierto(Concierto concierto) {
+    _conciertosDisponibles.add(concierto);
+    notifyListeners();
+  }
 
   @override
-  void agregarEntrada(Entrada entrada) => _entradasCompradas.add(entrada);
+  void agregarEntrada(Entrada entrada) {
+    _entradasCompradas.add(entrada);
+    notifyListeners();
+  }
 
   @override
   bool descontarDisponibles(Concierto concierto, int cantidad) {
-    // Cantidad inválida: no se toca el estado.
+    // Cantidad inválida: no se toca el estado (ni se notifica).
     if (cantidad <= 0) return false;
     // Búsqueda por instancia (Concierto no tiene id por ahora).
     final posicion = _conciertosDisponibles.indexOf(concierto);
@@ -64,6 +72,7 @@ class RepositorioEntradasMemoria implements RepositorioEntradas {
     _conciertosDisponibles[posicion] = almacenado.conDisponibles(
       almacenado.disponibles - cantidad,
     );
+    notifyListeners();
     return true;
   }
 }
