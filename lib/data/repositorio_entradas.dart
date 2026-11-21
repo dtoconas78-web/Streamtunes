@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/models/entrada.dart';
+import 'package:streamtunes_demo/models/movimiento.dart';
 
 /// Contrato del repositorio de entradas: conciertos publicados por el
 /// artista y entradas compradas por el oyente.
@@ -25,6 +26,36 @@ abstract class RepositorioEntradas extends ChangeNotifier {
   /// recibido como parámetro). Al descontar, reemplaza el concierto por una
   /// copia inmutable con `conDisponibles()`.
   bool descontarDisponibles(Concierto concierto, int cantidad);
+
+  /// Capacidad declarada del repositorio (NO es detección de tipo concreto):
+  /// `true` solo cuando el repo puede ejecutar una compra ATÓMICA real
+  /// (Firestore: stock + entrada + movimiento en una sola transacción).
+  /// Por defecto `false`: las implementaciones en memoria (y cualquier otra)
+  /// conservan su comportamiento sin modificaciones adicionales.
+  bool get soportaCompraAtomica => false;
+
+  /// Compra asíncrona. La implementación POR DEFECTO delega al flujo
+  /// sincrónico existente (`descontarDisponibles`), sin simular persistencia:
+  /// sirve para las implementaciones en memoria. La implementación Firestore
+  /// la sobrescribe con la operación transaccional completa: cuando recibe
+  /// [entradaGenerada] y [movimientoGenerado], descuenta el stock y crea
+  /// ambos documentos dentro de UNA única transacción (si falta alguno, se
+  /// rechaza antes de escribir nada). [operacionId] (opcional) hace la
+  /// operación idempotente: si los documentos asociados ya existen, no se
+  /// repite el descuento.
+  Future<bool> descontarDisponiblesAsync(
+    String conciertoId,
+    int cantidad, {
+    Entrada? entradaGenerada,
+    Movimiento? movimientoGenerado,
+    String? operacionId,
+  }) async {
+    final concierto = conciertosDisponibles
+        .where((c) => c.id == conciertoId)
+        .firstOrNull;
+    if (concierto == null) return false;
+    return descontarDisponibles(concierto, cantidad);
+  }
 }
 
 /// Implementación en memoria: arranca con los datos de ejemplo.

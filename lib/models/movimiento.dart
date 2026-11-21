@@ -15,6 +15,8 @@ class Movimiento {
   final String detalle;
   final double monto;
   final DateTime fecha;
+  final String
+  usuarioId; // uid del usuario que originó el movimiento ('' = doc antiguo)
 
   const Movimiento({
     this.id = '',
@@ -22,6 +24,7 @@ class Movimiento {
     required this.detalle,
     required this.monto,
     required this.fecha,
+    this.usuarioId = '',
   });
 
   /// Igualdad por valor (todos los campos).
@@ -32,10 +35,11 @@ class Movimiento {
       other.tipo == tipo &&
       other.detalle == detalle &&
       other.monto == monto &&
-      other.fecha == fecha;
+      other.fecha == fecha &&
+      other.usuarioId == usuarioId;
 
   @override
-  int get hashCode => Object.hash(id, tipo, detalle, monto, fecha);
+  int get hashCode => Object.hash(id, tipo, detalle, monto, fecha, usuarioId);
 
   /// Serializa para Firestore: enum como String (name), fecha como
   /// [Timestamp], id fuera del doc.
@@ -44,11 +48,13 @@ class Movimiento {
     'detalle': detalle,
     'monto': monto,
     'fecha': Timestamp.fromDate(fecha),
+    'usuarioId': usuarioId,
   };
 
   /// Reconstruye desde un documento de Firestore. [id] es el id del documento
   /// (si no se pasa ni está en el mapa, queda ''). Acepta fecha como
-  /// Timestamp / DateTime / String ISO. Lanza [FormatException] ante campos
+  /// Timestamp / DateTime / String ISO. `usuarioId` es opcional para tolerar
+  /// documentos antiguos (queda ''). Lanza [FormatException] ante campos
   /// faltantes, tipos inesperados o un `tipo` desconocido.
   factory Movimiento.fromMap(Map<String, dynamic> map, {String? id}) {
     final idDoc = id ?? map['id'];
@@ -63,8 +69,20 @@ class Movimiento {
       detalle: _str(map, 'detalle'),
       monto: _num(map, 'monto'),
       fecha: _fecha(map, 'fecha'),
+      usuarioId: _strOpcional(map, 'usuarioId', ''),
     );
   }
+}
+
+String _strOpcional(Map<String, dynamic> map, String campo, String defecto) {
+  final v = map[campo];
+  if (v == null) return defecto; // documento antiguo sin el campo
+  if (v is! String) {
+    throw FormatException(
+      'Movimiento.fromMap: "$campo" no es String (${v.runtimeType})',
+    );
+  }
+  return v;
 }
 
 TipoMovimiento _tipo(Map<String, dynamic> map, String campo) {

@@ -1,0 +1,97 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:streamtunes_demo/data/fuente_firestore.dart';
+import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
+import 'package:streamtunes_demo/models/movimiento.dart';
+
+/// Movimientos económicos en Cloud Firestore (colección `movimientos`) con
+/// snapshots en tiempo real, filtrados por `usuarioId` (uid de la sesión
+/// válida vía [uidActual], resuelto de forma diferida; sin sesión válida la
+/// lista queda vacía y nunca se exponen movimientos de otros usuarios).
+///
+/// El movimiento de una COMPRA no se escribe desde acá: se crea dentro de la
+/// transacción atómica de `RepositorioEntradasFirestore` (única ruta de
+/// escritura para ese registro). Acá `registrar` sólo cubre altas sueltas
+/// (p. ej. donaciones). La caché arranca vacía y se llena con el primer
+/// snapshot; ante error del stream se conserva la última caché válida y se
+/// registra en [ultimoError].
+class RepositorioMovimientosFirestore extends RepositorioMovimientos {
+  RepositorioMovimientosFirestore({required this._fuente, this.uidActual}) {
+    _suscripcion = _fuente
+        .snapshotsColeccion('movimientos')
+        .map((docs) {
+          final uid = uidActual?.call();
+          if (uid == null || uid.isEmpty) return <Movimiento>[];
+          return [
+            for (final d in docs)
+              if (d.datos['usuarioId'] == uid)
+                Movimiento.fromMap(d.datos, id: d.id),
+          ];
+        })
+        .listen(_alCambiar, onError: _alError);
+  }
+
+  final FuenteFirestore _fuente;
+
+  /// Proveedor diferido del uid de la sesión válida (null = sin sesión).
+  final String? Function()? uidActual;
+
+  List<Movimiento> _movimientos = [];
+  StreamSubscription<List<Movimiento>>? _suscripcion;
+
+  /// Último error del stream (la última caché válida se conserva).
+  Object? ultimoError;
+
+  @override
+  List<Movimiento> get movimientos => List.unmodifiable(_movimientos);
+
+  void _alCambiar(List<Movimiento> lista) {
+    if (listEquals(_movimientos, lista)) return; // sin cambio real, no notifica
+    _movimientos = lista;
+    notifyListeners();
+  }
+
+  void _alError(Object e) {
+    ultimoError = e;
+    debugPrint(
+      'RepositorioMovimientosFirestore: error de stream '
+      '(se conserva la última caché válida): $e',
+    );
+  }
+
+  @override
+  void registrar(Movimiento movimiento) {
+    final uid = uidActual?.call();
+    unawaited(
+      _escribir({
+        ...movimiento.toMap(),
+        if (uid != null && uid.isNotEmpty) 'usuarioId': uid,
+      }),
+    );
+  }
+
+  Future<void> _escribir(Map<String, dynamic> datos) async {
+    try {
+      await _fuente.agregarDocumento('movimientos', datos);
+    } catch (e) {
+      ultimoError = e;
+      debugPrint(
+        'RepositorioMovimientosFirestore: falló el registro del movimiento: $e',
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    unawaited(cerrar());
+    super.dispose();
+  }
+
+  /// Cancela la suscripción al snapshot (esperar con `await cerrar()`).
+  Future<void> cerrar() async {
+    final c = _suscripcion?.cancel();
+    _suscripcion = null;
+    await c;
+  }
+}

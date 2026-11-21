@@ -13,7 +13,13 @@ class SeguimientoViewModel extends ChangeNotifier {
   SeguimientoViewModel({
     required this._repositorioArtistas,
     required this._repositorioCatalogo,
-  });
+  }) {
+    // Reactividad: se reemiten los cambios de ambos repositorios (snapshots
+    // de Firestore o altas en memoria); las notificaciones propias de seguir
+    // y alternarAlbum siguen notificando directo, sin duplicarse.
+    _repositorioArtistas.addListener(notifyListeners);
+    _repositorioCatalogo.addListener(notifyListeners);
+  }
 
   final RepositorioArtistas _repositorioArtistas;
   final RepositorioCatalogo _repositorioCatalogo;
@@ -64,5 +70,12 @@ class SeguimientoViewModel extends ChangeNotifier {
       _albumesSeguidos.add(id);
     }
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _repositorioArtistas.removeListener(notifyListeners);
+    _repositorioCatalogo.removeListener(notifyListeners);
+    super.dispose();
   }
 }

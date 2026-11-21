@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Un documento de una colección: su id de Firestore + sus datos.
@@ -51,12 +53,55 @@ abstract class FuenteFirestore {
   );
 }
 
+/// Capacidad OPCIONAL de generar ids de documento (fuera de la interfaz
+/// `FuenteFirestore`, para no romper los fakes existentes que sólo hacen
+/// `implements FuenteFirestore`). Las implementaciones que la declaran
+/// (p. ej. `FuenteFirestoreFirebase`) usan su propio generador; las que no,
+/// usan el respaldo de la extensión [FuenteFirestoreIds].
+abstract class GeneradorIdsFirestore {
+  /// Genera un id de documento NUEVO para [coleccion] SIN escribir nada.
+  String generarId(String coleccion);
+}
+
+/// Generación de ids de documento SIN escribir nada (Bloque B: los ids de la
+/// compra atómica se preparan ANTES de la transacción, así permanecen
+/// estables ante los reintentos automáticos de Firestore).
+///
+/// Despacho dinámico: si la implementación declara [GeneradorIdsFirestore],
+/// se delega en su método; si no, se usa el generador de respaldo (id
+/// aleatorio de 20 caracteres, mismo formato que los auto-id de Firestore).
+extension FuenteFirestoreIds on FuenteFirestore {
+  String generarId(String coleccion) {
+    final self = this;
+    if (self is GeneradorIdsFirestore) {
+      return _generarIdDe(self as GeneradorIdsFirestore, coleccion);
+    }
+    const caracteres =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    final random = Random.secure();
+    return String.fromCharCodes(
+      Iterable.generate(
+        20,
+        (_) => caracteres.codeUnitAt(random.nextInt(caracteres.length)),
+      ),
+    );
+  }
+}
+
+/// Delega en el generador propio de la implementación. El parámetro es
+/// `GeneradorIdsFirestore` (que NO es subtipo de `FuenteFirestore`) para que
+/// la llamada resuelva al miembro de instancia y no a la extensión
+/// [FuenteFirestoreIds] (que si no, se llamaría a sí misma recursivamente).
+String _generarIdDe(GeneradorIdsFirestore generador, String coleccion) =>
+    generador.generarId(coleccion);
+
 /// Implementación real sobre [FirebaseFirestore]. Ojo: el constructor NO
 /// toca `FirebaseFirestore.instance` (lanzaria si Firebase no está
 /// inicializado; en tests este objeto existe pero nunca se usa porque
 /// `firebaseInicializado` es false). Cada método recién accede al instance al
 /// llamarse.
-class FuenteFirestoreFirebase implements FuenteFirestore {
+class FuenteFirestoreFirebase
+    implements FuenteFirestore, GeneradorIdsFirestore {
   FirebaseFirestore get _db => FirebaseFirestore.instance;
 
   @override
@@ -99,6 +144,12 @@ class FuenteFirestoreFirebase implements FuenteFirestore {
     Map<String, dynamic> datos,
   ) async {
     return (await _db.collection(coleccion).add(datos)).id;
+  }
+
+  @override
+  String generarId(String coleccion) {
+    // doc() sin argumentos = referencia con id autogenerado, sin escribir.
+    return _db.collection(coleccion).doc().id;
   }
 
   @override

@@ -8,7 +8,11 @@ import 'package:streamtunes_demo/models/cancion.dart';
 // datos_ejemplo ni las listas del repo a mano, pasa por acá y las pantallas
 // se actualizan solas con ListenableBuilder.
 class CatalogoViewModel extends ChangeNotifier {
-  CatalogoViewModel({required this._repositorio});
+  CatalogoViewModel({required this._repositorio}) {
+    // Reactividad: se reemiten los cambios del repositorio (altas locales en
+    // memoria o snapshots remotos de Firestore), una sola suscripción.
+    _repositorio.addListener(notifyListeners);
+  }
 
   final RepositorioCatalogo _repositorio;
   int _contadorAlbumes = 0;
@@ -17,7 +21,9 @@ class CatalogoViewModel extends ChangeNotifier {
   List<Cancion> get canciones => _repositorio.canciones;
   List<Album> get albumes => _repositorio.albumes;
 
-  // Publica canciones nuevas (sueltas o como álbum) y notifica.
+  // Publica canciones nuevas (sueltas o como álbum). No se notifica acá: el
+  // repo ya notificó y este VM reemite por la suscripción (una notificación
+  // por cambio real del repo).
   void publicar({
     required List<Cancion> nuevas,
     String? tituloAlbum,
@@ -37,6 +43,11 @@ class CatalogoViewModel extends ChangeNotifier {
         ),
       );
     }
-    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _repositorio.removeListener(notifyListeners);
+    super.dispose();
   }
 }

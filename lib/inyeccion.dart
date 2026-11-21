@@ -8,8 +8,11 @@ import 'package:streamtunes_demo/data/repositorio_artistas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas.dart';
+import 'package:streamtunes_demo/data/repositorio_entradas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
+import 'package:streamtunes_demo/data/repositorio_movimientos_firestore.dart';
 import 'package:streamtunes_demo/models/artista.dart';
+import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/plataforma/plataforma.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_auth_service.dart';
@@ -44,18 +47,28 @@ final AuthService servicioAuth = firebaseInicializado
 final AuthViewModel authViewModel = AuthViewModel(servicio: servicioAuth);
 
 // --- Repositorios ---
-// Bloque A (Firestore en tiempo real): con Firebase inicializado, catálogo y
-// artistas vienen de Firestore (snapshots); entradas y movimientos quedan en
-// memoria hasta el Bloque B. Sin Firebase (tests, demo, Windows/Linux) todo
-// queda en memoria con la semilla de datos_ejemplo.dart (que ya no se toca
-// desde ningún ViewModel).
+// Bloque A + B (Firestore): con Firebase inicializado, los cuatro repositorios
+// vienen de Firestore (snapshots en tiempo real; entradas con compra atómica
+// transaccional). Sin Firebase (tests, demo, Windows/Linux) todo queda en
+// memoria con la semilla de datos_ejemplo.dart (que ya no se toca desde ningún
+// ViewModel).
 final FuenteFirestore fuenteFirestore = FuenteFirestoreFirebase();
 
 final RepositorioCatalogo repositorioCatalogo = _crearCatalogo();
 final RepositorioArtistas repositorioArtistas = _crearArtistas();
-final RepositorioEntradas repositorioEntradas = RepositorioEntradasMemoria();
-final RepositorioMovimientos repositorioMovimientos =
-    RepositorioMovimientosMemoria();
+final RepositorioEntradas repositorioEntradas = _crearEntradas();
+final RepositorioMovimientos repositorioMovimientos = _crearMovimientos();
+
+/// UID de la sesión VÁLIDA de Firebase, resuelto de forma diferida (el usuario
+/// hace login después de crear los repositorios). Devuelve null cuando no hay
+/// sesión o cuando el usuario es invitado: el invitado es una cuenta LOCAL
+/// (id `invitado_N` del simulado) y NO tiene sesión en Firebase, así que ese
+/// id nunca debe usarse como uid de Firestore.
+String? _uidSesionValida() {
+  final usuario = authViewModel.usuario;
+  if (usuario == null || usuario.rol == RolUsuario.invitado) return null;
+  return usuario.id; // en Firebase mode Usuario.id = fbUser.uid
+}
 
 RepositorioCatalogo _crearCatalogo() {
   if (!firebaseInicializado) return RepositorioCatalogoMemoria();
@@ -67,6 +80,24 @@ RepositorioArtistas _crearArtistas() {
   if (!firebaseInicializado) return RepositorioArtistasMemoria();
   _dispararSemilla();
   return RepositorioArtistasFirestore(fuente: fuenteFirestore);
+}
+
+RepositorioEntradas _crearEntradas() {
+  if (!firebaseInicializado) return RepositorioEntradasMemoria();
+  _dispararSemilla();
+  return RepositorioEntradasFirestore(
+    fuente: fuenteFirestore,
+    uidActual: _uidSesionValida,
+  );
+}
+
+RepositorioMovimientos _crearMovimientos() {
+  if (!firebaseInicializado) return RepositorioMovimientosMemoria();
+  _dispararSemilla();
+  return RepositorioMovimientosFirestore(
+    fuente: fuenteFirestore,
+    uidActual: _uidSesionValida,
+  );
 }
 
 // Semilla idempotente (Bloque A): se dispara UNA SOLA VEZ por arranque y solo
@@ -121,6 +152,7 @@ final EntradasViewModel entradasViewModel = EntradasViewModel(
   repositorioEntradas: repositorioEntradas,
   repositorioMovimientos: repositorioMovimientos,
   reloj: reloj,
+  uidActual: _uidSesionValida,
 );
 final VentasViewModel ventasViewModel = VentasViewModel(
   repositorio: repositorioMovimientos,
