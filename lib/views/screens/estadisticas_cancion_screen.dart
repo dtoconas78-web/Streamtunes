@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
@@ -19,22 +20,41 @@ class PantallaB extends StatefulWidget {
 
 class _PantallaBState extends State<PantallaB> {
   late int reproduccionesLive;
-  late Timer _timer;
+  Timer? _timer;
+  VoidCallback? _cancelarCicloVida;
 
   @override
   void initState() {
     super.initState();
     reproduccionesLive = widget.cancion.reproducciones;
-    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _iniciarTimer();
+    // El refresco de estadísticas se frena al ir a segundo plano y se
+    // reanuda al volver (subtarea 9.2, ver gestor_ciclo_vida.dart).
+    _cancelarCicloVida = gestorCicloVida.registrar(
+      alPausar: _pausarTimer,
+      alReanudar: _reanudarTimer,
+    );
+  }
+
+  void _iniciarTimer() {
+    _timer ??= Timer.periodic(const Duration(seconds: 3), (timer) {
       setState(() {
         reproduccionesLive += 7; // simulado
       });
     });
   }
 
+  void _pausarTimer() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void _reanudarTimer() => _iniciarTimer();
+
   @override
   void dispose() {
-    _timer.cancel();
+    _cancelarCicloVida?.call();
+    _pausarTimer();
     super.dispose();
   }
 

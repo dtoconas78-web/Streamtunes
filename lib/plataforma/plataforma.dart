@@ -23,4 +23,9 @@ class Politicas {
   /// tienen un mecanismo implementado detrás.
   String get avisoNotificacionesNoDisponibles =>
       'Las notificaciones todavía no están disponibles en esta versión';
+
+  /// Aviso mostrado en el banner global cuando el dispositivo no tiene
+  /// conexión a internet.
+  String get avisoSinConexion =>
+      'Sin conexión: algunas funciones necesitan internet';
 }

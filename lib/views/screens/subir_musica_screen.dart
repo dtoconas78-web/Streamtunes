@@ -35,9 +35,32 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
   bool _subiendo = false;
   double _progreso = 0;
   Timer? _timer;
+  VoidCallback? _cancelarCicloVida;
+
+  @override
+  void initState() {
+    super.initState();
+    // Si hay una subida en curso, su avance se frena al ir a segundo plano y
+    // se reanuda al volver (subtarea 9.2, ver gestor_ciclo_vida.dart).
+    _cancelarCicloVida = gestorCicloVida.registrar(
+      alPausar: _pausarSubida,
+      alReanudar: _reanudarSubida,
+    );
+  }
+
+  void _pausarSubida() {
+    if (!_subiendo) return;
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  void _reanudarSubida() {
+    if (_subiendo) _iniciarAvance();
+  }
 
   @override
   void dispose() {
+    _cancelarCicloVida?.call();
     _timer?.cancel();
     _tituloCtrl.dispose();
     _anioCtrl.dispose();
@@ -102,7 +125,11 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
       _subiendo = true;
       _progreso = 0;
     });
-    _timer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
+    _iniciarAvance();
+  }
+
+  void _iniciarAvance() {
+    _timer ??= Timer.periodic(const Duration(milliseconds: 120), (timer) {
       setState(() => _progreso = min(1.0, _progreso + 0.05));
       if (_progreso >= 1) {
         timer.cancel();

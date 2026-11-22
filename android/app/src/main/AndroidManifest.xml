@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Notificaciones locales (aviso de reproducción en segundo plano).
+         En Android 13+ es permiso de runtime; en el J4+ (Android 9) alcanza
+         con declararlo acá. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="streamtunes_demo"
         android:name="${applicationName}"

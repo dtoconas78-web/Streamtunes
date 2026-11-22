@@ -8,6 +8,7 @@ import 'package:streamtunes_demo/views/screens/perfil_artista_screen.dart';
 import 'package:streamtunes_demo/views/screens/explorar_screen.dart';
 import 'package:streamtunes_demo/views/screens/login_screen.dart';
 import 'package:streamtunes_demo/views/screens/oyente_shell.dart';
+import 'package:streamtunes_demo/views/widgets/banner_sin_conexion.dart';
 import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 
 // Arranque: se inicializa Firebase primero (si está configurado); si no,
@@ -15,6 +16,10 @@ import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await inicializarFirebase();
+  // Activa el gestor de ciclo de vida (necesita el binding ya inicializado).
+  inicializarCicloVida();
+  // Inicializa las notificaciones locales (aviso de reproducción en pausa).
+  await inicializarNotificaciones();
   runApp(const MiApp());
 }
 
@@ -33,6 +38,7 @@ class MiApp extends StatelessWidget {
             reproductor,
             authViewModel,
             estadoNavegacion,
+            servicioConectividad,
           ]),
           builder: (context, _) {
             final tecladoAbierto = MediaQuery.of(context).viewInsets.bottom > 0;
@@ -50,6 +56,8 @@ class MiApp extends StatelessWidget {
                     estadoNavegacion.hayRutaSuperpuesta);
             return Column(
               children: [
+                // Franja no invasiva cuando el dispositivo se queda sin red.
+                BannerSinConexion(servicio: servicioConectividad),
                 Expanded(
                   child: MediaQuery.removePadding(
                     context: context,
