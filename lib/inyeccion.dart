@@ -28,6 +28,10 @@ import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/utils/reloj.dart';
 import 'package:streamtunes_demo/viewmodels/seguimiento_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/ventas_viewmodel.dart';
+import 'package:streamtunes_demo/services/fuente_conectividad.dart';
+import 'package:streamtunes_demo/services/gestor_ciclo_vida.dart';
+import 'package:streamtunes_demo/services/servicio_conectividad.dart';
+import 'package:streamtunes_demo/services/servicio_notificaciones.dart';
 
 /// Raíz de composición de la app: acá se arma UNA SOLA VEZ qué
 /// implementaciones concretas reciben los servicios y ViewModels (inyección de
