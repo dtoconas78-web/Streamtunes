@@ -8,12 +8,16 @@ plugins {
 
 android {
     namespace = "com.example.streamtunes_demo"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_local_notifications 23.x compila contra SDK 37: hay que fijar
+    // compileSdk en 37 (la plataforma android-37.0 está instalada en el SDK).
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Requerido por flutter_local_notifications (core library desugaring).
+        isCoreLibraryDesugaringEnabled = true
     }
 
     defaultConfig {
@@ -44,6 +48,11 @@ kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
+}
+
+dependencies {
+    // Requerido con isCoreLibraryDesugaringEnabled (ver compileOptions arriba).
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
 
 flutter {

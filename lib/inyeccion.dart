@@ -7,6 +7,10 @@ import 'package:streamtunes_demo/plataforma/plataforma.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
+import 'package:streamtunes_demo/services/fuente_conectividad.dart';
+import 'package:streamtunes_demo/services/gestor_ciclo_vida.dart';
+import 'package:streamtunes_demo/services/servicio_conectividad.dart';
+import 'package:streamtunes_demo/services/servicio_notificaciones.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/configuracion_viewmodel.dart';
@@ -53,6 +57,75 @@ final Reloj reloj = RelojDelSistema();
 // usuario cuando algo no lo está.
 final Capacidades capacidades = Capacidades();
 final Politicas politicas = Politicas();
+
+/// Servicio reactivo de conectividad (online/offline). En la app la fuente es
+/// connectivity_plus; en los tests se inyecta un FuenteConectividad falso.
+final ServicioConectividad servicioConectividad = ServicioConectividad(
+  fuente: FuenteConectividadPlus(),
+);
+
+// --- Ciclo de vida de la app ---
+// El gestor es lazy a propósito: hay que activarlo UNA VEZ al arrancar con
+// inicializarCicloVida() (después de WidgetsFlutterBinding.ensureInitialized(),
+// porque el AppLifecycleListener necesita el binding). En los tests no se
+// activa y no pasa nada.
+GestorCicloVida? _gestorCicloVida;
+
+GestorCicloVida get gestorCicloVida =>
+    _gestorCicloVida ??= _crearGestorCicloVida();
+
+/// Activa el gestor de ciclo de vida: crea el AppLifecycleListener y registra
+/// los callbacks que frenan/reanudan la reproducción al ir a segundo plano.
+void inicializarCicloVida() {
+  _gestorCicloVida ??= _crearGestorCicloVida();
+}
+
+/// Servicio de notificaciones locales (aviso de reproducción en pausa al ir
+/// a segundo plano). En la app es el plugin real; en los tests se inyecta uno
+/// falso. Hay que inicializarlo una vez al arrancar (ver main.dart).
+final ServicioNotificaciones servicioNotificaciones =
+    ServicioNotificacionesLocal();
+
+Future<void> inicializarNotificaciones() =>
+    servicioNotificaciones.inicializar();
+
+GestorCicloVida _crearGestorCicloVida() {
+  final gestor = GestorCicloVida();
+  registrarReproduccionEnCicloVida(gestor, reproductor, servicioNotificaciones);
+  return gestor;
+}
+
+/// Registra en el gestor de ciclo de vida el comportamiento de la
+/// reproducción: al ir a segundo plano se pausa y se muestra la notificación
+/// fija "en pausa"; al volver se reanuda y se oculta la notificación.
+void registrarReproduccionEnCicloVida(
+  GestorCicloVida gestor,
+  ControladorReproduccion reproductor,
+  ServicioNotificaciones notificaciones,
+) {
+  var pausadaPorCiclo = false;
+  gestor.registrar(
+    alPausar: () {
+      // Al ir a segundo plano se frena la reproducción si sonaba y se avisa
+      // con la notificación fija para saber que quedó en pausa.
+      if (reproductor.reproduciendo) {
+        pausadaPorCiclo = true;
+        reproductor.alternarPausa();
+        notificaciones.mostrarReproduccionEnPausa(
+          reproductor.cancion?.titulo ?? '',
+        );
+      }
+    },
+    alReanudar: () {
+      // Al volver se reanuda solo si el ciclo de vida la había frenado.
+      if (pausadaPorCiclo) {
+        pausadaPorCiclo = false;
+        reproductor.alternarPausa();
+        notificaciones.ocultarReproduccion();
+      }
+    },
+  );
+}
 
 // --- ViewModels con sus dependencias inyectadas ---
 // Ojo: catalogo y reproductor comparten el MISMO repositorio de catálogo,
