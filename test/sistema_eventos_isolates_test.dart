@@ -1,12 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
+import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
 import 'package:streamtunes_demo/services/gestor_ciclo_vida.dart';
 import 'package:streamtunes_demo/services/servicio_notificaciones.dart';
+import 'package:streamtunes_demo/utils/formatos.dart';
 import 'package:streamtunes_demo/utils/procesador_isolate.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/views/screens/estadisticas_cancion_screen.dart';
+import 'package:streamtunes_demo/views/screens/subir_musica_screen.dart';
 
 /// Listener falso: no toca el WidgetsBinding real (en tests planos no hay
 /// binding inicializado) y deja verificar que dispose() llegó.
@@ -84,6 +89,21 @@ void main() {
         expect(pausas, 2);
       },
     );
+
+    test('registrar devuelve una función para darse de baja', () {
+      final gestor = GestorCicloVida(listener: _ListenerFalso());
+      var pausas = 0;
+      final darseDeBaja = gestor.registrar(alPausar: () => pausas++);
+
+      gestor.manejarEstado(AppLifecycleState.paused);
+      expect(pausas, 1);
+
+      darseDeBaja();
+      expect(gestor.cantidadSuscriptos, 0);
+      gestor.manejarEstado(AppLifecycleState.resumed);
+      gestor.manejarEstado(AppLifecycleState.paused);
+      expect(pausas, 1);
+    });
 
     test('dispose libera el listener y limpia los callbacks', () {
       final listener = _ListenerFalso();
@@ -175,6 +195,55 @@ void main() {
         expect(reproductor.reproduciendo, isFalse);
         expect(notificaciones.mostradas, isEmpty);
         expect(notificaciones.ocultadas, 0);
+      },
+    );
+  });
+
+  group('pantallas con tareas activas (subtarea 9.2)', () {
+    testWidgets(
+      'PantallaB frena el refresco en segundo plano y lo reanuda al volver',
+      (tester) async {
+        const cancion = Cancion(
+          id: 'c1',
+          titulo: 'Tema de prueba',
+          duracionSegundos: 100,
+          reproducciones: 1000,
+          tendencia: '+5%',
+          lugar: 'Buenos Aires',
+          horarioPico: '20 hs',
+          colorPortada: 0xFFFF5500,
+        );
+        await tester.pumpWidget(MaterialApp(home: PantallaB(cancion: cancion)));
+
+        expect(find.text(formatearMiles(1000)), findsOneWidget);
+        await tester.pump(const Duration(seconds: 3));
+        expect(find.text(formatearMiles(1007)), findsOneWidget);
+
+        // Segundo plano: el refresco queda frenado.
+        gestorCicloVida.manejarEstado(AppLifecycleState.paused);
+        await tester.pump(const Duration(seconds: 6));
+        expect(find.text(formatearMiles(1007)), findsOneWidget);
+
+        // Al volver, el refresco se reanuda.
+        gestorCicloVida.manejarEstado(AppLifecycleState.resumed);
+        await tester.pump(const Duration(seconds: 3));
+        expect(find.text(formatearMiles(1014)), findsOneWidget);
+
+        await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+      },
+    );
+
+    testWidgets(
+      'PantallaSubirMusica se registra en el ciclo de vida y se da de baja al salir',
+      (tester) async {
+        final antes = gestorCicloVida.cantidadSuscriptos;
+        await tester.pumpWidget(const MaterialApp(home: PantallaSubirMusica()));
+        expect(gestorCicloVida.cantidadSuscriptos, antes + 2);
+
+        await tester.pumpWidget(
+          const MaterialApp(home: Scaffold(body: Text('otra pantalla'))),
+        );
+        expect(gestorCicloVida.cantidadSuscriptos, antes);
       },
     );
   });

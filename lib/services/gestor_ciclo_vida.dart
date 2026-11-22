@@ -40,10 +40,15 @@ class GestorCicloVida {
   /// Cantidad de callbacks registrados (sirve para verificar el registro).
   int get cantidadSuscriptos => _alPausar.length + _alReanudar.length;
 
-  /// Registra un par de callbacks de ciclo de vida. Se pueden registrar varios.
-  void registrar({VoidCallback? alPausar, VoidCallback? alReanudar}) {
+  /// Registra un par de callbacks de ciclo de vida y devuelve una función
+  /// para darlos de baja (las pantallas la llaman en su dispose).
+  VoidCallback registrar({VoidCallback? alPausar, VoidCallback? alReanudar}) {
     if (alPausar != null) _alPausar.add(alPausar);
     if (alReanudar != null) _alReanudar.add(alReanudar);
+    return () {
+      if (alPausar != null) _alPausar.remove(alPausar);
+      if (alReanudar != null) _alReanudar.remove(alReanudar);
+    };
   }
 
   /// Punto de entrada del listener. Queda expuesto para poder disparar
