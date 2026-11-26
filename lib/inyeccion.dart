@@ -14,7 +14,8 @@ import 'package:streamtunes_demo/data/repositorio_entradas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_playlists.dart';
-import 'package:streamtunes_demo/data/repositorio_playlists_preferencias.dart';
+import 'package:streamtunes_demo/data/playlists_dao.dart';
+import 'package:streamtunes_demo/data/repositorio_playlists_sqlite.dart';
 import 'package:streamtunes_demo/data/repositorio_seguimiento.dart';
 import 'package:streamtunes_demo/data/repositorio_seguimiento_preferencias.dart';
 import 'package:streamtunes_demo/models/artista.dart';
@@ -73,15 +74,19 @@ final RepositorioArtistas repositorioArtistas = _crearArtistas();
 final RepositorioEntradas repositorioEntradas = _crearEntradas();
 final RepositorioMovimientos repositorioMovimientos = _crearMovimientos();
 
-// Datos del oyente (playlists, seguidos y "me gusta"): se guardan en el
-// celular con shared_preferences si main() pudo abrirlo
+// Datos del oyente: las playlists van en SQLite y los seguidos y "me gusta"
+// en SharedPreferencesAsync, si main() pudo abrirlos
 // (inicializarPersistenciaLocal); si no (tests, o falla el plugin), quedan en
 // memoria. Son POR USUARIO: siguen al usuario con sesión de authViewModel y
 // al cerrar sesión (o como invitado) quedan vacíos y no se guarda nada.
 final RepositorioPlaylists repositorioPlaylists = _vincularAlUsuario(
-  preferenciasLocales == null
+  baseDatosLocal == null
       ? RepositorioPlaylistsMemoria()
-      : RepositorioPlaylistsPreferencias(prefs: preferenciasLocales!),
+      : RepositorioPlaylistsSqlite(
+          dao: PlaylistsDao(baseDatosLocal!),
+          // Para importar las playlists del guardado anterior (JSON).
+          prefsViejas: preferenciasLocales,
+        ),
   (r, uid) => r.usarUsuario(uid),
 );
 final RepositorioSeguimiento repositorioSeguimiento = _vincularAlUsuario(
@@ -341,11 +346,19 @@ final PlaylistsViewModel playlistsViewModel = PlaylistsViewModel(
   repositorio: repositorioPlaylists,
 );
 // La preferencia de notificaciones se guarda en el celular si hay guardado
-// local; el permiso y los recordatorios solo se usan con el plugin listo.
+// local. Como SharedPreferencesAsync lee en forma asíncrona, main() espera
+// [inicializarConfiguracion] antes de que se cree el ViewModel.
+final RepositorioConfiguracion repositorioConfiguracion =
+    preferenciasLocales == null
+    ? RepositorioConfiguracionMemoria()
+    : RepositorioConfiguracionPreferencias(prefs: preferenciasLocales!);
+
+/// Lee la configuración guardada. Nunca lanza (el repo captura sus errores).
+Future<void> inicializarConfiguracion() => repositorioConfiguracion.cargar();
+
+// El permiso y los recordatorios solo se usan con el plugin listo.
 final ConfiguracionViewModel configuracionViewModel = ConfiguracionViewModel(
-  repositorio: preferenciasLocales == null
-      ? RepositorioConfiguracionMemoria()
-      : RepositorioConfiguracionPreferencias(prefs: preferenciasLocales!),
+  repositorio: repositorioConfiguracion,
   recordatorios: _notificacionesListas ? servicioRecordatorios : null,
   tareas: servicioTareas,
 );

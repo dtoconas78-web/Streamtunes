@@ -58,12 +58,13 @@ void callbackDispatcher() {
     WidgetsFlutterBinding.ensureInitialized();
     if (tarea != tareaVerificarNovedades) return true; // tarea desconocida
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.reload(); // por si la app la cambió en otro isolate
+      // SharedPreferencesAsync no tiene caché por isolate: lee siempre lo
+      // último que guardó la app (no hace falta reload()).
+      final prefs = SharedPreferencesAsync();
+      final configuracion = RepositorioConfiguracionPreferencias(prefs: prefs);
+      await configuracion.cargar();
       // Si el usuario desactivó las notificaciones, no se hace nada.
-      if (!RepositorioConfiguracionPreferencias(prefs: prefs).notificaciones) {
-        return true;
-      }
+      if (!configuracion.notificaciones) return true;
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,

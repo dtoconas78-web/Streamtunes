@@ -36,8 +36,8 @@ lib/
 ├── inyeccion.dart       → raíz de composición: globales lazy (servicios, repositorios, VMs, reloj)
 ├── navigation/          → navegador global, rutas, cerrar sesión
 ├── models/              → Usuario, Artista, Cancion, Album, Concierto, Entrada, Movimiento, Playlist (inmutables)
-├── data/                → contratos Repositorio* + implementaciones *Memoria/*Firestore/*Preferencias (guardado local)
-│   └── services/        → semilla datos_ejemplo.dart
+├── data/                → contratos Repositorio* + implementaciones *Memoria/*Firestore/*Preferencias/*Sqlite (guardado local) y DAOs
+│   └── services/        → semilla datos_ejemplo.dart y base SQLite (base_datos_local.dart)
 ├── services/            → contrato AuthService (simulado vs FirebaseAuthService, elegido en inyeccion.dart) + inicialización Firebase
 ├── viewmodels/          → ChangeNotifiers sin dependencias de UI (solo importan flutter/foundation)
 ├── views/screens/       → pantallas
@@ -55,10 +55,22 @@ lib/
     Reciben sus dependencias por constructor.
   - `services/` y `data/`: contratos (`AuthService`, `Repositorio*`); la implementación
     concreta (simulada, memoria o Firebase) se elige en un único lugar: `inyeccion.dart`.
-  - Guardado local: playlists, seguidos y "me gusta" se guardan en el celular con
-    `shared_preferences` (repositorios `*Preferencias`, una clave por uid). Si
-    `inicializarPersistenciaLocal()` no corrió (tests) quedan en memoria. Son por
-    usuario: al cerrar sesión o como invitado quedan vacíos y no se guarda nada.
+  - Guardado local (`services/persistencia_local.dart`):
+    - Playlists en **SQLite** (`sqflite`): `data/services/base_datos_local.dart`
+      (esquema versionado con `onCreate`/`onUpgrade`), `data/playlists_dao.dart`
+      (consultas con `whereArgs`, escritura en transacción) y
+      `RepositorioPlaylistsSqlite`. La primera vez importa las playlists que había
+      como JSON en shared_preferences y borra esa clave.
+    - Seguidos, "me gusta" y configuración en **`SharedPreferencesAsync`** (sin
+      caché por isolate: la tarea de workmanager lee lo mismo que la app). Al
+      arrancar se migran una sola vez los valores de la API vieja.
+    - La carga es asíncrona: `usarUsuario(uid)` vacía en el acto, lee en segundo
+      plano y notifica al terminar (`cargando`, `listo`); si cambia el usuario a
+      mitad de la carga se descarta. Si `inicializarPersistenciaLocal()` no corrió
+      (tests) todo queda en memoria. Son por usuario: al cerrar sesión o como
+      invitado quedan vacíos y no se guarda nada.
+    - Tests: base en memoria con `sqflite_common_ffi` y
+      `InMemorySharedPreferencesAsync` (`test/dobles_persistencia.dart`).
   - Notificaciones (Configuración): al activarlas se pide el permiso real
     (`ServicioRecordatorios.solicitarPermisos`), se guarda la preferencia y se
     registra con `workmanager` una verificación periódica de conciertos nuevos

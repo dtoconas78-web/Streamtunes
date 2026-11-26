@@ -17,9 +17,11 @@ import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await inicializarFirebase();
-  // Abre el guardado local (playlists, seguidos y "me gusta"); si falla, la
-  // app sigue en memoria (ver services/persistencia_local.dart).
+  // Abre el guardado local (SQLite para las playlists y
+  // SharedPreferencesAsync para seguidos, "me gusta" y configuración); si
+  // falla, la app sigue en memoria (ver services/persistencia_local.dart).
   await inicializarPersistenciaLocal();
+  await inicializarConfiguracion();
   // Activa el gestor de ciclo de vida (necesita el binding ya inicializado).
   inicializarCicloVida();
   // Inicializa las notificaciones locales (aviso de reproducción en pausa).
