@@ -1,21 +1,32 @@
+import 'dart:collection';
+
 // Modelo simple para representar un álbum.
 // No depende de Flutter: el color de portada se guarda como int ARGB.
 // "cancionIds" son los ids de sus canciones (más robusto que posiciones:
 // si el catálogo cambia de orden, el álbum sigue apuntando bien).
+//
+// Inmutable también por dentro: la lista de ids es privada y se expone como
+// vista de solo lectura, así nadie puede cambiar un álbum del catálogo sin
+// pasar por el repositorio. El constructor sigue siendo const (lo usan los
+// tests), por eso no copia la lista: quien construye pasa una lista propia.
 class Album {
   final String id;
   final String titulo;
   final String anio;
   final int colorPortada;
-  final List<String> cancionIds;
+  final List<String> _cancionIds;
 
   const Album({
     required this.id,
     required this.titulo,
     required this.anio,
     required this.colorPortada,
-    required this.cancionIds,
+    required this._cancionIds,
   });
+
+  /// Ids de las canciones, de solo lectura (agregar o quitar lanza
+  /// UnsupportedError).
+  List<String> get cancionIds => UnmodifiableListView(_cancionIds);
 
   /// Igualdad por valor (incluye la lista de ids, comparada elemento a
   /// elemento para no depender de Flutter).
@@ -38,7 +49,7 @@ class Album {
     'titulo': titulo,
     'anio': anio,
     'colorPortada': colorPortada,
-    'cancionIds': cancionIds,
+    'cancionIds': List.of(_cancionIds),
   };
 
   /// Reconstruye desde un documento de Firestore. Lanza [FormatException]
