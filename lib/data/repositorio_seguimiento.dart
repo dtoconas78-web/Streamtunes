@@ -23,7 +23,15 @@ abstract class RepositorioSeguimiento extends ChangeNotifier {
   void alternarMeGusta(String cancionId);
 
   /// Cambia el usuario dueño de los datos (null = sin sesión o invitado).
+  /// Lo del usuario anterior se descarta en el acto; lo guardado del nuevo
+  /// llega en segundo plano (notifica al terminar, ver [listo]).
   void usarUsuario(String? uid);
+
+  /// true mientras se lee lo guardado del usuario actual.
+  bool get cargando;
+
+  /// Se completa cuando terminó la última carga pedida por [usarUsuario].
+  Future<void> get listo;
 }
 
 /// Datos de seguimiento de un usuario (lo que se guarda y se carga).
@@ -110,24 +118,65 @@ class RepositorioSeguimientoMemoria extends RepositorioSeguimiento {
     _cambio();
   }
 
+  bool _cargando = false;
+  // Si no se pudo leer lo guardado, no se guarda nada en esta sesión del
+  // usuario: guardar la lista incompleta pisaría los datos que sí existen.
+  bool _cargaFallida = false;
+  Future<void> _listo = Future.value();
+
+  @override
+  bool get cargando => _cargando;
+
+  @override
+  Future<void> get listo => _listo;
+
   @override
   void usarUsuario(String? uid) {
     if (uid == _uid) return;
     _uid = uid;
+    _cargaFallida = false;
     final previos = !_datos.vacio;
-    _datos = uid == null ? DatosSeguimiento() : cargar(uid);
-    if (previos || !_datos.vacio) notifyListeners();
+    _datos = DatosSeguimiento();
+    _cargando = uid != null;
+    if (previos || _cargando) notifyListeners();
+    _listo = uid == null ? Future.value() : _cargarDe(uid);
+  }
+
+  // Lee lo guardado de [uid]. Si mientras tanto cambió el usuario, se
+  // descarta. Lo que el usuario siguió o marcó durante la carga se suma a lo
+  // guardado (y se vuelve a guardar la unión).
+  Future<void> _cargarDe(String uid) async {
+    DatosSeguimiento guardados;
+    var fallo = false;
+    try {
+      guardados = await cargar(uid);
+    } catch (e) {
+      debugPrint('No se pudieron leer los seguimientos guardados: $e');
+      guardados = DatosSeguimiento();
+      fallo = true;
+    }
+    if (_uid != uid) return;
+    _cargaFallida = fallo;
+    final cambiosDuranteCarga = !_datos.vacio;
+    _datos = DatosSeguimiento(
+      artistas: {...guardados.artistas, ..._datos.artistas},
+      albumes: {...guardados.albumes, ..._datos.albumes},
+      meGusta: {...guardados.meGusta, ..._datos.meGusta},
+    );
+    _cargando = false;
+    if (cambiosDuranteCarga && !_cargaFallida) guardar(uid, _datos);
+    notifyListeners();
   }
 
   void _cambio() {
     final u = _uid;
-    if (u != null) guardar(u, _datos);
+    if (u != null && !_cargaFallida) guardar(u, _datos);
     notifyListeners();
   }
 
   /// Datos guardados del usuario [uid] (en memoria no hay nada).
   @protected
-  DatosSeguimiento cargar(String uid) => DatosSeguimiento();
+  Future<DatosSeguimiento> cargar(String uid) async => DatosSeguimiento();
 
   /// Persiste los datos del usuario [uid] (en memoria no hace nada).
   @protected

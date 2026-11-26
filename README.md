@@ -10,6 +10,37 @@ App móvil (Flutter) para escuchar música gratis, pensada para artistas "under"
   - Donaciones directas al artista.
   - Conciertos publicados por el artista (ver concierto, comprar entrada).
   - El artista ve sus **ventas y donaciones** desde su perfil.
+  - **Comisión:** StreamTunes se queda con el 30% de cada entrada vendida
+    (`utils/comision.dart`). El fan paga el precio publicado, sin cargos extra; las
+    donaciones llegan completas. Cada venta guarda su `comision` y Ventas y
+    donaciones muestra bruto, comisión y neto (documentos viejos: comisión 0).
+  - **Donaciones:** el fan dona con su nombre o en forma anónima, desde Donar o
+    desde el reproductor sin dejar de escuchar (`views/widgets/hoja_donacion.dart`;
+    si no sigue al artista se le ofrece "Seguir y donar"). Cada donación guarda
+    `donante` ('' = anónima) y `artistaId`. El artista ve "Quién te banca" en su
+    perfil y recibe una notificación local por cada donación nueva mientras tiene
+    la app abierta (`services/aviso_donaciones.dart`; sin push ni servidor).
+  - **Métricas reales:** una reproducción cuenta cuando se escuchan 30 s (o la
+    canción entera si es más corta; adelantar no suma). Se guarda en la cola local
+    SQLite (`reproducciones`, esquema v2) con la ciudad que el oyente declara en su
+    perfil (sin GPS) y la franja horaria, y se sube a `metricas/{cancionId}` con
+    `FieldValue.increment` (`services/sincronizacion_metricas.dart`) al arrancar, al
+    iniciar sesión, al ir a segundo plano y con una tarea periódica de workmanager.
+    La app y la tarea reservan lotes para no sumar dos veces. El artista ve "Tu
+    música en números" en su perfil y por canción en Estadísticas (resumen calculado
+    en un isolate si hay muchas canciones). Sin Firebase ni datos, Estadísticas
+    muestra los valores de ejemplo avisando que son de ejemplo.
+  - **Cámara y galería** (`image_picker` + `path_provider`): foto de perfil del
+    artista, foto de portada al subir música y foto del documento en la solicitud
+    de verificación. Contrato `FuenteDeFotos` (resultado sellado: foto, canceló o
+    falló) y `FotoViewModel`, que copia la foto a la carpeta de la app, guarda solo
+    la RUTA (perfil en SharedPreferencesAsync, portadas en la tabla SQLite
+    `portadas`, esquema v3) y borra la foto reemplazada. La del documento va a la
+    carpeta temporal y se borra al enviar o salir (dato sensible); una portada no
+    publicada también se borra. Si Android cierra la app con la cámara abierta, la
+    foto de perfil se recupera al iniciar sesión (`retrieveLostData`). Sin permisos
+    nuevos: usa la cámara y el selector de fotos del sistema. `Capacidades.camara`
+    solo en Android/iOS.
 - **Dos roles + invitado:**
   - **Artista:** sube música, ve estadísticas, publica conciertos, ve ventas/donaciones.
   - **Oyente registrado:** escucha, compra entradas, dona, guarda música, crea listas.
@@ -36,8 +67,8 @@ lib/
 ├── inyeccion.dart       → raíz de composición: globales lazy (servicios, repositorios, VMs, reloj)
 ├── navigation/          → navegador global, rutas, cerrar sesión
 ├── models/              → Usuario, Artista, Cancion, Album, Concierto, Entrada, Movimiento, Playlist (inmutables)
-├── data/                → contratos Repositorio* + implementaciones *Memoria/*Firestore/*Preferencias (guardado local)
-│   └── services/        → semilla datos_ejemplo.dart
+├── data/                → contratos Repositorio* + implementaciones *Memoria/*Firestore/*Preferencias/*Sqlite (guardado local) y DAOs
+│   └── services/        → semilla datos_ejemplo.dart y base SQLite (base_datos_local.dart)
 ├── services/            → contrato AuthService (simulado vs FirebaseAuthService, elegido en inyeccion.dart) + inicialización Firebase
 ├── viewmodels/          → ChangeNotifiers sin dependencias de UI (solo importan flutter/foundation)
 ├── views/screens/       → pantallas
@@ -55,10 +86,22 @@ lib/
     Reciben sus dependencias por constructor.
   - `services/` y `data/`: contratos (`AuthService`, `Repositorio*`); la implementación
     concreta (simulada, memoria o Firebase) se elige en un único lugar: `inyeccion.dart`.
-  - Guardado local: playlists, seguidos y "me gusta" se guardan en el celular con
-    `shared_preferences` (repositorios `*Preferencias`, una clave por uid). Si
-    `inicializarPersistenciaLocal()` no corrió (tests) quedan en memoria. Son por
-    usuario: al cerrar sesión o como invitado quedan vacíos y no se guarda nada.
+  - Guardado local (`services/persistencia_local.dart`):
+    - Playlists en **SQLite** (`sqflite`): `data/services/base_datos_local.dart`
+      (esquema versionado con `onCreate`/`onUpgrade`), `data/playlists_dao.dart`
+      (consultas con `whereArgs`, escritura en transacción) y
+      `RepositorioPlaylistsSqlite`. La primera vez importa las playlists que había
+      como JSON en shared_preferences y borra esa clave.
+    - Seguidos, "me gusta" y configuración en **`SharedPreferencesAsync`** (sin
+      caché por isolate: la tarea de workmanager lee lo mismo que la app). Al
+      arrancar se migran una sola vez los valores de la API vieja.
+    - La carga es asíncrona: `usarUsuario(uid)` vacía en el acto, lee en segundo
+      plano y notifica al terminar (`cargando`, `listo`); si cambia el usuario a
+      mitad de la carga se descarta. Si `inicializarPersistenciaLocal()` no corrió
+      (tests) todo queda en memoria. Son por usuario: al cerrar sesión o como
+      invitado quedan vacíos y no se guarda nada.
+    - Tests: base en memoria con `sqflite_common_ffi` y
+      `InMemorySharedPreferencesAsync` (`test/dobles_persistencia.dart`).
   - Notificaciones (Configuración): al activarlas se pide el permiso real
     (`ServicioRecordatorios.solicitarPermisos`), se guarda la preferencia y se
     registra con `workmanager` una verificación periódica de conciertos nuevos
@@ -119,7 +162,7 @@ lib/
   dart analyze
   flutter test
   ```
-  Actualmente: analyze sin issues y **56 tests aprobados**.
+  Actualmente: analyze sin issues y **251 tests aprobados**.
 - **Convenciones para agregar pruebas:**
   - Las aserciones de los tests existentes se preservan; modificarlas solo se justifica
     por un cambio funcional real.

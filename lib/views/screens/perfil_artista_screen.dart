@@ -7,6 +7,9 @@ import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/widgets/estado_verificacion_ui.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
+import 'package:streamtunes_demo/views/widgets/quien_te_banca.dart';
+import 'package:streamtunes_demo/views/widgets/selector_foto.dart';
+import 'package:streamtunes_demo/views/widgets/tu_musica_en_numeros.dart';
 
 // Pantalla A: perfil del artista + tabs + lista de canciones.
 // Es Stateful porque el botón "Seguir" cambia de estado al tocarlo.
@@ -97,13 +100,15 @@ class _PantallaAState extends State<PantallaA>
                               shape: BoxShape.circle,
                               border: Border.all(color: colorFondo, width: 4),
                             ),
-                            child: const CircleAvatar(
-                              radius: 45,
-                              backgroundColor: colorTarjeta,
-                              child: Icon(
-                                Icons.person,
-                                size: 45,
-                                color: colorAcento,
+                            // Foto de perfil del artista (si cargó una). Es
+                            // la del usuario con sesión: un fan que mira este
+                            // perfil no debe ver su propia foto acá.
+                            child: ListenableBuilder(
+                              listenable: fotoPerfilViewModel,
+                              builder: (context, _) => AvatarFoto(
+                                ruta: authViewModel.esArtista
+                                    ? fotoPerfilViewModel.ruta
+                                    : null,
                               ),
                             ),
                           ),
@@ -248,6 +253,20 @@ class _PantallaAState extends State<PantallaA>
                         ],
                       ),
                     ),
+                    // Solo el artista ve sus estadísticas y quiénes lo apoyan.
+                    if (authViewModel.esArtista)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                        child: TuMusicaEnNumeros(metricas: metricasViewModel),
+                      ),
+                    if (authViewModel.esArtista)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                        child: QuienTeBanca(
+                          ventas: ventasViewModel,
+                          alVerTodo: () => irA(context, Rutas.ventas),
+                        ),
+                      ),
                     // Barra de búsqueda (solo visual, sin lógica).
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -307,6 +326,7 @@ class _PantallaAState extends State<PantallaA>
                           child: ListTile(
                             leading: PortadaCuadrada(
                               color: colorDe(cancion.colorPortada),
+                              itemId: cancion.id,
                               tamano: 44,
                             ),
                             title: Text(cancion.titulo),
@@ -340,6 +360,7 @@ class _PantallaAState extends State<PantallaA>
                           child: ListTile(
                             leading: PortadaCuadrada(
                               color: colorDe(album.colorPortada),
+                              itemId: album.id,
                               tamano: 44,
                               icono: Icons.album,
                             ),

@@ -19,7 +19,7 @@ const String claveConciertosVistos = 'streamtunes.novedades.conciertosVistos';
 /// Devuelve los conciertos nuevos avisados.
 Future<List<Concierto>> verificarNovedades({
   required FuenteFirestore fuente,
-  required SharedPreferences prefs,
+  required SharedPreferencesAsync prefs,
   required Future<void> Function(List<String> nombres) avisar,
   Duration limite = const Duration(seconds: 30),
 }) async {
@@ -36,7 +36,7 @@ Future<List<Concierto>> verificarNovedades({
     }
   }
 
-  final vistos = prefs.getStringList(claveConciertosVistos);
+  final vistos = await prefs.getStringList(claveConciertosVistos);
   final nuevos = vistos == null
       ? const <Concierto>[]
       : [

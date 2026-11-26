@@ -177,6 +177,7 @@ class BibliotecaScreen extends StatelessWidget {
                   child: ListTile(
                     leading: PortadaCuadrada(
                       color: colorDe(album.colorPortada),
+                      itemId: album.id,
                       icono: Icons.album,
                     ),
                     title: Text(album.titulo),
@@ -203,6 +204,7 @@ class BibliotecaScreen extends StatelessWidget {
                 child: ListTile(
                   leading: PortadaCuadrada(
                     color: colorDe(album.colorPortada),
+                    itemId: album.id,
                     icono: Icons.album,
                   ),
                   title: Text(album.titulo),

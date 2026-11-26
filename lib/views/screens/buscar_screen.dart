@@ -90,6 +90,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
                           contentPadding: EdgeInsets.zero,
                           leading: PortadaCuadrada(
                             color: colorDe(album.colorPortada),
+                            itemId: album.id,
                             tamano: 48,
                             icono: Icons.album,
                           ),
@@ -125,6 +126,7 @@ class _BuscarScreenState extends State<BuscarScreen> {
                           contentPadding: EdgeInsets.zero,
                           leading: PortadaCuadrada(
                             color: colorDe(cancion.colorPortada),
+                            itemId: cancion.id,
                             tamano: 48,
                           ),
                           title: Text(cancion.titulo),

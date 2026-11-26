@@ -6,6 +6,8 @@ import 'package:streamtunes_demo/data/fuente_firestore.dart';
 import 'package:streamtunes_demo/services/tareas_segundo_plano.dart';
 import 'package:streamtunes_demo/services/verificacion_novedades.dart';
 
+import 'dobles_persistencia.dart';
+
 /// Fuente de Firestore mínima: solo la colección `conciertos`, que se puede
 /// cambiar entre corridas (como si se publicaran conciertos nuevos).
 class _FuenteConciertos implements FuenteFirestore {
@@ -40,14 +42,13 @@ DocumentoFirestore _concierto(String id, String nombre) => DocumentoFirestore(
 
 void main() {
   late _FuenteConciertos fuente;
-  late SharedPreferences prefs;
+  late SharedPreferencesAsync prefs;
   late List<List<String>> avisos;
 
   Future<void> avisar(List<String> nombres) async => avisos.add(nombres);
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
-    prefs = await SharedPreferences.getInstance();
+    prefs = preferenciasEnMemoria();
     fuente = _FuenteConciertos();
     avisos = [];
   });
@@ -64,7 +65,7 @@ void main() {
 
       expect(nuevos, isEmpty);
       expect(avisos, isEmpty);
-      expect(prefs.getStringList(claveConciertosVistos), ['c1', 'c2']);
+      expect(await prefs.getStringList(claveConciertosVistos), ['c1', 'c2']);
     });
 
     test('avisa solo los conciertos nuevos desde la última corrida', () async {
@@ -105,7 +106,7 @@ void main() {
         ),
         throwsStateError,
       );
-      expect(prefs.getStringList(claveConciertosVistos), isEmpty);
+      expect(await prefs.getStringList(claveConciertosVistos), isEmpty);
 
       await verificarNovedades(fuente: fuente, prefs: prefs, avisar: avisar);
       expect(avisos, [
@@ -135,7 +136,7 @@ void main() {
         verificarNovedades(fuente: fuente, prefs: prefs, avisar: avisar),
         throwsStateError,
       );
-      expect(prefs.getStringList(claveConciertosVistos), ['c1']);
+      expect(await prefs.getStringList(claveConciertosVistos), ['c1']);
       expect(avisos, isEmpty);
     });
 

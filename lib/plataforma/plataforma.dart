@@ -3,6 +3,8 @@
 // distintas: QUÉ está implementado (Capacidades) y QUÉ se le explica al
 // usuario (Politicas).
 
+import 'package:streamtunes_demo/utils/comision.dart';
+
 /// Disponibilidad objetiva de funcionalidades IMPLEMENTADAS en la aplicación.
 ///
 /// Ojo: esto NO es el permiso que el usuario le concede al sistema operativo
@@ -19,6 +21,7 @@ class Capacidades {
     this.notificacionesDisponibles = false,
     this.notificacionesProgramadas = false,
     this.tareasSegundoPlano = false,
+    this.camara = false,
   });
 
   /// Hay mecanismo de notificaciones locales (plugin inicializado): habilita
@@ -31,6 +34,9 @@ class Capacidades {
 
   /// Hay tareas periódicas en segundo plano (workmanager inicializado).
   final bool tareasSegundoPlano;
+
+  /// Se pueden sacar o elegir fotos (cámara/galería: Android e iOS).
+  final bool camara;
 }
 
 /// Mensajes explicativos destinados al usuario (políticas de la app): textos
@@ -45,6 +51,27 @@ class Politicas {
   /// permiso de notificaciones del sistema.
   String get avisoPermisoNotificacionesDenegado =>
       'Sin permiso de notificaciones: activalo en los ajustes del celular';
+
+  /// Explicación de la comisión para el artista (al publicar un concierto y
+  /// en Ventas y donaciones).
+  String get textoComisionArtista =>
+      'StreamTunes se queda con el $porcentajeComision de cada entrada vendida; '
+      'el resto es para vos. Las donaciones te llegan completas.';
+
+  /// Explicación para el fan al comprar: paga el precio publicado.
+  String get textoComisionFan =>
+      'Pagás el precio publicado, sin cargos extra. De cada entrada, '
+      'StreamTunes se queda con el $porcentajeComision para mantener la app '
+      'gratis y sin publicidad.';
+
+  /// Aviso cuando la cámara/galería no está disponible (escritorio, web).
+  String get avisoCamaraNoDisponible =>
+      'Las fotos solo se pueden cargar desde el celular';
+
+  /// Mensaje cuando no se pudo obtener la foto (p. ej. sin permiso).
+  String get avisoFotoFallida =>
+      'No se pudo cargar la foto. Revisá los permisos de cámara y fotos '
+      'en los ajustes del celular.';
 
   /// Aviso mostrado en el banner global cuando el dispositivo no tiene
   /// conexión a internet.

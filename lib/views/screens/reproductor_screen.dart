@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
+import 'package:streamtunes_demo/views/widgets/hoja_donacion.dart';
 import 'package:streamtunes_demo/views/widgets/modo_reproduccion_ui.dart';
+import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/requiere_registro.dart';
 
 // Pantalla Reproductor: portada, controles y barra de progreso.
@@ -62,15 +63,14 @@ class PantallaReproductor extends StatelessWidget {
                       constraints: const BoxConstraints(maxWidth: 320),
                       child: AspectRatio(
                         aspectRatio: 1,
-                        child: Container(
-                          decoration: BoxDecoration(
+                        // Foto de portada si hay; si no, el color.
+                        child: LayoutBuilder(
+                          builder: (context, medidas) => PortadaCuadrada(
                             color: colorDe(cancion.colorPortada),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(
-                            Icons.music_note,
-                            size: 96,
-                            color: Colors.black,
+                            itemId: cancion.id,
+                            tamano: medidas.maxWidth,
+                            radio: 20,
+                            tamanoIcono: 96,
                           ),
                         ),
                       ),
@@ -217,7 +217,9 @@ class PantallaReproductor extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 28),
-                  // Apoyo directo al artista (el pago real se conecta en la fase 2).
+                  // Apoyo directo al artista sin dejar de escuchar: la hoja de
+                  // donación se abre acá mismo (el pago real se conecta en
+                  // la fase 2).
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -230,10 +232,9 @@ class PantallaReproductor extends StatelessWidget {
                         ),
                       ),
                       icon: const Icon(Icons.volunteer_activism),
-                      label: const Text('Apoyar a Mateo Cabral'),
+                      label: Text('Apoyar a ${perfil.artista.nombre}'),
                       onPressed: () {
-                        // Donar es solo para cuentas registradas; además,
-                        // en Donar se aplica la regla de seguir al artista.
+                        // Donar es solo para cuentas registradas.
                         if (authViewModel.esInvitado) {
                           unawaited(
                             mostrarDialogoRegistro(
@@ -242,7 +243,7 @@ class PantallaReproductor extends StatelessWidget {
                             ),
                           );
                         } else {
-                          irA(context, Rutas.donar);
+                          unawaited(_apoyar(context));
                         }
                       },
                     ),
@@ -254,5 +255,35 @@ class PantallaReproductor extends StatelessWidget {
         );
       },
     );
+  }
+
+  // Regla de la app: solo se le dona a un artista que seguís. Si todavía
+  // no lo sigue, se le ofrece seguirlo y donar en un paso.
+  Future<void> _apoyar(BuildContext context) async {
+    final artista = perfil.artista;
+    if (!seguimientoViewModel.sigo(artista.id)) {
+      final seguir = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text('Seguí a ${artista.nombre}'),
+          content: const Text(
+            'Para donarle a un artista primero tenés que seguirlo.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Seguir y donar'),
+            ),
+          ],
+        ),
+      );
+      if (seguir != true || !context.mounted) return;
+      seguimientoViewModel.seguir(artista.id);
+    }
+    await abrirDonacion(context, artista);
   }
 }

@@ -38,25 +38,27 @@ class CatalogoViewModel extends ChangeNotifier {
 
   // Publica canciones nuevas (sueltas o como álbum). No se notifica acá: el
   // repo ya notificó y este VM reemite por la suscripción (una notificación
-  // por cambio real del repo).
-  void publicar({
+  // por cambio real del repo). Devuelve el id del álbum creado (null si son
+  // canciones sueltas), p. ej. para asociarle la foto de portada.
+  String? publicar({
     required List<Cancion> nuevas,
     String? tituloAlbum,
     String? anioAlbum,
     required int colorPortada,
   }) {
     _repositorio.agregarCanciones(nuevas);
-    if (tituloAlbum != null) {
-      _repositorio.agregarAlbum(
-        Album(
-          id: _nuevoIdAlbum(),
-          titulo: tituloAlbum,
-          anio: anioAlbum ?? '',
-          colorPortada: colorPortada,
-          cancionIds: [for (final c in nuevas) c.id],
-        ),
-      );
-    }
+    if (tituloAlbum == null) return null;
+    final idAlbum = _nuevoIdAlbum();
+    _repositorio.agregarAlbum(
+      Album(
+        id: idAlbum,
+        titulo: tituloAlbum,
+        anio: anioAlbum ?? '',
+        colorPortada: colorPortada,
+        cancionIds: [for (final c in nuevas) c.id],
+      ),
+    );
+    return idAlbum;
   }
 
   @override

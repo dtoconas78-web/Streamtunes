@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/constantes.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
+import 'package:streamtunes_demo/views/widgets/selector_foto.dart';
 
 // Pantalla Editar perfil: foto, nombre, país y "sobre mí".
 class PantallaEditarPerfil extends StatefulWidget {
@@ -29,14 +32,11 @@ class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
     super.dispose();
   }
 
-  void _cambiarFoto() {
-    // Elegir una foto real necesita el paquete image_picker.
-    // Por ahora solo avisa.
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Cambiar la foto se conecta más adelante')),
-    );
-  }
+  // Cámara o galería (image_picker); la foto se guarda en el celular y su
+  // ruta queda asociada al usuario (ver fotoPerfilViewModel).
+  void _cambiarFoto() => unawaited(
+    cambiarFoto(context, fotoPerfilViewModel, titulo: 'Foto de perfil'),
+  );
 
   void _guardar() {
     // Si algún campo no cumple las reglas, muestra el error y no guarda.
@@ -69,10 +69,21 @@ class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
                   onTap: _cambiarFoto,
                   child: Stack(
                     children: [
-                      const CircleAvatar(
-                        radius: 50,
-                        backgroundColor: colorTarjeta,
-                        child: Icon(Icons.person, size: 50, color: colorAcento),
+                      ListenableBuilder(
+                        listenable: fotoPerfilViewModel,
+                        builder: (context, _) => Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            AvatarFoto(
+                              ruta: fotoPerfilViewModel.ruta,
+                              radio: 50,
+                            ),
+                            if (fotoPerfilViewModel.cargando)
+                              const CircularProgressIndicator(
+                                color: colorAcento,
+                              ),
+                          ],
+                        ),
                       ),
                       Positioned(
                         right: 0,

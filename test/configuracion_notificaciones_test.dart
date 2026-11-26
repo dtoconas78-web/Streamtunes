@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streamtunes_demo/data/repositorio_configuracion.dart';
 import 'package:streamtunes_demo/plataforma/plataforma.dart';
 import 'package:streamtunes_demo/viewmodels/configuracion_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/configuracion_screen.dart';
 
 import 'dobles_notificaciones.dart';
+import 'dobles_persistencia.dart';
 
 void main() {
   late RecordatoriosFalsos recordatorios;
@@ -107,18 +107,15 @@ void main() {
     });
 
     test('arranca con la preferencia guardada en el celular', () async {
-      SharedPreferences.setMockInitialValues({
-        claveNotificacionesActivas: true,
-      });
-      final prefs = await SharedPreferences.getInstance();
-      final vm = ConfiguracionViewModel(
-        repositorio: RepositorioConfiguracionPreferencias(prefs: prefs),
-      );
+      final prefs = preferenciasEnMemoria({claveNotificacionesActivas: true});
+      final repositorio = RepositorioConfiguracionPreferencias(prefs: prefs);
+      await repositorio.cargar(); // como main() antes de crear el VM
+      final vm = ConfiguracionViewModel(repositorio: repositorio);
       expect(vm.notificaciones, isTrue);
 
       // Y desactivar se guarda.
       await vm.cambiarNotificaciones(false);
-      expect(prefs.getBool(claveNotificacionesActivas), isFalse);
+      expect(await prefs.getBool(claveNotificacionesActivas), isFalse);
     });
   });
 

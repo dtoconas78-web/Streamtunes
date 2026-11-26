@@ -7,28 +7,41 @@ import 'package:streamtunes_demo/data/fuente_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_artistas.dart';
 import 'package:streamtunes_demo/data/repositorio_artistas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
+import 'package:streamtunes_demo/data/repositorio_ciudad.dart';
 import 'package:streamtunes_demo/data/repositorio_configuracion.dart';
+import 'package:streamtunes_demo/data/repositorio_foto_perfil.dart';
+import 'package:streamtunes_demo/data/repositorio_metricas.dart';
+import 'package:streamtunes_demo/data/reproducciones_dao.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_playlists.dart';
-import 'package:streamtunes_demo/data/repositorio_playlists_preferencias.dart';
+import 'package:streamtunes_demo/data/repositorio_portadas.dart';
+import 'package:streamtunes_demo/data/playlists_dao.dart';
+import 'package:streamtunes_demo/data/repositorio_playlists_sqlite.dart';
 import 'package:streamtunes_demo/data/repositorio_seguimiento.dart';
 import 'package:streamtunes_demo/data/repositorio_seguimiento_preferencias.dart';
 import 'package:streamtunes_demo/models/artista.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/plataforma/plataforma.dart';
+import 'package:streamtunes_demo/services/almacen_fotos.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
+import 'package:streamtunes_demo/services/aviso_donaciones.dart';
 import 'package:streamtunes_demo/services/firebase_auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
 import 'package:streamtunes_demo/services/firebase_semilla.dart';
+import 'package:streamtunes_demo/services/fuente_de_fotos.dart';
+import 'package:streamtunes_demo/services/fuente_image_picker.dart';
 import 'package:streamtunes_demo/services/persistencia_local.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/configuracion_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/foto_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/metricas_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/perfil_oyente_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/playlists_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
@@ -40,6 +53,7 @@ import 'package:streamtunes_demo/services/gestor_ciclo_vida.dart';
 import 'package:streamtunes_demo/services/servicio_conectividad.dart';
 import 'package:streamtunes_demo/services/servicio_notificaciones.dart';
 import 'package:streamtunes_demo/services/servicio_recordatorios.dart';
+import 'package:streamtunes_demo/services/sincronizacion_metricas.dart';
 import 'package:streamtunes_demo/services/tareas_segundo_plano.dart';
 import 'package:streamtunes_demo/services/tareas_segundo_plano_workmanager.dart';
 
@@ -73,15 +87,19 @@ final RepositorioArtistas repositorioArtistas = _crearArtistas();
 final RepositorioEntradas repositorioEntradas = _crearEntradas();
 final RepositorioMovimientos repositorioMovimientos = _crearMovimientos();
 
-// Datos del oyente (playlists, seguidos y "me gusta"): se guardan en el
-// celular con shared_preferences si main() pudo abrirlo
+// Datos del oyente: las playlists van en SQLite y los seguidos y "me gusta"
+// en SharedPreferencesAsync, si main() pudo abrirlos
 // (inicializarPersistenciaLocal); si no (tests, o falla el plugin), quedan en
 // memoria. Son POR USUARIO: siguen al usuario con sesión de authViewModel y
 // al cerrar sesión (o como invitado) quedan vacíos y no se guarda nada.
 final RepositorioPlaylists repositorioPlaylists = _vincularAlUsuario(
-  preferenciasLocales == null
+  baseDatosLocal == null
       ? RepositorioPlaylistsMemoria()
-      : RepositorioPlaylistsPreferencias(prefs: preferenciasLocales!),
+      : RepositorioPlaylistsSqlite(
+          dao: PlaylistsDao(baseDatosLocal!),
+          // Para importar las playlists del guardado anterior (JSON).
+          prefsViejas: preferenciasLocales,
+        ),
   (r, uid) => r.usarUsuario(uid),
 );
 final RepositorioSeguimiento repositorioSeguimiento = _vincularAlUsuario(
@@ -90,6 +108,52 @@ final RepositorioSeguimiento repositorioSeguimiento = _vincularAlUsuario(
       : RepositorioSeguimientoPreferencias(prefs: preferenciasLocales!),
   (r, uid) => r.usarUsuario(uid),
 );
+
+// Ciudad que declara el oyente en su perfil (para las métricas; sin GPS).
+final PerfilOyenteViewModel perfilOyenteViewModel = _vincularAlUsuario(
+  PerfilOyenteViewModel(
+    repositorio: preferenciasLocales == null
+        ? RepositorioCiudadMemoria()
+        : RepositorioCiudadPreferencias(prefs: preferenciasLocales!),
+  ),
+  (vm, uid) => vm.usarUsuario(uid),
+);
+
+// --- Métricas de reproducción ---
+// Con Firebase, las métricas viven en la colección `metricas` (todos los
+// oyentes suman con incrementos atómicos); sin Firebase, en memoria. Cada
+// reproducción contada va primero a la cola local en SQLite (si hay) y se
+// sube con registroReproducciones.sincronizar().
+final RepositorioMetricas repositorioMetricas = firebaseInicializado
+    ? RepositorioMetricasFirestore(fuente: fuenteFirestore)
+    : RepositorioMetricasMemoria();
+
+final RegistroReproducciones registroReproducciones = RegistroReproducciones(
+  metricas: repositorioMetricas,
+  ciudad: () => perfilOyenteViewModel.ciudadParaMetricas,
+  dao: baseDatosLocal == null ? null : ReproduccionesDao(baseDatosLocal!),
+  reloj: reloj,
+);
+
+final MetricasViewModel metricasViewModel = MetricasViewModel(
+  repositorio: repositorioMetricas,
+);
+
+/// Sube las reproducciones pendientes al arrancar, al iniciar sesión (las
+/// reglas de Firestore piden sesión para escribir) y al ir a segundo plano.
+/// La tarea de workmanager cubre el caso de la app cerrada.
+void inicializarMetricas() {
+  if (!firebaseInicializado) return;
+  void sincronizar() {
+    if (_uidSesionValida() != null) {
+      unawaited(registroReproducciones.sincronizar());
+    }
+  }
+
+  sincronizar();
+  authViewModel.addListener(sincronizar);
+  gestorCicloVida.registrar(alPausar: sincronizar);
+}
 
 // Carga ya los datos del usuario actual y los recarga en cada login/logout
 // (usarUsuario no hace nada si el uid no cambió).
@@ -109,6 +173,10 @@ String? _uidSesionValida() {
   if (usuario == null || usuario.rol == RolUsuario.invitado) return null;
   return usuario.id; // en Firebase mode Usuario.id = fbUser.uid
 }
+
+/// Id del artista de la sesión, o null si quien usa la app no es artista.
+String? _artistaSesionId() =>
+    authViewModel.esArtista ? perfil.artista.id : null;
 
 RepositorioCatalogo _crearCatalogo() {
   if (!firebaseInicializado) return RepositorioCatalogoMemoria();
@@ -134,10 +202,16 @@ RepositorioEntradas _crearEntradas() {
 RepositorioMovimientos _crearMovimientos() {
   if (!firebaseInicializado) return RepositorioMovimientosMemoria();
   _dispararSemilla();
-  return RepositorioMovimientosFirestore(
+  final repo = RepositorioMovimientosFirestore(
     fuente: fuenteFirestore,
     uidActual: _uidSesionValida,
+    // El artista ve también las donaciones que le hacen otros usuarios.
+    artistaActual: _artistaSesionId,
   );
+  // Se crea al arrancar (lo usa el aviso de donaciones), antes del login:
+  // al cambiar la sesión se refiltra sin esperar otro snapshot.
+  authViewModel.addListener(repo.actualizarSesion);
+  return repo;
 }
 
 // Semilla idempotente (Bloque A): se dispara UNA SOLA VEZ por arranque y solo
@@ -192,6 +266,7 @@ final Capacidades capacidades = Capacidades(
   notificacionesDisponibles: _notificacionesListas,
   notificacionesProgramadas: _notificacionesListas,
   tareasSegundoPlano: _tareasListas,
+  camara: _camaraLista,
 );
 final Politicas politicas = Politicas();
 
@@ -260,12 +335,96 @@ Future<void> inicializarTareasSegundoPlano() async {
   try {
     await _tareasWorkmanager.inicializar();
     _tareasListas = true;
+    // Subida de métricas con la app cerrada: siempre registrada (no depende
+    // de la preferencia de notificaciones). Política update: no se duplica.
+    if (firebaseInicializado && baseDatosLocal != null) {
+      await _tareasWorkmanager.registrarSincronizacionMetricas();
+    }
     if (configuracionViewModel.notificaciones) {
       await servicioTareas.registrarVerificacionPeriodica();
     }
   } catch (e) {
     debugPrint('Tareas en segundo plano no disponibles: $e');
   }
+}
+
+// --- Cámara y fotos ---
+// image_picker (cámara/galería del sistema) + copia en la carpeta de la app
+// con path_provider. Se guarda la RUTA, nunca la imagen.
+final FuenteDeFotos fuenteFotos = FuenteImagePicker();
+final AlmacenFotos almacenFotos = AlmacenFotosLocal();
+bool _camaraLista = false;
+
+/// Portadas con foto (SQLite si hay base local; si no, memoria).
+final RepositorioPortadas repositorioPortadas = baseDatosLocal == null
+    ? RepositorioPortadasMemoria()
+    : RepositorioPortadasSqlite(baseDatosLocal!);
+
+final RepositorioFotoPerfil repositorioFotoPerfil = preferenciasLocales == null
+    ? RepositorioFotoPerfilMemoria()
+    : RepositorioFotoPerfilPreferencias(prefs: preferenciasLocales!);
+
+/// Foto de perfil del usuario con sesión (la ruta se guarda por uid).
+final FotoViewModel fotoPerfilViewModel = _vincularAlUsuario(
+  FotoViewModel(
+    fuente: fuenteFotos,
+    almacen: almacenFotos,
+    prefijo: 'perfil',
+    alGuardar: (ruta) async {
+      final uid = _uidSesionValida();
+      if (uid != null) await repositorioFotoPerfil.guardar(uid, ruta);
+    },
+    alPendiente: repositorioFotoPerfil.marcarPendiente,
+  ),
+  (vm, uid) => unawaited(_cargarFotoPerfil(vm, uid)),
+);
+
+// Al cambiar de usuario: muestra su foto guardada. Si Android cerró la app
+// con la cámara abierta para la foto de perfil, se recupera acá (recién con
+// sesión hay a quién guardársela; la app siempre arranca en el login).
+Future<void> _cargarFotoPerfil(FotoViewModel vm, String? uid) async {
+  vm.mostrar(null);
+  if (uid == null) return;
+  try {
+    final ruta = await repositorioFotoPerfil.leer(uid);
+    if (_uidSesionValida() != uid) return;
+    vm.mostrar(ruta);
+    if (_camaraLista && await repositorioFotoPerfil.pendiente()) {
+      await vm.recuperarPerdida();
+    }
+  } catch (e) {
+    debugPrint('No se pudo leer la foto de perfil: $e');
+  }
+}
+
+/// Activa la cámara (solo Android/iOS) y carga las portadas guardadas.
+/// Va ANTES del primer acceso a [capacidades] (que es lazy). Nunca lanza.
+Future<void> inicializarFotos() async {
+  _camaraLista =
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+  final portadas = repositorioPortadas;
+  if (portadas is RepositorioPortadasSqlite) await portadas.cargar();
+}
+
+// --- Aviso de donaciones recibidas (al artista, con la app abierta) ---
+final AvisoDonaciones avisoDonaciones = AvisoDonaciones(
+  repositorio: repositorioMovimientos,
+  sesion: authViewModel,
+  artistaActual: _artistaSesionId,
+  // Capacidad real + preferencia del usuario, consultadas en cada aviso.
+  activo: () =>
+      capacidades.notificacionesDisponibles &&
+      configuracionViewModel.notificaciones,
+  avisar: servicioRecordatorios.mostrarDonacionRecibida,
+  reloj: reloj,
+);
+
+/// Activa el aviso de donaciones (solo si el plugin de notificaciones se
+/// inicializó; en los tests no se activa).
+void inicializarAvisoDonaciones() {
+  if (_notificacionesListas) avisoDonaciones.iniciar();
 }
 
 GestorCicloVida _crearGestorCicloVida() {
@@ -315,6 +474,8 @@ final CatalogoViewModel catalogo = CatalogoViewModel(
 final ControladorReproduccion reproductor = ControladorReproduccion(
   repositorioCatalogo: repositorioCatalogo,
   repositorioSeguimiento: repositorioSeguimiento,
+  // Cada reproducción contada (30 s escuchados) va a las métricas.
+  alContarReproduccion: registroReproducciones.contar,
 );
 final SeguimientoViewModel seguimientoViewModel = SeguimientoViewModel(
   repositorioArtistas: repositorioArtistas,
@@ -341,11 +502,19 @@ final PlaylistsViewModel playlistsViewModel = PlaylistsViewModel(
   repositorio: repositorioPlaylists,
 );
 // La preferencia de notificaciones se guarda en el celular si hay guardado
-// local; el permiso y los recordatorios solo se usan con el plugin listo.
+// local. Como SharedPreferencesAsync lee en forma asíncrona, main() espera
+// [inicializarConfiguracion] antes de que se cree el ViewModel.
+final RepositorioConfiguracion repositorioConfiguracion =
+    preferenciasLocales == null
+    ? RepositorioConfiguracionMemoria()
+    : RepositorioConfiguracionPreferencias(prefs: preferenciasLocales!);
+
+/// Lee la configuración guardada. Nunca lanza (el repo captura sus errores).
+Future<void> inicializarConfiguracion() => repositorioConfiguracion.cargar();
+
+// El permiso y los recordatorios solo se usan con el plugin listo.
 final ConfiguracionViewModel configuracionViewModel = ConfiguracionViewModel(
-  repositorio: preferenciasLocales == null
-      ? RepositorioConfiguracionMemoria()
-      : RepositorioConfiguracionPreferencias(prefs: preferenciasLocales!),
+  repositorio: repositorioConfiguracion,
   recordatorios: _notificacionesListas ? servicioRecordatorios : null,
   tareas: servicioTareas,
 );

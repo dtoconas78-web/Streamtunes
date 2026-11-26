@@ -1,14 +1,17 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
+import 'package:streamtunes_demo/viewmodels/foto_viewmodel.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/constantes.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
 import 'package:streamtunes_demo/views/widgets/seccion_audio.dart';
+import 'package:streamtunes_demo/views/widgets/selector_foto.dart';
 
 // Pantalla Subir música: una canción suelta o un álbum.
 class PantallaSubirMusica extends StatefulWidget {
@@ -37,6 +40,15 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
   Timer? _timer;
   VoidCallback? _cancelarCicloVida;
 
+  // Foto de portada opcional (cámara o galería). Si no se publica, el
+  // archivo se borra al salir de la pantalla.
+  late final FotoViewModel _portada = FotoViewModel(
+    fuente: fuenteFotos,
+    almacen: almacenFotos,
+    prefijo: 'portada',
+  );
+  bool _portadaPublicada = false;
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +74,8 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
   void dispose() {
     _cancelarCicloVida?.call();
     _timer?.cancel();
+    if (!_portadaPublicada) unawaited(_portada.descartar());
+    _portada.dispose();
     _tituloCtrl.dispose();
     _anioCtrl.dispose();
     _descripcionCtrl.dispose();
@@ -161,12 +175,23 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
     ];
 
     // El catálogo es el dueño de las listas: publica y notifica solo.
-    catalogo.publicar(
+    final idAlbum = catalogo.publicar(
       nuevas: nuevas,
       tituloAlbum: _esAlbum ? titulo : null,
       anioAlbum: _anioCtrl.text.trim(),
       colorPortada: _colorPortada.toARGB32(),
     );
+    // La foto de portada (si hay) queda para el álbum y sus canciones.
+    final rutaPortada = _portada.ruta;
+    if (rutaPortada != null) {
+      _portadaPublicada = true;
+      unawaited(
+        repositorioPortadas.asignar([
+          ?idAlbum,
+          for (final c in nuevas) c.id,
+        ], rutaPortada),
+      );
+    }
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -301,10 +326,62 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                           ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    // Foto de portada opcional: si hay, reemplaza al color.
+                    ListenableBuilder(
+                      listenable: _portada,
+                      builder: (context, _) => Row(
+                        children: [
+                          if (_portada.ruta != null) ...[
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(
+                                File(_portada.ruta!),
+                                width: 56,
+                                height: 56,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: colorAcento,
+                                side: const BorderSide(color: colorAcento),
+                              ),
+                              icon: _portada.cargando
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.add_a_photo),
+                              label: Text(
+                                _portada.ruta == null
+                                    ? 'Agregar foto de portada'
+                                    : 'Cambiar foto',
+                              ),
+                              onPressed: _portada.cargando
+                                  ? null
+                                  : () => unawaited(
+                                      cambiarFoto(
+                                        context,
+                                        _portada,
+                                        titulo: 'Foto de portada',
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const Padding(
                       padding: EdgeInsets.only(top: 8),
                       child: Text(
-                        'Por ahora la portada es un color. Subir una imagen se conecta más adelante.',
+                        'La foto es opcional: sin foto se usa el color. Se ve en este celular.',
                         style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ),
