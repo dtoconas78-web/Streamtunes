@@ -20,6 +20,16 @@ App móvil (Flutter) para escuchar música gratis, pensada para artistas "under"
     `donante` ('' = anónima) y `artistaId`. El artista ve "Quién te banca" en su
     perfil y recibe una notificación local por cada donación nueva mientras tiene
     la app abierta (`services/aviso_donaciones.dart`; sin push ni servidor).
+  - **Métricas reales:** una reproducción cuenta cuando se escuchan 30 s (o la
+    canción entera si es más corta; adelantar no suma). Se guarda en la cola local
+    SQLite (`reproducciones`, esquema v2) con la ciudad que el oyente declara en su
+    perfil (sin GPS) y la franja horaria, y se sube a `metricas/{cancionId}` con
+    `FieldValue.increment` (`services/sincronizacion_metricas.dart`) al arrancar, al
+    iniciar sesión, al ir a segundo plano y con una tarea periódica de workmanager.
+    La app y la tarea reservan lotes para no sumar dos veces. El artista ve "Tu
+    música en números" en su perfil y por canción en Estadísticas (resumen calculado
+    en un isolate si hay muchas canciones). Sin Firebase ni datos, Estadísticas
+    muestra los valores de ejemplo avisando que son de ejemplo.
 - **Dos roles + invitado:**
   - **Artista:** sube música, ve estadísticas, publica conciertos, ve ventas/donaciones.
   - **Oyente registrado:** escucha, compra entradas, dona, guarda música, crea listas.
@@ -141,7 +151,7 @@ lib/
   dart analyze
   flutter test
   ```
-  Actualmente: analyze sin issues y **207 tests aprobados**.
+  Actualmente: analyze sin issues y **233 tests aprobados**.
 - **Convenciones para agregar pruebas:**
   - Las aserciones de los tests existentes se preservan; modificarlas solo se justifica
     por un cambio funcional real.

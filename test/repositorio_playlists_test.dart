@@ -149,6 +149,17 @@ void main() {
       expect(reabierto.playlists.map((p) => p.nombre), ['Vieja', 'Nueva']);
     });
 
+    test('si no se pudo leer lo guardado, no lo pisa al crear', () async {
+      await dao.reemplazarDeUsuario('u1', [Playlist(id: 'p1', nombre: 'Mía')]);
+      final r = _RepositorioQueFallaAlLeer(dao)..usarUsuario('u1');
+      await r.listo;
+      expect(r.playlists, isEmpty);
+      r.crear('Nueva'); // funciona en memoria...
+      await r.escrituras;
+      // ...pero no reemplaza lo que hay guardado.
+      expect((await dao.deUsuario('u1')).single.nombre, 'Mía');
+    });
+
     group('migración desde shared_preferences (JSON)', () {
       test('importa las playlists viejas y borra la clave', () async {
         final prefs = preferenciasEnMemoria({
@@ -212,4 +223,13 @@ void main() {
     expect(copia.cancionIds, ['a', 'b']);
     expect(Playlist.fromMap('no es un mapa'), isNull);
   });
+}
+
+/// Repositorio cuya lectura falla (p. ej. la base se cerró).
+class _RepositorioQueFallaAlLeer extends RepositorioPlaylistsSqlite {
+  _RepositorioQueFallaAlLeer(PlaylistsDao dao) : super(dao: dao);
+
+  @override
+  Future<List<Playlist>> cargar(String uid) async =>
+      throw StateError('database_closed');
 }

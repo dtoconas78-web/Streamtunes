@@ -7,7 +7,10 @@ import 'package:streamtunes_demo/data/fuente_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_artistas.dart';
 import 'package:streamtunes_demo/data/repositorio_artistas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
+import 'package:streamtunes_demo/data/repositorio_ciudad.dart';
 import 'package:streamtunes_demo/data/repositorio_configuracion.dart';
+import 'package:streamtunes_demo/data/repositorio_metricas.dart';
+import 'package:streamtunes_demo/data/reproducciones_dao.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas_firestore.dart';
@@ -31,6 +34,8 @@ import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/configuracion_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/metricas_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/perfil_oyente_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/playlists_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
@@ -42,6 +47,7 @@ import 'package:streamtunes_demo/services/gestor_ciclo_vida.dart';
 import 'package:streamtunes_demo/services/servicio_conectividad.dart';
 import 'package:streamtunes_demo/services/servicio_notificaciones.dart';
 import 'package:streamtunes_demo/services/servicio_recordatorios.dart';
+import 'package:streamtunes_demo/services/sincronizacion_metricas.dart';
 import 'package:streamtunes_demo/services/tareas_segundo_plano.dart';
 import 'package:streamtunes_demo/services/tareas_segundo_plano_workmanager.dart';
 
@@ -96,6 +102,52 @@ final RepositorioSeguimiento repositorioSeguimiento = _vincularAlUsuario(
       : RepositorioSeguimientoPreferencias(prefs: preferenciasLocales!),
   (r, uid) => r.usarUsuario(uid),
 );
+
+// Ciudad que declara el oyente en su perfil (para las métricas; sin GPS).
+final PerfilOyenteViewModel perfilOyenteViewModel = _vincularAlUsuario(
+  PerfilOyenteViewModel(
+    repositorio: preferenciasLocales == null
+        ? RepositorioCiudadMemoria()
+        : RepositorioCiudadPreferencias(prefs: preferenciasLocales!),
+  ),
+  (vm, uid) => vm.usarUsuario(uid),
+);
+
+// --- Métricas de reproducción ---
+// Con Firebase, las métricas viven en la colección `metricas` (todos los
+// oyentes suman con incrementos atómicos); sin Firebase, en memoria. Cada
+// reproducción contada va primero a la cola local en SQLite (si hay) y se
+// sube con registroReproducciones.sincronizar().
+final RepositorioMetricas repositorioMetricas = firebaseInicializado
+    ? RepositorioMetricasFirestore(fuente: fuenteFirestore)
+    : RepositorioMetricasMemoria();
+
+final RegistroReproducciones registroReproducciones = RegistroReproducciones(
+  metricas: repositorioMetricas,
+  ciudad: () => perfilOyenteViewModel.ciudadParaMetricas,
+  dao: baseDatosLocal == null ? null : ReproduccionesDao(baseDatosLocal!),
+  reloj: reloj,
+);
+
+final MetricasViewModel metricasViewModel = MetricasViewModel(
+  repositorio: repositorioMetricas,
+);
+
+/// Sube las reproducciones pendientes al arrancar, al iniciar sesión (las
+/// reglas de Firestore piden sesión para escribir) y al ir a segundo plano.
+/// La tarea de workmanager cubre el caso de la app cerrada.
+void inicializarMetricas() {
+  if (!firebaseInicializado) return;
+  void sincronizar() {
+    if (_uidSesionValida() != null) {
+      unawaited(registroReproducciones.sincronizar());
+    }
+  }
+
+  sincronizar();
+  authViewModel.addListener(sincronizar);
+  gestorCicloVida.registrar(alPausar: sincronizar);
+}
 
 // Carga ya los datos del usuario actual y los recarga en cada login/logout
 // (usarUsuario no hace nada si el uid no cambió).
@@ -272,6 +324,11 @@ Future<void> inicializarTareasSegundoPlano() async {
   try {
     await _tareasWorkmanager.inicializar();
     _tareasListas = true;
+    // Subida de métricas con la app cerrada: siempre registrada (no depende
+    // de la preferencia de notificaciones). Política update: no se duplica.
+    if (firebaseInicializado && baseDatosLocal != null) {
+      await _tareasWorkmanager.registrarSincronizacionMetricas();
+    }
     if (configuracionViewModel.notificaciones) {
       await servicioTareas.registrarVerificacionPeriodica();
     }
@@ -346,6 +403,8 @@ final CatalogoViewModel catalogo = CatalogoViewModel(
 final ControladorReproduccion reproductor = ControladorReproduccion(
   repositorioCatalogo: repositorioCatalogo,
   repositorioSeguimiento: repositorioSeguimiento,
+  // Cada reproducción contada (30 s escuchados) va a las métricas.
+  alContarReproduccion: registroReproducciones.contar,
 );
 final SeguimientoViewModel seguimientoViewModel = SeguimientoViewModel(
   repositorioArtistas: repositorioArtistas,

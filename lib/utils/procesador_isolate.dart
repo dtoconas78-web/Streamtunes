@@ -1,5 +1,6 @@
 import 'dart:isolate';
 
+import 'package:streamtunes_demo/models/metricas_cancion.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
 
 /// Umbral de uso: recién conviene mandar el cómputo a un isolate aparte
@@ -47,3 +48,11 @@ Map<String, Object> resumenMovimientos(List<Movimiento> movimientos) {
 Future<Map<String, Object>> resumenMovimientosEnIsolate(
   List<Movimiento> movimientos,
 ) => computarEnIsolate(() => resumenMovimientos(movimientos));
+
+/// Resumen de métricas ([resumirMetricas]) corriendo en un isolate aparte
+/// si hay muchas canciones (>= [umbralIsolate]); si no, directo.
+Future<ResumenMetricas> resumirMetricasAdaptativo(
+  List<MetricasCancion> metricas,
+) => metricas.length >= umbralIsolate
+    ? computarEnIsolate(() => resumirMetricas(metricas))
+    : Future.value(resumirMetricas(metricas));

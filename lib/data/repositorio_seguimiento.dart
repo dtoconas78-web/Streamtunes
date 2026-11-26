@@ -119,6 +119,9 @@ class RepositorioSeguimientoMemoria extends RepositorioSeguimiento {
   }
 
   bool _cargando = false;
+  // Si no se pudo leer lo guardado, no se guarda nada en esta sesión del
+  // usuario: guardar la lista incompleta pisaría los datos que sí existen.
+  bool _cargaFallida = false;
   Future<void> _listo = Future.value();
 
   @override
@@ -131,6 +134,7 @@ class RepositorioSeguimientoMemoria extends RepositorioSeguimiento {
   void usarUsuario(String? uid) {
     if (uid == _uid) return;
     _uid = uid;
+    _cargaFallida = false;
     final previos = !_datos.vacio;
     _datos = DatosSeguimiento();
     _cargando = uid != null;
@@ -143,13 +147,16 @@ class RepositorioSeguimientoMemoria extends RepositorioSeguimiento {
   // guardado (y se vuelve a guardar la unión).
   Future<void> _cargarDe(String uid) async {
     DatosSeguimiento guardados;
+    var fallo = false;
     try {
       guardados = await cargar(uid);
     } catch (e) {
       debugPrint('No se pudieron leer los seguimientos guardados: $e');
       guardados = DatosSeguimiento();
+      fallo = true;
     }
     if (_uid != uid) return;
+    _cargaFallida = fallo;
     final cambiosDuranteCarga = !_datos.vacio;
     _datos = DatosSeguimiento(
       artistas: {...guardados.artistas, ..._datos.artistas},
@@ -157,13 +164,13 @@ class RepositorioSeguimientoMemoria extends RepositorioSeguimiento {
       meGusta: {...guardados.meGusta, ..._datos.meGusta},
     );
     _cargando = false;
-    if (cambiosDuranteCarga) guardar(uid, _datos);
+    if (cambiosDuranteCarga && !_cargaFallida) guardar(uid, _datos);
     notifyListeners();
   }
 
   void _cambio() {
     final u = _uid;
-    if (u != null) guardar(u, _datos);
+    if (u != null && !_cargaFallida) guardar(u, _datos);
     notifyListeners();
   }
 

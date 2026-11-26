@@ -101,6 +101,9 @@ class RepositorioPlaylistsMemoria extends RepositorioPlaylists {
   }
 
   bool _cargando = false;
+  // Si no se pudo leer lo guardado, no se guarda nada en esta sesión del
+  // usuario: guardar la lista incompleta pisaría los datos que sí existen.
+  bool _cargaFallida = false;
   Future<void> _listo = Future.value();
 
   @override
@@ -113,6 +116,7 @@ class RepositorioPlaylistsMemoria extends RepositorioPlaylists {
   void usarUsuario(String? uid) {
     if (uid == _uid) return;
     _uid = uid;
+    _cargaFallida = false;
     final previas = _playlists.isNotEmpty;
     _playlists.clear();
     _cargando = uid != null;
@@ -125,13 +129,16 @@ class RepositorioPlaylistsMemoria extends RepositorioPlaylists {
   // cambió playlists durante la carga, se conservan y se guarda la unión.
   Future<void> _cargarDe(String uid) async {
     List<Playlist> guardadas;
+    var fallo = false;
     try {
       guardadas = await cargar(uid);
     } catch (e) {
       debugPrint('No se pudieron leer las playlists guardadas: $e');
       guardadas = const [];
+      fallo = true;
     }
     if (_uid != uid) return;
+    _cargaFallida = fallo;
     final cambiosDuranteCarga = _playlists.isNotEmpty;
     final ids = {for (final p in _playlists) p.id};
     _playlists.insertAll(0, [
@@ -139,13 +146,13 @@ class RepositorioPlaylistsMemoria extends RepositorioPlaylists {
         if (!ids.contains(p.id)) p,
     ]);
     _cargando = false;
-    if (cambiosDuranteCarga) guardar(uid, playlists);
+    if (cambiosDuranteCarga && !_cargaFallida) guardar(uid, playlists);
     notifyListeners();
   }
 
   void _cambio() {
     final u = _uid;
-    if (u != null) guardar(u, playlists);
+    if (u != null && !_cargaFallida) guardar(u, playlists);
     notifyListeners();
   }
 

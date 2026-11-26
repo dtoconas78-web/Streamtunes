@@ -8,6 +8,7 @@ import 'package:streamtunes_demo/views/widgets/estado_verificacion_ui.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 import 'package:streamtunes_demo/views/widgets/quien_te_banca.dart';
+import 'package:streamtunes_demo/views/widgets/tu_musica_en_numeros.dart';
 
 // Pantalla A: perfil del artista + tabs + lista de canciones.
 // Es Stateful porque el botón "Seguir" cambia de estado al tocarlo.
@@ -249,7 +250,12 @@ class _PantallaAState extends State<PantallaA>
                         ],
                       ),
                     ),
-                    // Solo el artista ve quiénes lo apoyan (dato económico).
+                    // Solo el artista ve sus estadísticas y quiénes lo apoyan.
+                    if (authViewModel.esArtista)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                        child: TuMusicaEnNumeros(metricas: metricasViewModel),
+                      ),
                     if (authViewModel.esArtista)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),

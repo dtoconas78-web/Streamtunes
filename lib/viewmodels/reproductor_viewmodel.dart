@@ -11,6 +11,10 @@ import 'package:streamtunes_demo/models/cancion.dart';
 // lib/views/widgets/modo_reproduccion_ui.dart.
 enum ModoReproduccion { enOrden, aleatorio, repetirUna }
 
+/// Segundos escuchados a partir de los cuales una reproducción cuenta para
+/// las estadísticas (o la canción entera, si dura menos).
+const int segundosParaContar = 30;
+
 // Controlador de reproducción: guarda qué suena, en qué segundo y si está en pausa.
 // Vive fuera de las pantallas, por eso la música sigue al navegar.
 // Cuando se conecte audio real (just_audio), solo hay que tocar esta clase.
@@ -23,14 +27,25 @@ class ControladorReproduccion extends ChangeNotifier {
   // Los "me gusta" se guardan POR ID de canción en el repositorio de
   // seguimiento (el mismo que usa SeguimientoViewModel); sin repositorio se
   // usa uno en memoria.
+  //
+  // [alContarReproduccion] se llama UNA vez por cada vez que suena una
+  // canción, cuando se escucharon [segundosParaContar] segundos (o la
+  // canción entera si es más corta). Adelantar con la barra no suma
+  // segundos escuchados. Así este VM no sabe nada de SQLite ni Firestore.
   ControladorReproduccion({
     required this._repositorioCatalogo,
     RepositorioSeguimiento? repositorioSeguimiento,
+    this._alContarReproduccion,
   }) : _repositorioSeguimiento =
            repositorioSeguimiento ?? RepositorioSeguimientoMemoria();
 
   final RepositorioCatalogo _repositorioCatalogo;
   final RepositorioSeguimiento _repositorioSeguimiento;
+  final void Function(Cancion cancion)? _alContarReproduccion;
+
+  // Escucha actual: segundos realmente escuchados y si ya se contó.
+  int _escuchados = 0;
+  bool _contada = false;
 
   int? _indiceActual; // null = todavía no se eligió ninguna canción
   int _posicion = 0; // segundos reproducidos de la canción actual
@@ -92,6 +107,7 @@ class ControladorReproduccion extends ChangeNotifier {
     if (_indiceActual != indice) {
       _indiceActual = indice;
       _posicion = 0;
+      _nuevaEscucha();
     }
     _reproduciendo = true;
     // El reloj se crea una sola vez y avanza cada segundo mientras suena.
@@ -112,6 +128,7 @@ class ControladorReproduccion extends ChangeNotifier {
     _indiceActual =
         _cola[((inicio % _cola.length) + _cola.length) % _cola.length];
     _posicion = 0;
+    _nuevaEscucha();
     _reproduciendo = true;
     _timer ??= Timer.periodic(const Duration(seconds: 1), (_) => _avanzar());
     notifyListeners();
@@ -120,11 +137,14 @@ class ControladorReproduccion extends ChangeNotifier {
   void _avanzar() {
     if (!_reproduciendo || !hayCancion) return;
     _posicion++;
+    _escuchados++;
+    _contarSiCorresponde();
     // Al terminar la canción: en "solo esta canción" vuelve a empezarla;
     // en los otros modos pasa a la siguiente de la cola.
     if (_posicion >= total) {
       if (_modo == ModoReproduccion.repetirUna) {
         _posicion = 0;
+        _nuevaEscucha();
       } else {
         _irA(_indiceEnCola(_posEnCola() + 1));
       }
@@ -135,6 +155,23 @@ class ControladorReproduccion extends ChangeNotifier {
   void _irA(int nuevoIndice) {
     _indiceActual = nuevoIndice;
     _posicion = 0;
+    _nuevaEscucha();
+  }
+
+  void _nuevaEscucha() {
+    _escuchados = 0;
+    _contada = false;
+  }
+
+  void _contarSiCorresponde() {
+    final c = cancion;
+    if (_contada || c == null) return;
+    final umbral = c.duracionSegundos < segundosParaContar
+        ? c.duracionSegundos
+        : segundosParaContar;
+    if (_escuchados < umbral) return;
+    _contada = true;
+    _alContarReproduccion?.call(c);
   }
 
   void alternarPausa() {
@@ -179,7 +216,8 @@ class ControladorReproduccion extends ChangeNotifier {
     if (_modo == ModoReproduccion.aleatorio && _historialAleatorio.isNotEmpty) {
       _irA(_historialAleatorio.removeLast());
     } else if (_posicion > 3) {
-      _posicion = 0;
+      _posicion = 0; // vuelve a empezar: es otra escucha
+      _nuevaEscucha();
     } else {
       _irA(_indiceEnCola(_posEnCola() - 1));
     }

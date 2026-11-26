@@ -63,6 +63,21 @@ abstract class GeneradorIdsFirestore {
   String generarId(String coleccion);
 }
 
+/// Capacidad OPCIONAL de sumar contadores de forma atómica (métricas de
+/// reproducción). Fuera de `FuenteFirestore` por el mismo motivo que
+/// [GeneradorIdsFirestore]: no romper los fakes que hacen `implements`.
+abstract class IncrementadorFirestore {
+  /// Suma [incrementos] al documento [id] de [coleccion] (lo crea si no
+  /// existe). Los valores son números o mapas anidados de números: se suman
+  /// campo por campo en el servidor (FieldValue.increment), así dos
+  /// celulares que suman a la vez no se pisan.
+  Future<void> incrementar(
+    String coleccion,
+    String id,
+    Map<String, Object> incrementos,
+  );
+}
+
 /// Generación de ids de documento SIN escribir nada (Bloque B: los ids de la
 /// compra atómica se preparan ANTES de la transacción, así permanecen
 /// estables ante los reintentos automáticos de Firestore).
@@ -101,7 +116,7 @@ String _generarIdDe(GeneradorIdsFirestore generador, String coleccion) =>
 /// `firebaseInicializado` es false). Cada método recién accede al instance al
 /// llamarse.
 class FuenteFirestoreFirebase
-    implements FuenteFirestore, GeneradorIdsFirestore {
+    implements FuenteFirestore, GeneradorIdsFirestore, IncrementadorFirestore {
   FirebaseFirestore get _db => FirebaseFirestore.instance;
 
   @override
@@ -145,6 +160,29 @@ class FuenteFirestoreFirebase
   ) async {
     return (await _db.collection(coleccion).add(datos)).id;
   }
+
+  @override
+  Future<void> incrementar(
+    String coleccion,
+    String id,
+    Map<String, Object> incrementos,
+  ) {
+    // set + merge con mapas anidados: crea el doc o suma campo por campo.
+    return _db
+        .collection(coleccion)
+        .doc(id)
+        .set(_comoIncrementos(incrementos), SetOptions(merge: true));
+  }
+
+  static Map<String, Object> _comoIncrementos(Map<String, Object> mapa) => {
+    for (final e in mapa.entries)
+      e.key: switch (e.value) {
+        final num n => FieldValue.increment(n),
+        final Map<String, Object> m => _comoIncrementos(m),
+        final Map m => _comoIncrementos(m.cast<String, Object>()),
+        final otro => throw ArgumentError('No es un incremento: $otro'),
+      },
+  };
 
   @override
   String generarId(String coleccion) {

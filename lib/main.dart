@@ -31,6 +31,8 @@ Future<void> main() async {
   await inicializarTareasSegundoPlano();
   // Aviso al artista cuando recibe una donación (con la app abierta).
   inicializarAvisoDonaciones();
+  // Sube las reproducciones contadas a las métricas (ver inyeccion.dart).
+  inicializarMetricas();
   runApp(const MiApp());
 }
 

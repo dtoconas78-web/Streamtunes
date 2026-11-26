@@ -104,6 +104,19 @@ void main() {
     });
   });
 
+  test('registra la subida periódica de métricas con red', () async {
+    await ServicioTareasWorkmanager().registrarSincronizacionMetricas();
+    expect(plataforma.periodicas, [
+      {
+        'uniqueName': nombreUnicoMetricas,
+        'taskName': tareaSincronizarMetricas,
+        'frequency': frecuenciaMetricas,
+        'policy': ExistingPeriodicWorkPolicy.update,
+        'network': NetworkType.connected,
+      },
+    ]);
+  });
+
   test('cancelar cancela la tarea por su nombre único', () async {
     await ServicioTareasWorkmanager().cancelar();
     expect(plataforma.canceladas, [nombreUnicoNovedades]);
