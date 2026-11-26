@@ -73,4 +73,31 @@ void main() {
     expect(find.text('Sin Señal'), findsOneWidget);
     expect(find.byType(Scaffold), findsWidgets);
   });
+
+  testWidgets('el perfil del artista tiene la pestaña Ventas', (tester) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const MiApp());
+    await tester.enterText(
+      find.byType(TextFormField).first,
+      'artista@mail.com',
+    );
+    await tester.tap(find.text('Artista'));
+    await tester.tap(find.text('Ingresar'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Ventas y donaciones'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Donaciones'), findsWidgets);
+    await tester.scrollUntilVisible(
+      find.text('Donación de un fan'),
+      100,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('Donación de un fan'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

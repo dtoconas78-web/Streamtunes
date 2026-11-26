@@ -27,7 +27,7 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -42,16 +42,6 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
       appBar: AppBar(
         title: const Text('Perfil'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.attach_money),
-            tooltip: 'Ventas y donaciones',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const VentasDonacionesScreen()),
-              );
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.logout, color: colorAcento),
             tooltip: 'Cerrar sesión',
@@ -223,7 +213,7 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
               ),
             ),
             const SizedBox(height: 12),
-            // Tabs: Canciones / Álbumes / Sobre mí.
+            // Tabs: Canciones / Álbumes / Sobre mí / Ventas.
             TabBar(
               controller: _tabController,
               labelColor: colorAcento,
@@ -233,6 +223,7 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                 Tab(text: 'Canciones'),
                 Tab(text: 'Álbumes'),
                 Tab(text: 'Sobre mí'),
+                Tab(text: 'Ventas y donaciones'),
               ],
             ),
             // Contenido de cada tab.
@@ -339,6 +330,11 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                         style: const TextStyle(color: Colors.grey, fontSize: 14),
                       ),
                     ),
+                  ),
+                  // Tab 4: ventas y donaciones.
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: PanelVentasDonaciones(margenInferior: 88),
                   ),
                 ],
               ),
