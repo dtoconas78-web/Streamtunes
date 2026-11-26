@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
 import 'package:streamtunes_demo/data/fuente_firestore.dart';
@@ -109,12 +110,25 @@ RepositorioMovimientos _crearMovimientos() {
 // hilo principal: corre en segundo plano con sus propios errores capturados,
 // y los repos se enteran de los datos nuevos vía sus snapshots. Si falla, la
 // app sigue con lo que haya en Firestore.
+//
+// Las reglas de Firestore solo permiten escribir con `request.auth != null`,
+// así que la semilla espera al primer usuario con sesión en Firebase Auth (al
+// arrancar todavía no hay nadie logueado y la escritura daría
+// PERMISSION_DENIED). El invitado es local y no cuenta como sesión.
 bool _semillaDisparada = false;
+StreamSubscription<User?>? _esperaSesionSemilla;
 
 void _dispararSemilla() {
   if (_semillaDisparada) return;
   _semillaDisparada = true;
-  unawaited(_sembrar());
+  _esperaSesionSemilla = FirebaseAuth.instance.authStateChanges().listen((
+    usuario,
+  ) {
+    if (usuario == null) return;
+    _esperaSesionSemilla?.cancel();
+    _esperaSesionSemilla = null;
+    unawaited(_sembrar());
+  });
 }
 
 Future<void> _sembrar() async {
