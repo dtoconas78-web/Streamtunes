@@ -22,6 +22,7 @@ import 'package:streamtunes_demo/models/artista.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/plataforma/plataforma.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
+import 'package:streamtunes_demo/services/aviso_donaciones.dart';
 import 'package:streamtunes_demo/services/firebase_auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
 import 'package:streamtunes_demo/services/firebase_semilla.dart';
@@ -115,6 +116,10 @@ String? _uidSesionValida() {
   return usuario.id; // en Firebase mode Usuario.id = fbUser.uid
 }
 
+/// Id del artista de la sesión, o null si quien usa la app no es artista.
+String? _artistaSesionId() =>
+    authViewModel.esArtista ? perfil.artista.id : null;
+
 RepositorioCatalogo _crearCatalogo() {
   if (!firebaseInicializado) return RepositorioCatalogoMemoria();
   _dispararSemilla();
@@ -142,6 +147,8 @@ RepositorioMovimientos _crearMovimientos() {
   return RepositorioMovimientosFirestore(
     fuente: fuenteFirestore,
     uidActual: _uidSesionValida,
+    // El artista ve también las donaciones que le hacen otros usuarios.
+    artistaActual: _artistaSesionId,
   );
 }
 
@@ -271,6 +278,25 @@ Future<void> inicializarTareasSegundoPlano() async {
   } catch (e) {
     debugPrint('Tareas en segundo plano no disponibles: $e');
   }
+}
+
+// --- Aviso de donaciones recibidas (al artista, con la app abierta) ---
+final AvisoDonaciones avisoDonaciones = AvisoDonaciones(
+  repositorio: repositorioMovimientos,
+  sesion: authViewModel,
+  artistaActual: _artistaSesionId,
+  // Capacidad real + preferencia del usuario, consultadas en cada aviso.
+  activo: () =>
+      capacidades.notificacionesDisponibles &&
+      configuracionViewModel.notificaciones,
+  avisar: servicioRecordatorios.mostrarDonacionRecibida,
+  reloj: reloj,
+);
+
+/// Activa el aviso de donaciones (solo si el plugin de notificaciones se
+/// inicializó; en los tests no se activa).
+void inicializarAvisoDonaciones() {
+  if (_notificacionesListas) avisoDonaciones.iniciar();
 }
 
 GestorCicloVida _crearGestorCicloVida() {

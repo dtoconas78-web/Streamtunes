@@ -25,7 +25,25 @@ abstract class ServicioRecordatorios {
 
   /// Avisa que hay conciertos nuevos publicados (tarea en segundo plano).
   Future<void> mostrarNuevosConciertos(List<String> nombres);
+
+  /// Avisa al artista que recibió una donación ([donante] '' = anónima).
+  Future<void> mostrarDonacionRecibida({
+    required double monto,
+    required String donante,
+  });
 }
+
+/// Texto del aviso de donación recibida (función pura: se prueba sin
+/// plugin). [precio] es el monto ya formateado.
+({String titulo, String cuerpo}) textoDonacionRecibida(
+  String precio,
+  String donante,
+) => (
+  titulo: 'Recibiste una donación',
+  cuerpo: donante.isEmpty
+      ? 'Alguien te donó $precio de forma anónima'
+      : '$donante te donó $precio',
+);
 
 /// Hora del día en que sale el recordatorio (el día ANTERIOR al concierto).
 const int horaRecordatorio = 10;

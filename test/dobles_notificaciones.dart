@@ -37,6 +37,16 @@ class RecordatoriosFalsos implements ServicioRecordatorios {
   Future<void> mostrarNuevosConciertos(List<String> nombres) async {
     avisos.add(nombres);
   }
+
+  final List<({double monto, String donante})> donaciones = [];
+
+  @override
+  Future<void> mostrarDonacionRecibida({
+    required double monto,
+    required String donante,
+  }) async {
+    donaciones.add((monto: monto, donante: donante));
+  }
 }
 
 /// Doble del servicio de tareas en segundo plano.

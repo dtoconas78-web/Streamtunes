@@ -10,6 +10,10 @@ import 'package:streamtunes_demo/models/movimiento.dart';
 /// válida vía [uidActual], resuelto de forma diferida; sin sesión válida la
 /// lista queda vacía y nunca se exponen movimientos de otros usuarios).
 ///
+/// Excepción: si la sesión es de un artista ([artistaActual] devuelve su
+/// id), también se incluyen las DONACIONES dirigidas a ese artista aunque
+/// las haya hecho otro usuario (así ve quién lo banca y recibe el aviso).
+///
 /// El movimiento de una COMPRA no se escribe desde acá: se crea dentro de la
 /// transacción atómica de `RepositorioEntradasFirestore` (única ruta de
 /// escritura para ese registro). Acá `registrar` sólo cubre altas sueltas
@@ -17,15 +21,25 @@ import 'package:streamtunes_demo/models/movimiento.dart';
 /// snapshot; ante error del stream se conserva la última caché válida y se
 /// registra en [ultimoError].
 class RepositorioMovimientosFirestore extends RepositorioMovimientos {
-  RepositorioMovimientosFirestore({required this._fuente, this.uidActual}) {
+  RepositorioMovimientosFirestore({
+    required this._fuente,
+    this.uidActual,
+    this.artistaActual,
+  }) {
     _suscripcion = _fuente
         .snapshotsColeccion('movimientos')
         .map((docs) {
           final uid = uidActual?.call();
           if (uid == null || uid.isEmpty) return <Movimiento>[];
+          final artista = artistaActual?.call();
+          bool esDonacionParaMi(Map<String, dynamic> datos) =>
+              artista != null &&
+              artista.isNotEmpty &&
+              datos['tipo'] == TipoMovimiento.donacion.name &&
+              datos['artistaId'] == artista;
           return [
             for (final d in docs)
-              if (d.datos['usuarioId'] == uid)
+              if (d.datos['usuarioId'] == uid || esDonacionParaMi(d.datos))
                 Movimiento.fromMap(d.datos, id: d.id),
           ];
         })
@@ -36,6 +50,10 @@ class RepositorioMovimientosFirestore extends RepositorioMovimientos {
 
   /// Proveedor diferido del uid de la sesión válida (null = sin sesión).
   final String? Function()? uidActual;
+
+  /// Proveedor diferido del id del artista de la sesión (null = la sesión no
+  /// es de un artista).
+  final String? Function()? artistaActual;
 
   List<Movimiento> _movimientos = [];
   StreamSubscription<List<Movimiento>>? _suscripcion;

@@ -135,6 +135,7 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
                         ),
                         subtitle: Text(
                           '${m.tipo.etiqueta} · ${formatearFecha(m.fecha)}'
+                          '${m.tipo == TipoMovimiento.donacion ? (m.esAnonima ? ' · anónima' : ' · de ${m.donante}') : ''}'
                           '${m.comision > 0 ? ' · comisión -${formatearPrecio(m.comision)}' : ''}',
                           style: const TextStyle(
                             color: Colors.grey,

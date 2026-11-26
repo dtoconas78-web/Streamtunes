@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
-import 'package:streamtunes_demo/utils/formularios.dart';
-import 'package:streamtunes_demo/utils/formatos.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/widgets/boton_perfil.dart';
+import 'package:streamtunes_demo/views/widgets/hoja_donacion.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
@@ -17,29 +16,6 @@ class DonarScreen extends StatelessWidget {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(mensaje)));
-  }
-
-  // Elección de monto y confirmación. Con backend real, acá va el
-  // pasarela de pago (Mercado Pago, etc.); el flujo queda igual.
-  Future<void> _elegirMonto(BuildContext context, String nombreArtista) async {
-    final montoElegido = await showModalBottomSheet<double>(
-      context: context,
-      builder: (sheetContext) => _HojaElegirMonto(
-        nombreArtista: nombreArtista,
-        alConfirmar: (monto) => Navigator.pop(sheetContext, monto),
-      ),
-    );
-
-    if (montoElegido == null || !context.mounted) return;
-
-    ventasViewModel.registrarDonacion(
-      'Donación a $nombreArtista',
-      montoElegido,
-    );
-    _error(
-      context,
-      'Donaste ${formatearPrecio(montoElegido)} a $nombreArtista. ¡Gracias!',
-    );
   }
 
   @override
@@ -110,7 +86,7 @@ class DonarScreen extends StatelessWidget {
                         Icons.volunteer_activism,
                         color: colorAcento,
                       ),
-                      onTap: () => _elegirMonto(context, artista.nombre),
+                      onTap: () => abrirDonacion(context, artista),
                     ),
                   ),
               ],
@@ -155,111 +131,6 @@ class DonarScreen extends StatelessWidget {
             ],
           );
         },
-      ),
-    );
-  }
-}
-
-// Hoja inferior para elegir el monto. Es StatefulWidget aparte para que el
-// TextEditingController viva y muera con la hoja: si el padre lo hiciera
-// dispose() apenas se cierra el sheet (mientras el TextField todavía está
-// montado durante la animación de salida), el framework revienta con
-// "_dependents.isEmpty" / "attached is not true".
-class _HojaElegirMonto extends StatefulWidget {
-  final String nombreArtista;
-  final void Function(double monto) alConfirmar;
-
-  const _HojaElegirMonto({
-    required this.nombreArtista,
-    required this.alConfirmar,
-  });
-
-  @override
-  State<_HojaElegirMonto> createState() => _HojaElegirMontoState();
-}
-
-class _HojaElegirMontoState extends State<_HojaElegirMonto> {
-  static const _rapidos = [500.0, 1000.0, 2000.0, 5000.0];
-  final _controlador = TextEditingController();
-  double? _montoElegido;
-
-  @override
-  void dispose() {
-    _controlador.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Donar a ${widget.nombreArtista}',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'El 100% va directo al artista.',
-              style: TextStyle(color: Colors.grey, fontSize: 13),
-            ),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final monto in _rapidos)
-                  ChoiceChip(
-                    label: Text(formatearPrecio(monto)),
-                    selected: _montoElegido == monto,
-                    onSelected: (_) => setState(() {
-                      _montoElegido = monto;
-                      _controlador.clear();
-                    }),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _controlador,
-              keyboardType: TextInputType.number,
-              decoration: decoracionFormulario('Otro monto (\$ argentinos)'),
-              onChanged: (texto) {
-                final valor = double.tryParse(texto);
-                setState(
-                  () => _montoElegido = (valor != null && valor > 0)
-                      ? valor
-                      : null,
-                );
-              },
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                style: FilledButton.styleFrom(
-                  backgroundColor: colorAcento,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: const StadiumBorder(),
-                ),
-                onPressed: _montoElegido == null
-                    ? null
-                    : () => widget.alConfirmar(_montoElegido!),
-                child: Text(
-                  _montoElegido == null
-                      ? 'Elegí un monto'
-                      : 'Donar ${formatearPrecio(_montoElegido!)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

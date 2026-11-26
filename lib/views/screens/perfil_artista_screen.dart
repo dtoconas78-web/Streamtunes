@@ -7,6 +7,7 @@ import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/widgets/estado_verificacion_ui.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
+import 'package:streamtunes_demo/views/widgets/quien_te_banca.dart';
 
 // Pantalla A: perfil del artista + tabs + lista de canciones.
 // Es Stateful porque el botón "Seguir" cambia de estado al tocarlo.
@@ -248,6 +249,15 @@ class _PantallaAState extends State<PantallaA>
                         ],
                       ),
                     ),
+                    // Solo el artista ve quiénes lo apoyan (dato económico).
+                    if (authViewModel.esArtista)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                        child: QuienTeBanca(
+                          ventas: ventasViewModel,
+                          alVerTodo: () => irA(context, Rutas.ventas),
+                        ),
+                      ),
                     // Barra de búsqueda (solo visual, sin lógica).
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),

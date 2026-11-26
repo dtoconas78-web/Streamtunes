@@ -29,6 +29,8 @@ Future<void> main() async {
   // Inicializa workmanager (tareas periódicas en segundo plano, ver
   // services/tareas_segundo_plano_workmanager.dart).
   await inicializarTareasSegundoPlano();
+  // Aviso al artista cuando recibe una donación (con la app abierta).
+  inicializarAvisoDonaciones();
   runApp(const MiApp());
 }
 

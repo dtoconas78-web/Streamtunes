@@ -14,6 +14,12 @@ App móvil (Flutter) para escuchar música gratis, pensada para artistas "under"
     (`utils/comision.dart`). El fan paga el precio publicado, sin cargos extra; las
     donaciones llegan completas. Cada venta guarda su `comision` y Ventas y
     donaciones muestra bruto, comisión y neto (documentos viejos: comisión 0).
+  - **Donaciones:** el fan dona con su nombre o en forma anónima, desde Donar o
+    desde el reproductor sin dejar de escuchar (`views/widgets/hoja_donacion.dart`;
+    si no sigue al artista se le ofrece "Seguir y donar"). Cada donación guarda
+    `donante` ('' = anónima) y `artistaId`. El artista ve "Quién te banca" en su
+    perfil y recibe una notificación local por cada donación nueva mientras tiene
+    la app abierta (`services/aviso_donaciones.dart`; sin push ni servidor).
 - **Dos roles + invitado:**
   - **Artista:** sube música, ve estadísticas, publica conciertos, ve ventas/donaciones.
   - **Oyente registrado:** escucha, compra entradas, dona, guarda música, crea listas.
@@ -135,7 +141,7 @@ lib/
   dart analyze
   flutter test
   ```
-  Actualmente: analyze sin issues y **189 tests aprobados**.
+  Actualmente: analyze sin issues y **207 tests aprobados**.
 - **Convenciones para agregar pruebas:**
   - Las aserciones de los tests existentes se preservan; modificarlas solo se justifica
     por un cambio funcional real.

@@ -73,15 +73,44 @@ class VentasViewModel extends ChangeNotifier {
     );
   }
 
-  void registrarDonacion(String detalle, double monto) {
+  /// Registra una donación. [donante] es el nombre que el fan elige mostrar
+  /// ('' = anónima); [artistaId] es quien la recibe.
+  void registrarDonacion(
+    String detalle,
+    double monto, {
+    String donante = '',
+    String artistaId = '',
+  }) {
     _repositorio.registrar(
       Movimiento(
         tipo: TipoMovimiento.donacion,
         detalle: detalle,
         monto: monto,
         fecha: _reloj.ahora(),
+        donante: donante.trim(),
+        artistaId: artistaId,
       ),
     );
+  }
+
+  /// "Quién te banca": donantes agrupados por nombre, de mayor a menor
+  /// total. Todas las donaciones anónimas van juntas en una sola fila
+  /// (con [Bancador.anonimo] en true).
+  List<Bancador> get quienesTeBancan {
+    final porNombre = <String, Bancador>{};
+    for (final m in _repositorio.movimientos) {
+      if (m.tipo != TipoMovimiento.donacion) continue;
+      final previo = porNombre[m.donante];
+      porNombre[m.donante] = Bancador(
+        nombre: m.donante,
+        total: (previo?.total ?? 0) + m.monto,
+        cantidad: (previo?.cantidad ?? 0) + 1,
+      );
+    }
+    return porNombre.values.toList()..sort((a, b) {
+      final porTotal = b.total.compareTo(a.total);
+      return porTotal != 0 ? porTotal : a.nombre.compareTo(b.nombre);
+    });
   }
 
   @override
@@ -89,4 +118,33 @@ class VentasViewModel extends ChangeNotifier {
     _repositorio.removeListener(notifyListeners);
     super.dispose();
   }
+}
+
+/// Un fan que apoya al artista (o todos los anónimos juntos).
+class Bancador {
+  const Bancador({
+    required this.nombre,
+    required this.total,
+    required this.cantidad,
+  });
+
+  /// '' = donaciones anónimas.
+  final String nombre;
+  final double total;
+  final int cantidad;
+
+  bool get anonimo => nombre.isEmpty;
+
+  @override
+  bool operator ==(Object other) =>
+      other is Bancador &&
+      other.nombre == nombre &&
+      other.total == total &&
+      other.cantidad == cantidad;
+
+  @override
+  int get hashCode => Object.hash(nombre, total, cantidad);
+
+  @override
+  String toString() => 'Bancador($nombre, $total, $cantidad)';
 }

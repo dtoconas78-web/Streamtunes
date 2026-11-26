@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/services/servicio_recordatorios.dart';
+import 'package:streamtunes_demo/utils/formatos.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 /// Servicio de notificaciones locales de la app.
@@ -35,6 +36,9 @@ class ServicioNotificacionesLocal
 
   static const int _idReproduccion = 1;
   static const int _idNovedades = 2;
+  // Donaciones: ids rotativos 3..99 para que varias seguidas no se pisen.
+  static const int _idDonacionBase = 3;
+  int _contadorDonaciones = 0;
   static const String _canalId = 'reproduccion_segundo_plano';
   bool _inicializado = false;
 
@@ -53,6 +57,15 @@ class ServicioNotificacionesLocal
         'novedades_conciertos',
         'Nuevos conciertos',
         channelDescription: 'Aviso cuando se publican conciertos nuevos',
+      );
+
+  static const AndroidNotificationDetails _canalDonaciones =
+      AndroidNotificationDetails(
+        'donaciones_recibidas',
+        'Donaciones recibidas',
+        channelDescription: 'Aviso al artista cuando un fan le dona',
+        importance: Importance.high,
+        priority: Priority.high,
       );
 
   AndroidFlutterLocalNotificationsPlugin? get _android => _plugin
@@ -145,6 +158,21 @@ class ServicioNotificacionesLocal
           : '${nombres.length} conciertos nuevos',
       body: nombres.join(', '),
       notificationDetails: const NotificationDetails(android: _canalNovedades),
+    );
+  }
+
+  @override
+  Future<void> mostrarDonacionRecibida({
+    required double monto,
+    required String donante,
+  }) async {
+    await inicializar();
+    final texto = textoDonacionRecibida(formatearPrecio(monto), donante);
+    await _plugin.show(
+      id: _idDonacionBase + (_contadorDonaciones++ % 97),
+      title: texto.titulo,
+      body: texto.cuerpo,
+      notificationDetails: const NotificationDetails(android: _canalDonaciones),
     );
   }
 }
