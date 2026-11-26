@@ -3,6 +3,7 @@ import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/utils/comision.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
 import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
@@ -52,9 +53,10 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
                 child: Row(
                   children: [
                     Expanded(
+                      // Lo que recibe el artista (ya sin la comisión).
                       child: _tarjetaTotal(
-                        'Ventas',
-                        ventasViewModel.totalVentas,
+                        'Entradas (neto)',
+                        ventasViewModel.netoVentas,
                         colorAcento,
                         Icons.confirmation_number,
                       ),
@@ -71,6 +73,17 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
                   ],
                 ),
               ),
+              if (ventasViewModel.totalComisiones > 0)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: Text(
+                    'Vendiste ${formatearPrecio(ventasViewModel.totalVentas)} '
+                    'en entradas · comisión StreamTunes '
+                    '($porcentajeComision): '
+                    '-${formatearPrecio(ventasViewModel.totalComisiones)}',
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 // Wrap en vez de Row: en pantallas angostas los filtros no
@@ -121,14 +134,16 @@ class _VentasDonacionesScreenState extends State<VentasDonacionesScreen> {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          '${m.tipo.etiqueta} · ${formatearFecha(m.fecha)}',
+                          '${m.tipo.etiqueta} · ${formatearFecha(m.fecha)}'
+                          '${m.comision > 0 ? ' · comisión -${formatearPrecio(m.comision)}' : ''}',
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 12,
                           ),
                         ),
                         trailing: Text(
-                          '+${formatearPrecio(m.monto)}',
+                          // Lo que recibe el artista (neto de comisión).
+                          '+${formatearPrecio(m.neto)}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,

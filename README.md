@@ -10,6 +10,10 @@ App móvil (Flutter) para escuchar música gratis, pensada para artistas "under"
   - Donaciones directas al artista.
   - Conciertos publicados por el artista (ver concierto, comprar entrada).
   - El artista ve sus **ventas y donaciones** desde su perfil.
+  - **Comisión:** StreamTunes se queda con el 30% de cada entrada vendida
+    (`utils/comision.dart`). El fan paga el precio publicado, sin cargos extra; las
+    donaciones llegan completas. Cada venta guarda su `comision` y Ventas y
+    donaciones muestra bruto, comisión y neto (documentos viejos: comisión 0).
 - **Dos roles + invitado:**
   - **Artista:** sube música, ve estadísticas, publica conciertos, ve ventas/donaciones.
   - **Oyente registrado:** escucha, compra entradas, dona, guarda música, crea listas.
@@ -131,7 +135,7 @@ lib/
   dart analyze
   flutter test
   ```
-  Actualmente: analyze sin issues y **56 tests aprobados**.
+  Actualmente: analyze sin issues y **189 tests aprobados**.
 - **Convenciones para agregar pruebas:**
   - Las aserciones de los tests existentes se preservan; modificarlas solo se justifica
     por un cambio funcional real.

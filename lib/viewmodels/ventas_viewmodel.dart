@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
+import 'package:streamtunes_demo/utils/comision.dart';
 import 'package:streamtunes_demo/utils/reloj.dart';
 
 // Ventas y donaciones del artista. Los movimientos viven en el
@@ -44,6 +45,20 @@ class VentasViewModel extends ChangeNotifier {
     return total;
   }
 
+  /// Comisión de StreamTunes sobre las ventas de entradas (las donaciones
+  /// no tienen).
+  double get totalComisiones {
+    double total = 0;
+    for (final m in _repositorio.movimientos) {
+      if (m.tipo == TipoMovimiento.venta) total += m.comision;
+    }
+    return total;
+  }
+
+  /// Lo que recibe el artista por entradas: [totalVentas] (lo que pagaron
+  /// los fans) menos [totalComisiones].
+  double get netoVentas => totalVentas - totalComisiones;
+
   void registrarVenta(String detalle, double monto) {
     // No se notifica acá: el repo ya notificó y este VM reemite por la
     // suscripción (una sola notificación por movimiento).
@@ -52,6 +67,7 @@ class VentasViewModel extends ChangeNotifier {
         tipo: TipoMovimiento.venta,
         detalle: detalle,
         monto: monto,
+        comision: comisionDe(monto),
         fecha: _reloj.ahora(),
       ),
     );

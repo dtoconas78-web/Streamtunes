@@ -18,6 +18,10 @@ class Movimiento {
   final String
   usuarioId; // uid del usuario que originó el movimiento ('' = doc antiguo)
 
+  /// Comisión de StreamTunes incluida en [monto] (solo en ventas de
+  /// entradas; 0 en donaciones y en documentos antiguos).
+  final double comision;
+
   const Movimiento({
     this.id = '',
     required this.tipo,
@@ -25,7 +29,11 @@ class Movimiento {
     required this.monto,
     required this.fecha,
     this.usuarioId = '',
+    this.comision = 0,
   });
+
+  /// Lo que recibe el artista: lo que pagó el fan menos la comisión.
+  double get neto => monto - comision;
 
   /// Igualdad por valor (todos los campos).
   @override
@@ -36,10 +44,12 @@ class Movimiento {
       other.detalle == detalle &&
       other.monto == monto &&
       other.fecha == fecha &&
-      other.usuarioId == usuarioId;
+      other.usuarioId == usuarioId &&
+      other.comision == comision;
 
   @override
-  int get hashCode => Object.hash(id, tipo, detalle, monto, fecha, usuarioId);
+  int get hashCode =>
+      Object.hash(id, tipo, detalle, monto, fecha, usuarioId, comision);
 
   /// Serializa para Firestore: enum como String (name), fecha como
   /// [Timestamp], id fuera del doc.
@@ -49,12 +59,13 @@ class Movimiento {
     'monto': monto,
     'fecha': Timestamp.fromDate(fecha),
     'usuarioId': usuarioId,
+    'comision': comision,
   };
 
   /// Reconstruye desde un documento de Firestore. [id] es el id del documento
   /// (si no se pasa ni está en el mapa, queda ''). Acepta fecha como
   /// Timestamp / DateTime / String ISO. `usuarioId` es opcional para tolerar
-  /// documentos antiguos (queda ''). Lanza [FormatException] ante campos
+  /// documentos antiguos (queda ''), igual que `comision` (queda 0). Lanza [FormatException] ante campos
   /// faltantes, tipos inesperados o un `tipo` desconocido.
   factory Movimiento.fromMap(Map<String, dynamic> map, {String? id}) {
     final idDoc = id ?? map['id'];
@@ -70,6 +81,7 @@ class Movimiento {
       monto: _num(map, 'monto'),
       fecha: _fecha(map, 'fecha'),
       usuarioId: _strOpcional(map, 'usuarioId', ''),
+      comision: map['comision'] == null ? 0 : _num(map, 'comision'),
     );
   }
 }

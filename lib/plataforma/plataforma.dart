@@ -3,6 +3,8 @@
 // distintas: QUÉ está implementado (Capacidades) y QUÉ se le explica al
 // usuario (Politicas).
 
+import 'package:streamtunes_demo/utils/comision.dart';
+
 /// Disponibilidad objetiva de funcionalidades IMPLEMENTADAS en la aplicación.
 ///
 /// Ojo: esto NO es el permiso que el usuario le concede al sistema operativo
@@ -45,6 +47,18 @@ class Politicas {
   /// permiso de notificaciones del sistema.
   String get avisoPermisoNotificacionesDenegado =>
       'Sin permiso de notificaciones: activalo en los ajustes del celular';
+
+  /// Explicación de la comisión para el artista (al publicar un concierto y
+  /// en Ventas y donaciones).
+  String get textoComisionArtista =>
+      'StreamTunes se queda con el $porcentajeComision de cada entrada vendida; '
+      'el resto es para vos. Las donaciones te llegan completas.';
+
+  /// Explicación para el fan al comprar: paga el precio publicado.
+  String get textoComisionFan =>
+      'Pagás el precio publicado, sin cargos extra. De cada entrada, '
+      'StreamTunes se queda con el $porcentajeComision para mantener la app '
+      'gratis y sin publicidad.';
 
   /// Aviso mostrado en el banner global cuando el dispositivo no tiene
   /// conexión a internet.

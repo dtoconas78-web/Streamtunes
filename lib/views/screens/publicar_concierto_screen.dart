@@ -94,6 +94,11 @@ class _PublicarConciertoScreenState extends State<PublicarConciertoScreen> {
                   'Publicalo y los oyentes lo ven en "Comprar entrada". Vos ponés el precio y la cantidad de entradas.',
                   style: TextStyle(color: Colors.grey, fontSize: 13),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  politicas.textoComisionArtista,
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
                 const SizedBox(height: 24),
                 TextFormField(
                   controller: _nombreCtrl,

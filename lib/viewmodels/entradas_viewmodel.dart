@@ -7,6 +7,7 @@ import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/models/entrada.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
 import 'package:streamtunes_demo/services/servicio_recordatorios.dart';
+import 'package:streamtunes_demo/utils/comision.dart';
 import 'package:streamtunes_demo/utils/reloj.dart';
 
 // Entradas del oyente y conciertos disponibles. Los datos viven en los
@@ -104,6 +105,7 @@ class EntradasViewModel extends ChangeNotifier {
         tipo: TipoMovimiento.venta,
         detalle: '${concierto.nombre} x$cantidad',
         monto: concierto.precio * cantidad,
+        comision: comisionDe(concierto.precio * cantidad),
         fecha: _reloj.ahora(),
       ),
     );
@@ -163,6 +165,7 @@ class EntradasViewModel extends ChangeNotifier {
       tipo: TipoMovimiento.venta,
       detalle: '${concierto.nombre} x$cantidad',
       monto: concierto.precio * cantidad,
+      comision: comisionDe(concierto.precio * cantidad),
       fecha: _reloj.ahora(),
       usuarioId: uid,
     );

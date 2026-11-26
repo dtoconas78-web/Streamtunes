@@ -147,6 +147,11 @@ class _ComprarEntradaScreenState extends State<ComprarEntradaScreen> {
                     concierto.lugar,
                     style: const TextStyle(color: Colors.white70),
                   ),
+                  const SizedBox(height: 8),
+                  Text(
+                    politicas.textoComisionFan,
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
