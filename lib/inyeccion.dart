@@ -196,12 +196,16 @@ RepositorioEntradas _crearEntradas() {
 RepositorioMovimientos _crearMovimientos() {
   if (!firebaseInicializado) return RepositorioMovimientosMemoria();
   _dispararSemilla();
-  return RepositorioMovimientosFirestore(
+  final repo = RepositorioMovimientosFirestore(
     fuente: fuenteFirestore,
     uidActual: _uidSesionValida,
     // El artista ve también las donaciones que le hacen otros usuarios.
     artistaActual: _artistaSesionId,
   );
+  // Se crea al arrancar (lo usa el aviso de donaciones), antes del login:
+  // al cambiar la sesión se refiltra sin esperar otro snapshot.
+  authViewModel.addListener(repo.actualizarSesion);
+  return repo;
 }
 
 // Semilla idempotente (Bloque A): se dispara UNA SOLA VEZ por arranque y solo

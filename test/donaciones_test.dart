@@ -194,6 +194,38 @@ void main() {
       },
     );
 
+    test('al cambiar la sesión refiltra sin esperar otro snapshot', () async {
+      final fuente = _FuenteMovimientos();
+      String? uid;
+      final repo = RepositorioMovimientosFirestore(
+        fuente: fuente,
+        uidActual: () => uid,
+      );
+      fuente.emitir([
+        doc(
+          'v1',
+          Movimiento(
+            tipo: TipoMovimiento.venta,
+            detalle: 'Show',
+            monto: 1000,
+            fecha: fecha,
+          ),
+          usuarioId: 'u1',
+        ),
+      ]);
+      await Future<void>.delayed(Duration.zero);
+      expect(repo.movimientos, isEmpty); // llegó antes del login
+
+      uid = 'u1';
+      repo.actualizarSesion();
+      expect(repo.movimientos.single.id, 'v1');
+
+      uid = null;
+      repo.actualizarSesion();
+      expect(repo.movimientos, isEmpty);
+      await repo.cerrar();
+    });
+
     test('si la sesión no es de artista, solo ve lo propio', () async {
       expect(await idsVistos(), ['v1']);
     });

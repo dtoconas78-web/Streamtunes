@@ -55,7 +55,9 @@ class TuMusicaEnNumeros extends StatelessWidget {
                   )
                 else ...[
                   Text(
-                    '${formatearMiles(r.total)} reproducciones',
+                    r.total == 1
+                        ? '1 reproducción'
+                        : '${formatearMiles(r.total)} reproducciones',
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,

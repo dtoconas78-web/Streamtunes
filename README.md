@@ -151,7 +151,7 @@ lib/
   dart analyze
   flutter test
   ```
-  Actualmente: analyze sin issues y **233 tests aprobados**.
+  Actualmente: analyze sin issues y **234 tests aprobados**.
 - **Convenciones para agregar pruebas:**
   - Las aserciones de los tests existentes se preservan; modificarlas solo se justifica
     por un cambio funcional real.

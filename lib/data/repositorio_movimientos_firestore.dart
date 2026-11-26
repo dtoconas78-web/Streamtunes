@@ -29,21 +29,40 @@ class RepositorioMovimientosFirestore extends RepositorioMovimientos {
     _suscripcion = _fuente
         .snapshotsColeccion('movimientos')
         .map((docs) {
-          final uid = uidActual?.call();
-          if (uid == null || uid.isEmpty) return <Movimiento>[];
-          final artista = artistaActual?.call();
-          bool esDonacionParaMi(Map<String, dynamic> datos) =>
-              artista != null &&
-              artista.isNotEmpty &&
-              datos['tipo'] == TipoMovimiento.donacion.name &&
-              datos['artistaId'] == artista;
-          return [
-            for (final d in docs)
-              if (d.datos['usuarioId'] == uid || esDonacionParaMi(d.datos))
-                Movimiento.fromMap(d.datos, id: d.id),
-          ];
+          _ultimosDocs = docs;
+          return _filtrar(docs);
         })
         .listen(_alCambiar, onError: _alError);
+  }
+
+  // Últimos documentos recibidos: al cambiar la sesión se vuelven a filtrar
+  // sin esperar otro snapshot (el repo puede crearse antes del login).
+  List<DocumentoFirestore> _ultimosDocs = const [];
+
+  List<Movimiento> _filtrar(List<DocumentoFirestore> docs) {
+    final uid = uidActual?.call();
+    if (uid == null || uid.isEmpty) return <Movimiento>[];
+    final artista = artistaActual?.call();
+    bool esDonacionParaMi(Map<String, dynamic> datos) =>
+        artista != null &&
+        artista.isNotEmpty &&
+        datos['tipo'] == TipoMovimiento.donacion.name &&
+        datos['artistaId'] == artista;
+    return [
+      for (final d in docs)
+        if (d.datos['usuarioId'] == uid || esDonacionParaMi(d.datos))
+          Movimiento.fromMap(d.datos, id: d.id),
+    ];
+  }
+
+  /// La sesión cambió (login, logout, otro rol): vuelve a filtrar los
+  /// últimos documentos recibidos.
+  void actualizarSesion() {
+    try {
+      _alCambiar(_filtrar(_ultimosDocs));
+    } catch (e) {
+      _alError(e);
+    }
   }
 
   final FuenteFirestore _fuente;
