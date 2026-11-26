@@ -87,7 +87,7 @@ movimientos/{id}   { tipo: venta|donacion, detalle, monto, fecha, usuarioId }
 - Semilla automática e idempotente al iniciar con Firebase: solo puebla
   colecciones vacías (`count == 0`) con ids determinísticos
   (`concierto-N`, `entrada-N`, `movimiento-N`, …), reutilizando
-  `datos_ejemplo.dart`.
+  `lib/data/services/datos_ejemplo.dart`.
 
 ### Bloque A (6.1–6.4) — ✅ HECHO (commit `fe1500b`)
 
@@ -119,8 +119,13 @@ movimientos/{id}   { tipo: venta|donacion, detalle, monto, fecha, usuarioId }
   contrato, nunca por clases concretas de Firestore. El uid se resuelve de
   forma diferida (`authViewModel.usuario?.id`, descartando invitados: su id
   local `invitado_N` no es un uid de Firebase).
-- Playlists y seguimientos siguen en memoria; `usuarios/{uid}` queda para el
-  paso de perfil.
+- Playlists, seguidos (artistas y álbumes) y "me gusta" NO están en Firestore:
+  tienen contrato propio (`RepositorioPlaylists`, `RepositorioSeguimiento`) con
+  implementación en memoria y guardado local en el celular con
+  `shared_preferences` (una clave JSON por uid, ver
+  `lib/services/persistencia_local.dart`). Una versión Firestore se agrega
+  implementando esos mismos contratos; `usuarios/{uid}` queda para el paso de
+  perfil.
 
 ### Reglas de seguridad — riesgo documentado (sin cambios en esta etapa)
 
@@ -148,5 +153,5 @@ para su foto).
 
 Mientras tanto, la app guarda todo lo que no es binario en Firestore: con
 Firebase inicializado, los repositorios Firestore reemplazan la memoria
-(`datos_ejemplo.dart`); sin Firebase (tests, demo, Windows/Linux), todo sigue
+(`lib/data/services/datos_ejemplo.dart`); sin Firebase (tests, demo, Windows/Linux), todo sigue
 en memoria y las pantallas no cambian (igual que se hizo con el auth).

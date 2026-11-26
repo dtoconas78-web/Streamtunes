@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
+import 'package:streamtunes_demo/data/services/datos_ejemplo.dart' as datos;
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/models/entrada.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
@@ -9,7 +9,7 @@ import 'package:streamtunes_demo/models/movimiento.dart';
 ///
 /// Es observable (ChangeNotifier): altas y descuentos notifican a los
 /// listeners, y con backend también los cambios remotos (snapshots).
-/// La implementación de demo es en memoria (semilla: datos_ejemplo.dart).
+/// La implementación de demo es en memoria (semilla: data/services/datos_ejemplo.dart).
 abstract class RepositorioEntradas extends ChangeNotifier {
   List<Entrada> get entradasCompradas;
   List<Concierto> get conciertosDisponibles;

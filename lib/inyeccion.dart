@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
+import 'package:streamtunes_demo/data/services/datos_ejemplo.dart' as datos;
 import 'package:streamtunes_demo/data/fuente_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_artistas.dart';
 import 'package:streamtunes_demo/data/repositorio_artistas_firestore.dart';
@@ -12,6 +12,10 @@ import 'package:streamtunes_demo/data/repositorio_entradas.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos_firestore.dart';
+import 'package:streamtunes_demo/data/repositorio_playlists.dart';
+import 'package:streamtunes_demo/data/repositorio_playlists_preferencias.dart';
+import 'package:streamtunes_demo/data/repositorio_seguimiento.dart';
+import 'package:streamtunes_demo/data/repositorio_seguimiento_preferencias.dart';
 import 'package:streamtunes_demo/models/artista.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/plataforma/plataforma.dart';
@@ -19,6 +23,7 @@ import 'package:streamtunes_demo/services/auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
 import 'package:streamtunes_demo/services/firebase_semilla.dart';
+import 'package:streamtunes_demo/services/persistencia_local.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/configuracion_viewmodel.dart';
@@ -55,7 +60,7 @@ final AuthViewModel authViewModel = AuthViewModel(servicio: servicioAuth);
 // Bloque A + B (Firestore): con Firebase inicializado, los cuatro repositorios
 // vienen de Firestore (snapshots en tiempo real; entradas con compra atómica
 // transaccional). Sin Firebase (tests, demo, Windows/Linux) todo queda en
-// memoria con la semilla de datos_ejemplo.dart (que ya no se toca desde ningún
+// memoria con la semilla de data/services/datos_ejemplo.dart (que ya no se toca desde ningún
 // ViewModel).
 final FuenteFirestore fuenteFirestore = FuenteFirestoreFirebase();
 
@@ -63,6 +68,32 @@ final RepositorioCatalogo repositorioCatalogo = _crearCatalogo();
 final RepositorioArtistas repositorioArtistas = _crearArtistas();
 final RepositorioEntradas repositorioEntradas = _crearEntradas();
 final RepositorioMovimientos repositorioMovimientos = _crearMovimientos();
+
+// Datos del oyente (playlists, seguidos y "me gusta"): se guardan en el
+// celular con shared_preferences si main() pudo abrirlo
+// (inicializarPersistenciaLocal); si no (tests, o falla el plugin), quedan en
+// memoria. Son POR USUARIO: siguen al usuario con sesión de authViewModel y
+// al cerrar sesión (o como invitado) quedan vacíos y no se guarda nada.
+final RepositorioPlaylists repositorioPlaylists = _vincularAlUsuario(
+  preferenciasLocales == null
+      ? RepositorioPlaylistsMemoria()
+      : RepositorioPlaylistsPreferencias(prefs: preferenciasLocales!),
+  (r, uid) => r.usarUsuario(uid),
+);
+final RepositorioSeguimiento repositorioSeguimiento = _vincularAlUsuario(
+  preferenciasLocales == null
+      ? RepositorioSeguimientoMemoria()
+      : RepositorioSeguimientoPreferencias(prefs: preferenciasLocales!),
+  (r, uid) => r.usarUsuario(uid),
+);
+
+// Carga ya los datos del usuario actual y los recarga en cada login/logout
+// (usarUsuario no hace nada si el uid no cambió).
+T _vincularAlUsuario<T>(T repo, void Function(T, String?) usarUsuario) {
+  usarUsuario(repo, _uidSesionValida());
+  authViewModel.addListener(() => usarUsuario(repo, _uidSesionValida()));
+  return repo;
+}
 
 /// UID de la sesión VÁLIDA de Firebase, resuelto de forma diferida (el usuario
 /// hace login después de crear los repositorios). Devuelve null cuando no hay
@@ -230,10 +261,12 @@ final CatalogoViewModel catalogo = CatalogoViewModel(
 );
 final ControladorReproduccion reproductor = ControladorReproduccion(
   repositorioCatalogo: repositorioCatalogo,
+  repositorioSeguimiento: repositorioSeguimiento,
 );
 final SeguimientoViewModel seguimientoViewModel = SeguimientoViewModel(
   repositorioArtistas: repositorioArtistas,
   repositorioCatalogo: repositorioCatalogo,
+  repositorioSeguimiento: repositorioSeguimiento,
 );
 final EntradasViewModel entradasViewModel = EntradasViewModel(
   repositorioEntradas: repositorioEntradas,
@@ -246,7 +279,9 @@ final VentasViewModel ventasViewModel = VentasViewModel(
   reloj: reloj,
 );
 
-final PlaylistsViewModel playlistsViewModel = PlaylistsViewModel();
+final PlaylistsViewModel playlistsViewModel = PlaylistsViewModel(
+  repositorio: repositorioPlaylists,
+);
 final ConfiguracionViewModel configuracionViewModel = ConfiguracionViewModel();
 
 // Identidad del artista de esta sesión: SIEMPRE sale del repositorio.
@@ -266,7 +301,7 @@ Artista _artistaSesion() {
   }
   throw StateError(
     'RepositorioArtistas no contiene al artista "mateo-cabral": '
-    'revisar la semilla de datos_ejemplo.dart.',
+    'revisar la semilla de data/services/datos_ejemplo.dart.',
   );
 }
 

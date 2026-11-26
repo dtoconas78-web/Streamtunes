@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
+import 'package:streamtunes_demo/data/services/datos_ejemplo.dart' as datos;
 import 'package:streamtunes_demo/models/movimiento.dart';
 
 /// Contrato del repositorio de movimientos económicos del artista (ventas de
@@ -9,7 +9,7 @@ import 'package:streamtunes_demo/models/movimiento.dart';
 /// desde más de un lugar (comprar entrada y donar), así que anuncia sus
 /// cambios para que los interesados (p. ej. VentasViewModel) los reemitan.
 ///
-/// La implementación de demo es en memoria (semilla: datos_ejemplo.dart).
+/// La implementación de demo es en memoria (semilla: data/services/datos_ejemplo.dart).
 abstract class RepositorioMovimientos extends ChangeNotifier {
   /// Movimientos de solo lectura.
   List<Movimiento> get movimientos;

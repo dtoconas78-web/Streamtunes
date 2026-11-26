@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
+import 'package:streamtunes_demo/data/services/datos_ejemplo.dart' as datos;
 import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 
@@ -7,7 +7,7 @@ import 'package:streamtunes_demo/models/cancion.dart';
 ///
 /// Es observable (ChangeNotifier, como RepositorioMovimientos): las altas
 /// locales notifican y, con backend, los cambios remotos (snapshots) también.
-/// La implementación de demo es en memoria (semilla: datos_ejemplo.dart);
+/// La implementación de demo es en memoria (semilla: data/services/datos_ejemplo.dart);
 /// con backend, esta misma interfaz se implementa contra Firestore.
 abstract class RepositorioCatalogo extends ChangeNotifier {
   /// Catálogo de solo lectura.

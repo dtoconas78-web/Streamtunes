@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
+import 'package:streamtunes_demo/data/repositorio_seguimiento.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 
 // Cómo se recorre la cola: en orden, aleatorio o repitiendo solo la canción
@@ -19,16 +20,23 @@ enum ModoReproduccion { enOrden, aleatorio, repetirUna }
 class ControladorReproduccion extends ChangeNotifier {
   // El catálogo se lee del repositorio inyectado (mismo que usa CatalogoViewModel,
   // ver lib/inyeccion.dart), así los índices de la cola siempre apuntan bien.
-  ControladorReproduccion({required this._repositorioCatalogo});
+  // Los "me gusta" se guardan POR ID de canción en el repositorio de
+  // seguimiento (el mismo que usa SeguimientoViewModel); sin repositorio se
+  // usa uno en memoria.
+  ControladorReproduccion({
+    required this._repositorioCatalogo,
+    RepositorioSeguimiento? repositorioSeguimiento,
+  }) : _repositorioSeguimiento =
+           repositorioSeguimiento ?? RepositorioSeguimientoMemoria();
 
   final RepositorioCatalogo _repositorioCatalogo;
+  final RepositorioSeguimiento _repositorioSeguimiento;
 
   int? _indiceActual; // null = todavía no se eligió ninguna canción
   int _posicion = 0; // segundos reproducidos de la canción actual
   bool _reproduciendo = false;
   bool _pantallaCompletaAbierta =
       false; // true cuando está abierto el reproductor grande
-  final Set<int> _meGustas = {}; // índices de canciones guardadas
   Timer? _timer;
 
   // Cola de reproducción (índices del catálogo). Vacía = todo el catálogo.
@@ -46,12 +54,19 @@ class ControladorReproduccion extends ChangeNotifier {
   ModoReproduccion get modo => _modo;
 
   bool get hayCancion => _indiceActual != null;
-  Cancion? get cancion => _indiceActual == null
-      ? null
-      : _repositorioCatalogo.canciones[_indiceActual!];
+  // Con Firestore el catálogo puede achicarse con un snapshot: un índice que
+  // quedó fuera de rango se trata como "sin canción" en vez de romper.
+  Cancion? get cancion {
+    final i = _indiceActual;
+    final canciones = _repositorioCatalogo.canciones;
+    return i == null || i < 0 || i >= canciones.length ? null : canciones[i];
+  }
+
   int get total => cancion == null ? 0 : cancion!.duracionSegundos;
-  bool get leGusta =>
-      _indiceActual != null && _meGustas.contains(_indiceActual);
+  bool get leGusta {
+    final c = cancion;
+    return c != null && _repositorioSeguimiento.meGusta(c.id);
+  }
 
   int get _largoCola =>
       _cola.isEmpty ? _repositorioCatalogo.canciones.length : _cola.length;
@@ -177,8 +192,9 @@ class ControladorReproduccion extends ChangeNotifier {
   }
 
   void alternarMeGusta() {
-    if (!hayCancion) return;
-    if (!_meGustas.remove(_indiceActual)) _meGustas.add(_indiceActual!);
+    final c = cancion;
+    if (c == null) return;
+    _repositorioSeguimiento.alternarMeGusta(c.id);
     notifyListeners();
   }
 

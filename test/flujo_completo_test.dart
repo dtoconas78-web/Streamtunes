@@ -227,4 +227,33 @@ void main() {
       await tester.pumpAndSettle();
     },
   );
+
+  testWidgets(
+    'al cambiar de usuario no se ven las playlists ni los seguidos del anterior',
+    (tester) async {
+      await entrarComoOyente(tester);
+      playlistsViewModel.crear('De Ana');
+      seguimientoViewModel.seguir('mateo-cabral');
+      await tester.pump();
+      expect(playlistsViewModel.playlists, isNotEmpty);
+
+      cerrarSesion();
+      await tester.pump();
+      authViewModel.login(
+        const Usuario(
+          id: 'o2',
+          nombre: 'Beto',
+          email: 'beto@example.com',
+          rol: RolUsuario.oyente,
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.text('Biblioteca').last);
+      await tester.pump();
+
+      expect(playlistsViewModel.playlists, isEmpty);
+      expect(seguimientoViewModel.seguidos, isEmpty);
+      expect(find.text('De Ana'), findsNothing);
+    },
+  );
 }

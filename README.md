@@ -36,7 +36,8 @@ lib/
 ├── inyeccion.dart       → raíz de composición: globales lazy (servicios, repositorios, VMs, reloj)
 ├── navigation/          → navegador global, rutas, cerrar sesión
 ├── models/              → Usuario, Artista, Cancion, Album, Concierto, Entrada, Movimiento, Playlist (inmutables)
-├── data/                → contratos Repositorio* + implementaciones *Memoria + semilla datos_ejemplo.dart
+├── data/                → contratos Repositorio* + implementaciones *Memoria/*Firestore/*Preferencias (guardado local)
+│   └── services/        → semilla datos_ejemplo.dart
 ├── services/            → contrato AuthService (simulado vs FirebaseAuthService, elegido en inyeccion.dart) + inicialización Firebase
 ├── viewmodels/          → ChangeNotifiers sin dependencias de UI (solo importan flutter/foundation)
 ├── views/screens/       → pantallas
@@ -54,6 +55,10 @@ lib/
     Reciben sus dependencias por constructor.
   - `services/` y `data/`: contratos (`AuthService`, `Repositorio*`); la implementación
     concreta (simulada, memoria o Firebase) se elige en un único lugar: `inyeccion.dart`.
+  - Guardado local: playlists, seguidos y "me gusta" se guardan en el celular con
+    `shared_preferences` (repositorios `*Preferencias`, una clave por uid). Si
+    `inicializarPersistenciaLocal()` no corrió (tests) quedan en memoria. Son por
+    usuario: al cerrar sesión o como invitado quedan vacíos y no se guarda nada.
   - `models/`: datos inmutables, sin dependencias de Flutter.
   - `utils/`: funciones puras (formatos, validadores, `errores_auth`, `reloj`).
 - **Inyección de dependencias:** `lib/inyeccion.dart` define globales top-level lazy

@@ -1,4 +1,4 @@
-import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
+import 'package:streamtunes_demo/data/services/datos_ejemplo.dart' as datos;
 import 'package:streamtunes_demo/data/fuente_firestore.dart';
 
 /// Resultado de poblar la semilla: cuántos documentos se escribieron por
@@ -16,7 +16,7 @@ class ResultadoSemilla {
 }
 
 /// Puebla de forma IDEMPOTENTE las colecciones vacías con los datos de
-/// ejemplo (datos_ejemplo.dart). Colecciones y cantidad prevista de docs:
+/// ejemplo (data/services/datos_ejemplo.dart). Colecciones y cantidad prevista de docs:
 ///
 /// - `canciones`: 4    (id = id del modelo)
 /// - `albumes`: 2      (id = id del modelo)

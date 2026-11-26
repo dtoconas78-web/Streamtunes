@@ -53,4 +53,23 @@ void main() {
     expect(album.anio, '2026');
     expect(album.cancionIds, ['tema-1', 'tema-2']);
   });
+
+  test('los álbumes publicados tienen ids únicos, aun desde VMs nuevos', () {
+    // Simula dos arranques de la app sobre el mismo catálogo: antes ambos
+    // generaban 'album-publicado-1' y con Firestore el segundo pisaba al primero.
+    final repo = RepositorioCatalogoMemoria();
+    for (final (i, vm) in [
+      CatalogoViewModel(repositorio: repo),
+      CatalogoViewModel(repositorio: repo),
+    ].indexed) {
+      vm.publicar(
+        nuevas: [_cancion('Tema $i', id: 'tema-unico-$i')],
+        tituloAlbum: 'Álbum $i',
+        colorPortada: 0xFFFF5500,
+      );
+    }
+    final ids = repo.albumes.map((a) => a.id).toList();
+    expect(ids.toSet().length, ids.length);
+    expect(ids.where((id) => id.startsWith('album-publicado-')).length, 2);
+  });
 }

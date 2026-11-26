@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/navigation/rutas.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
+import 'package:streamtunes_demo/services/persistencia_local.dart';
 import 'package:streamtunes_demo/theme/tema.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/views/screens/perfil_artista_screen.dart';
@@ -16,6 +17,9 @@ import 'package:streamtunes_demo/views/widgets/mini_reproductor.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await inicializarFirebase();
+  // Abre el guardado local (playlists, seguidos y "me gusta"); si falla, la
+  // app sigue en memoria (ver services/persistencia_local.dart).
+  await inicializarPersistenciaLocal();
   // Activa el gestor de ciclo de vida (necesita el binding ya inicializado).
   inicializarCicloVida();
   // Inicializa las notificaciones locales (aviso de reproducción en pausa).

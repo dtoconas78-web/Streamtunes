@@ -17,6 +17,21 @@ class CatalogoViewModel extends ChangeNotifier {
   final RepositorioCatalogo _repositorio;
   int _contadorAlbumes = 0;
 
+  // Id de álbum único también entre arranques: con Firestore, un id repetido
+  // (antes 'album-publicado-1' en cada arranque) PISABA el álbum ya publicado
+  // con setDocumento. El timestamp no se repite al reabrir la app y se
+  // comprueba contra el catálogo actual por si coincide dentro del mismo run.
+  String _nuevoIdAlbum() {
+    String id;
+    do {
+      _contadorAlbumes++;
+      id =
+          'album-publicado-${DateTime.now().microsecondsSinceEpoch}-'
+          '$_contadorAlbumes';
+    } while (_repositorio.albumes.any((a) => a.id == id));
+    return id;
+  }
+
   // Vistas de solo lectura: para publicar se usa [publicar].
   List<Cancion> get canciones => _repositorio.canciones;
   List<Album> get albumes => _repositorio.albumes;
@@ -32,10 +47,9 @@ class CatalogoViewModel extends ChangeNotifier {
   }) {
     _repositorio.agregarCanciones(nuevas);
     if (tituloAlbum != null) {
-      _contadorAlbumes++;
       _repositorio.agregarAlbum(
         Album(
-          id: 'album-publicado-$_contadorAlbumes',
+          id: _nuevoIdAlbum(),
           titulo: tituloAlbum,
           anio: anioAlbum ?? '',
           colorPortada: colorPortada,

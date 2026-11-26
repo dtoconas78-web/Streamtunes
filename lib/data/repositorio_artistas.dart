@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'package:streamtunes_demo/data/datos_ejemplo.dart' as datos;
+import 'package:streamtunes_demo/data/services/datos_ejemplo.dart' as datos;
 import 'package:streamtunes_demo/models/artista.dart';
 
 /// Contrato del repositorio de artistas (a quiénes se puede seguir y donar).
 ///
 /// Es observable (ChangeNotifier): con backend, los cambios remotos de la
 /// colección `artistas` (snapshots) notifican a los listeners. La
-/// implementación de demo es en memoria (semilla: datos_ejemplo.dart).
+/// implementación de demo es en memoria (semilla: data/services/datos_ejemplo.dart).
 abstract class RepositorioArtistas extends ChangeNotifier {
   /// Artistas de solo lectura.
   List<Artista> get todos;
