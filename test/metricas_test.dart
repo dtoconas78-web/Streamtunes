@@ -285,6 +285,7 @@ void main() {
         );
         expect(await v2.getVersion(), versionBaseDatos);
         expect((await v2.query('playlists')).single['nombre'], 'Vieja');
+        expect(await v2.query('portadas'), isEmpty); // tabla de la v3
         await ReproduccionesDao(v2).registrar(
           cancionId: 'a',
           ciudad: 'Mendoza',

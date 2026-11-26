@@ -26,6 +26,8 @@ Future<void> main() async {
   inicializarCicloVida();
   // Inicializa las notificaciones locales (aviso de reproducción en pausa).
   await inicializarNotificaciones();
+  // Cámara/galería y portadas guardadas (ver inyeccion.dart).
+  await inicializarFotos();
   // Inicializa workmanager (tareas periódicas en segundo plano, ver
   // services/tareas_segundo_plano_workmanager.dart).
   await inicializarTareasSegundoPlano();

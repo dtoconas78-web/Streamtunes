@@ -9,6 +9,7 @@ import 'package:streamtunes_demo/data/repositorio_artistas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
 import 'package:streamtunes_demo/data/repositorio_ciudad.dart';
 import 'package:streamtunes_demo/data/repositorio_configuracion.dart';
+import 'package:streamtunes_demo/data/repositorio_foto_perfil.dart';
 import 'package:streamtunes_demo/data/repositorio_metricas.dart';
 import 'package:streamtunes_demo/data/reproducciones_dao.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo_firestore.dart';
@@ -17,6 +18,7 @@ import 'package:streamtunes_demo/data/repositorio_entradas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_playlists.dart';
+import 'package:streamtunes_demo/data/repositorio_portadas.dart';
 import 'package:streamtunes_demo/data/playlists_dao.dart';
 import 'package:streamtunes_demo/data/repositorio_playlists_sqlite.dart';
 import 'package:streamtunes_demo/data/repositorio_seguimiento.dart';
@@ -24,16 +26,20 @@ import 'package:streamtunes_demo/data/repositorio_seguimiento_preferencias.dart'
 import 'package:streamtunes_demo/models/artista.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/plataforma/plataforma.dart';
+import 'package:streamtunes_demo/services/almacen_fotos.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
 import 'package:streamtunes_demo/services/aviso_donaciones.dart';
 import 'package:streamtunes_demo/services/firebase_auth_service.dart';
 import 'package:streamtunes_demo/services/firebase_inicial.dart';
 import 'package:streamtunes_demo/services/firebase_semilla.dart';
+import 'package:streamtunes_demo/services/fuente_de_fotos.dart';
+import 'package:streamtunes_demo/services/fuente_image_picker.dart';
 import 'package:streamtunes_demo/services/persistencia_local.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/catalogo_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/configuracion_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
+import 'package:streamtunes_demo/viewmodels/foto_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/metricas_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_oyente_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
@@ -260,6 +266,7 @@ final Capacidades capacidades = Capacidades(
   notificacionesDisponibles: _notificacionesListas,
   notificacionesProgramadas: _notificacionesListas,
   tareasSegundoPlano: _tareasListas,
+  camara: _camaraLista,
 );
 final Politicas politicas = Politicas();
 
@@ -339,6 +346,66 @@ Future<void> inicializarTareasSegundoPlano() async {
   } catch (e) {
     debugPrint('Tareas en segundo plano no disponibles: $e');
   }
+}
+
+// --- Cámara y fotos ---
+// image_picker (cámara/galería del sistema) + copia en la carpeta de la app
+// con path_provider. Se guarda la RUTA, nunca la imagen.
+final FuenteDeFotos fuenteFotos = FuenteImagePicker();
+final AlmacenFotos almacenFotos = AlmacenFotosLocal();
+bool _camaraLista = false;
+
+/// Portadas con foto (SQLite si hay base local; si no, memoria).
+final RepositorioPortadas repositorioPortadas = baseDatosLocal == null
+    ? RepositorioPortadasMemoria()
+    : RepositorioPortadasSqlite(baseDatosLocal!);
+
+final RepositorioFotoPerfil repositorioFotoPerfil = preferenciasLocales == null
+    ? RepositorioFotoPerfilMemoria()
+    : RepositorioFotoPerfilPreferencias(prefs: preferenciasLocales!);
+
+/// Foto de perfil del usuario con sesión (la ruta se guarda por uid).
+final FotoViewModel fotoPerfilViewModel = _vincularAlUsuario(
+  FotoViewModel(
+    fuente: fuenteFotos,
+    almacen: almacenFotos,
+    prefijo: 'perfil',
+    alGuardar: (ruta) async {
+      final uid = _uidSesionValida();
+      if (uid != null) await repositorioFotoPerfil.guardar(uid, ruta);
+    },
+    alPendiente: repositorioFotoPerfil.marcarPendiente,
+  ),
+  (vm, uid) => unawaited(_cargarFotoPerfil(vm, uid)),
+);
+
+// Al cambiar de usuario: muestra su foto guardada. Si Android cerró la app
+// con la cámara abierta para la foto de perfil, se recupera acá (recién con
+// sesión hay a quién guardársela; la app siempre arranca en el login).
+Future<void> _cargarFotoPerfil(FotoViewModel vm, String? uid) async {
+  vm.mostrar(null);
+  if (uid == null) return;
+  try {
+    final ruta = await repositorioFotoPerfil.leer(uid);
+    if (_uidSesionValida() != uid) return;
+    vm.mostrar(ruta);
+    if (_camaraLista && await repositorioFotoPerfil.pendiente()) {
+      await vm.recuperarPerdida();
+    }
+  } catch (e) {
+    debugPrint('No se pudo leer la foto de perfil: $e');
+  }
+}
+
+/// Activa la cámara (solo Android/iOS) y carga las portadas guardadas.
+/// Va ANTES del primer acceso a [capacidades] (que es lazy). Nunca lanza.
+Future<void> inicializarFotos() async {
+  _camaraLista =
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+  final portadas = repositorioPortadas;
+  if (portadas is RepositorioPortadasSqlite) await portadas.cargar();
 }
 
 // --- Aviso de donaciones recibidas (al artista, con la app abierta) ---

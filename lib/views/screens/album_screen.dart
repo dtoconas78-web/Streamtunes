@@ -66,6 +66,7 @@ class PantallaAlbum extends StatelessWidget {
               Center(
                 child: PortadaCuadrada(
                   color: colorDe(album.colorPortada),
+                  itemId: album.id,
                   tamano: 180,
                   radio: 16,
                   icono: Icons.album,

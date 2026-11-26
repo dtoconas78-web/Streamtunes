@@ -7,7 +7,7 @@ import 'package:sqflite/sqflite.dart';
 /// [_actualizarEsquema] aplica los pasos que faltan desde la versión que
 /// tenga el celular (nunca se borran datos del usuario).
 const String nombreBaseDatos = 'streamtunes.db';
-const int versionBaseDatos = 2;
+const int versionBaseDatos = 3;
 
 /// Opciones de apertura compartidas por la app y los tests (que abren la
 /// misma base en memoria con sqflite_common_ffi; ahí [unicaInstancia] va en
@@ -31,6 +31,7 @@ Future<Database> abrirBaseDatosLocal() async {
 Future<void> _actualizarEsquema(Database db, int desde, int hasta) async {
   if (desde < 1) await _crearV1(db);
   if (desde < 2) await _crearV2(db);
+  if (desde < 3) await _crearV3(db);
 }
 
 // v1: playlists del oyente. Las canciones de cada playlist van en una tabla
@@ -76,3 +77,12 @@ Future<void> _crearV2(Database db) async {
     ..execute('CREATE INDEX idx_reproducciones_lote ON reproducciones(lote)');
   await batch.commit(noResult: true);
 }
+
+// v3: portadas con foto de canciones y álbumes publicados desde este
+// celular. Se guarda la RUTA del archivo (la imagen queda en la carpeta de
+// documentos de la app); si no hay fila, se usa el color de portada.
+Future<void> _crearV3(Database db) => db.execute('''
+  CREATE TABLE portadas (
+    item_id TEXT PRIMARY KEY,
+    ruta TEXT NOT NULL
+  )''');

@@ -57,6 +57,7 @@ class InicioOyenteScreen extends StatelessWidget {
                           aspectRatio: 1,
                           child: PortadaCuadrada(
                             color: colorDe(album.colorPortada),
+                            itemId: album.id,
                             tamano: double.infinity,
                             radio: 12,
                             icono: Icons.album,
@@ -102,6 +103,7 @@ class InicioOyenteScreen extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 leading: PortadaCuadrada(
                   color: colorDe(catalogo.canciones[i].colorPortada),
+                  itemId: catalogo.canciones[i].id,
                   tamano: 48,
                 ),
                 title: Text(catalogo.canciones[i].titulo),

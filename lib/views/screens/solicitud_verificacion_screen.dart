@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formularios.dart';
 import 'package:streamtunes_demo/inyeccion.dart';
+import 'package:streamtunes_demo/viewmodels/foto_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/boton_principal.dart';
+import 'package:streamtunes_demo/views/widgets/selector_foto.dart';
 
 // Pantalla Solicitar verificación: datos, documento y cuenta de cobro.
 class PantallaSolicitudVerificacion extends StatefulWidget {
@@ -22,8 +26,20 @@ class _PantallaSolicitudVerificacionState
   final _linkCtrl = TextEditingController();
   String _tipoDoc = 'DNI';
 
+  // Foto del documento: dato sensible. Va a la carpeta TEMPORAL y se borra
+  // al enviar la solicitud o al salir de la pantalla (nunca queda guardada
+  // en la app; con backend se subiría directo, ver PerfilUsuario).
+  late final FotoViewModel _documento = FotoViewModel(
+    fuente: fuenteFotos,
+    almacen: almacenFotos,
+    prefijo: 'documento',
+    temporal: true,
+  );
+
   @override
   void dispose() {
+    unawaited(_documento.descartar());
+    _documento.dispose();
     _nombreCtrl.dispose();
     _numeroDocCtrl.dispose();
     _cuentaCtrl.dispose();
@@ -35,6 +51,8 @@ class _PantallaSolicitudVerificacionState
     if (!_formKey.currentState!.validate()) return;
 
     perfil.enviarSolicitud();
+    // Con backend la foto se subiría acá; en la app no se conserva.
+    unawaited(_documento.descartar());
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('Solicitud enviada')));
@@ -127,43 +145,63 @@ class _PantallaSolicitudVerificacionState
                   ],
                 ),
                 const SizedBox(height: 12),
-                // Foto del documento (simulada: adjuntar una real necesita image_picker).
+                // Foto del documento (cámara o galería).
                 FormField<bool>(
-                  initialValue: false,
-                  validator: (valor) =>
-                      valor == true ? null : 'Adjuntá una foto de tu documento',
-                  builder: (campo) {
-                    final adjunta = campo.value == true;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: adjunta
-                                  ? colorVerificado
-                                  : colorAcento,
-                              side: BorderSide(
-                                color: adjunta ? colorVerificado : colorAcento,
+                  validator: (_) => _documento.tieneFoto
+                      ? null
+                      : 'Adjuntá una foto de tu documento',
+                  builder: (campo) => ListenableBuilder(
+                    listenable: _documento,
+                    builder: (context, _) {
+                      final adjunta = _documento.tieneFoto;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: adjunta
+                                    ? colorVerificado
+                                    : colorAcento,
+                                side: BorderSide(
+                                  color: adjunta
+                                      ? colorVerificado
+                                      : colorAcento,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                               ),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              icon: Icon(
+                                adjunta
+                                    ? Icons.check_circle
+                                    : Icons.upload_file,
+                              ),
+                              label: Text(
+                                _documento.cargando
+                                    ? 'Cargando foto…'
+                                    : adjunta
+                                    ? 'Foto adjuntada · tocá para cambiarla'
+                                    : 'Adjuntar foto del documento',
+                              ),
+                              onPressed: _documento.cargando
+                                  ? null
+                                  : () async {
+                                      await cambiarFoto(
+                                        context,
+                                        _documento,
+                                        titulo: 'Foto del documento',
+                                      );
+                                      campo.didChange(_documento.tieneFoto);
+                                    },
                             ),
-                            icon: Icon(
-                              adjunta ? Icons.check_circle : Icons.upload_file,
-                            ),
-                            label: Text(
-                              adjunta
-                                  ? 'Foto adjuntada (simulado)'
-                                  : 'Adjuntar foto del documento',
-                            ),
-                            onPressed: () => campo.didChange(!adjunta),
                           ),
-                        ),
-                        if (campo.hasError) _error(campo.errorText!),
-                      ],
-                    );
-                  },
+                          if (campo.hasError) _error(campo.errorText!),
+                        ],
+                      );
+                    },
+                  ),
                 ),
                 const SizedBox(height: 28),
                 const Text(

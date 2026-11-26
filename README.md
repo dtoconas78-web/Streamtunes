@@ -30,6 +30,17 @@ App móvil (Flutter) para escuchar música gratis, pensada para artistas "under"
     música en números" en su perfil y por canción en Estadísticas (resumen calculado
     en un isolate si hay muchas canciones). Sin Firebase ni datos, Estadísticas
     muestra los valores de ejemplo avisando que son de ejemplo.
+  - **Cámara y galería** (`image_picker` + `path_provider`): foto de perfil del
+    artista, foto de portada al subir música y foto del documento en la solicitud
+    de verificación. Contrato `FuenteDeFotos` (resultado sellado: foto, canceló o
+    falló) y `FotoViewModel`, que copia la foto a la carpeta de la app, guarda solo
+    la RUTA (perfil en SharedPreferencesAsync, portadas en la tabla SQLite
+    `portadas`, esquema v3) y borra la foto reemplazada. La del documento va a la
+    carpeta temporal y se borra al enviar o salir (dato sensible); una portada no
+    publicada también se borra. Si Android cierra la app con la cámara abierta, la
+    foto de perfil se recupera al iniciar sesión (`retrieveLostData`). Sin permisos
+    nuevos: usa la cámara y el selector de fotos del sistema. `Capacidades.camara`
+    solo en Android/iOS.
 - **Dos roles + invitado:**
   - **Artista:** sube música, ve estadísticas, publica conciertos, ve ventas/donaciones.
   - **Oyente registrado:** escucha, compra entradas, dona, guarda música, crea listas.
@@ -151,7 +162,7 @@ lib/
   dart analyze
   flutter test
   ```
-  Actualmente: analyze sin issues y **234 tests aprobados**.
+  Actualmente: analyze sin issues y **251 tests aprobados**.
 - **Convenciones para agregar pruebas:**
   - Las aserciones de los tests existentes se preservan; modificarlas solo se justifica
     por un cambio funcional real.

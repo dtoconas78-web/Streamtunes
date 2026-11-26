@@ -7,6 +7,7 @@ import 'package:streamtunes_demo/inyeccion.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/hoja_donacion.dart';
 import 'package:streamtunes_demo/views/widgets/modo_reproduccion_ui.dart';
+import 'package:streamtunes_demo/views/widgets/portada.dart';
 import 'package:streamtunes_demo/views/widgets/requiere_registro.dart';
 
 // Pantalla Reproductor: portada, controles y barra de progreso.
@@ -62,15 +63,14 @@ class PantallaReproductor extends StatelessWidget {
                       constraints: const BoxConstraints(maxWidth: 320),
                       child: AspectRatio(
                         aspectRatio: 1,
-                        child: Container(
-                          decoration: BoxDecoration(
+                        // Foto de portada si hay; si no, el color.
+                        child: LayoutBuilder(
+                          builder: (context, medidas) => PortadaCuadrada(
                             color: colorDe(cancion.colorPortada),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(
-                            Icons.music_note,
-                            size: 96,
-                            color: Colors.black,
+                            itemId: cancion.id,
+                            tamano: medidas.maxWidth,
+                            radio: 20,
+                            tamanoIcono: 96,
                           ),
                         ),
                       ),

@@ -281,6 +281,7 @@ class PantallaPlaylist extends StatelessWidget {
                         contentPadding: EdgeInsets.zero,
                         leading: PortadaCuadrada(
                           color: colorDe(c.colorPortada),
+                          itemId: c.id,
                           tamano: 48,
                         ),
                         title: Text(c.titulo),

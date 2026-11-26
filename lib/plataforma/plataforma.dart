@@ -21,6 +21,7 @@ class Capacidades {
     this.notificacionesDisponibles = false,
     this.notificacionesProgramadas = false,
     this.tareasSegundoPlano = false,
+    this.camara = false,
   });
 
   /// Hay mecanismo de notificaciones locales (plugin inicializado): habilita
@@ -33,6 +34,9 @@ class Capacidades {
 
   /// Hay tareas periódicas en segundo plano (workmanager inicializado).
   final bool tareasSegundoPlano;
+
+  /// Se pueden sacar o elegir fotos (cámara/galería: Android e iOS).
+  final bool camara;
 }
 
 /// Mensajes explicativos destinados al usuario (políticas de la app): textos
@@ -59,6 +63,15 @@ class Politicas {
       'Pagás el precio publicado, sin cargos extra. De cada entrada, '
       'StreamTunes se queda con el $porcentajeComision para mantener la app '
       'gratis y sin publicidad.';
+
+  /// Aviso cuando la cámara/galería no está disponible (escritorio, web).
+  String get avisoCamaraNoDisponible =>
+      'Las fotos solo se pueden cargar desde el celular';
+
+  /// Mensaje cuando no se pudo obtener la foto (p. ej. sin permiso).
+  String get avisoFotoFallida =>
+      'No se pudo cargar la foto. Revisá los permisos de cámara y fotos '
+      'en los ajustes del celular.';
 
   /// Aviso mostrado en el banner global cuando el dispositivo no tiene
   /// conexión a internet.
