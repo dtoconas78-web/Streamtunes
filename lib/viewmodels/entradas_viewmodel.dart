@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas.dart';
 import 'package:streamtunes_demo/data/repositorio_movimientos.dart';
 import 'package:streamtunes_demo/models/concierto.dart';
 import 'package:streamtunes_demo/models/entrada.dart';
 import 'package:streamtunes_demo/models/movimiento.dart';
+import 'package:streamtunes_demo/services/servicio_recordatorios.dart';
 import 'package:streamtunes_demo/utils/reloj.dart';
 
 // Entradas del oyente y conciertos disponibles. Los datos viven en los
@@ -27,6 +30,8 @@ class EntradasViewModel extends ChangeNotifier {
     required this._repositorioMovimientos,
     this._reloj = const RelojDelSistema(),
     this.uidActual,
+    this._recordatorios,
+    this._recordatoriosActivos,
   }) {
     _repositorioEntradas.addListener(notifyListeners);
   }
@@ -40,6 +45,11 @@ class EntradasViewModel extends ChangeNotifier {
   // sesión Firebase). Sólo se usa en el flujo de compra atómica.
   final String? Function()? uidActual;
   int _contadorOperaciones = 0;
+  // Recordatorio del concierto al comprar (opcionales: sin ellos no se
+  // programa nada, como en los tests de la Ola 1). [_recordatoriosActivos]
+  // se consulta en cada compra: refleja la preferencia y la capacidad.
+  final ServicioRecordatorios? _recordatorios;
+  final bool Function()? _recordatoriosActivos;
 
   // Vistas de solo lectura: las altas/bajas pasan por [publicarConcierto] y
   // [comprar]/[comprarAsync].
@@ -109,7 +119,31 @@ class EntradasViewModel extends ChangeNotifier {
   ///   uid de la sesión válida y ejecuta UNA ÚNICA operación transaccional
   ///   (`descontarDisponiblesAsync` con `operacionId`); no se llama `comprar`
   ///   ni se registra el movimiento por separado.
+  ///
+  /// Si la compra sale bien y los recordatorios están activos, se programa el
+  /// recordatorio del concierto en segundo plano (un fallo ahí no afecta la
+  /// compra, que ya quedó hecha).
   Future<bool> comprarAsync(Concierto concierto, int cantidad) async {
+    final ok = await _comprarAsync(concierto, cantidad);
+    if (ok) _programarRecordatorio(concierto);
+    return ok;
+  }
+
+  void _programarRecordatorio(Concierto concierto) {
+    final recordatorios = _recordatorios;
+    if (recordatorios == null || !(_recordatoriosActivos?.call() ?? false)) {
+      return;
+    }
+    unawaited(
+      recordatorios.programarRecordatorioConcierto(concierto).catchError((
+        Object e,
+      ) {
+        debugPrint('No se pudo programar el recordatorio del concierto: $e');
+      }),
+    );
+  }
+
+  Future<bool> _comprarAsync(Concierto concierto, int cantidad) async {
     if (!_repositorioEntradas.soportaCompraAtomica) {
       return comprar(concierto, cantidad);
     }

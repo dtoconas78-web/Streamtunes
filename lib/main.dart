@@ -24,6 +24,9 @@ Future<void> main() async {
   inicializarCicloVida();
   // Inicializa las notificaciones locales (aviso de reproducción en pausa).
   await inicializarNotificaciones();
+  // Inicializa workmanager (tareas periódicas en segundo plano, ver
+  // services/tareas_segundo_plano_workmanager.dart).
+  await inicializarTareasSegundoPlano();
   runApp(const MiApp());
 }
 

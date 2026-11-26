@@ -59,6 +59,14 @@ lib/
     `shared_preferences` (repositorios `*Preferencias`, una clave por uid). Si
     `inicializarPersistenciaLocal()` no corrió (tests) quedan en memoria. Son por
     usuario: al cerrar sesión o como invitado quedan vacíos y no se guarda nada.
+  - Notificaciones (Configuración): al activarlas se pide el permiso real
+    (`ServicioRecordatorios.solicitarPermisos`), se guarda la preferencia y se
+    registra con `workmanager` una verificación periódica de conciertos nuevos
+    (`callbackDispatcher` en `services/tareas_segundo_plano_workmanager.dart`,
+    corre en un isolate aparte sin ViewModels). Al comprar una entrada se
+    programa un recordatorio el día anterior a las 10 (modo inexacto, sin
+    `SCHEDULE_EXACT_ALARM`). Las `Capacidades` solo se activan si `main()`
+    inicializó el plugin y workmanager; en los tests quedan en `false`.
   - `models/`: datos inmutables, sin dependencias de Flutter.
   - `utils/`: funciones puras (formatos, validadores, `errores_auth`, `reloj`).
 - **Inyección de dependencias:** `lib/inyeccion.dart` define globales top-level lazy

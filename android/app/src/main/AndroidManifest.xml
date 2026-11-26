@@ -1,8 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Notificaciones locales (aviso de reproducción en segundo plano).
-         En Android 13+ es permiso de runtime; en el J4+ (Android 9) alcanza
-         con declararlo acá. -->
+    <!-- Notificaciones locales (pausa en segundo plano, recordatorios y
+         novedades). En Android 13+ es permiso de runtime (se pide al activar
+         las notificaciones en Configuración); en Android 9 alcanza con
+         declararlo acá. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Recordatorios programados: el plugin necesita enterarse del reinicio
+         del celular para volver a programarlos (ScheduledNotificationBootReceiver).
+         No se pide SCHEDULE_EXACT_ALARM: los recordatorios usan modo inexacto. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application
         android:label="streamtunes_demo"
         android:name="${applicationName}"
@@ -29,6 +34,22 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- flutter_local_notifications: dispara las notificaciones
+             programadas (zonedSchedule) y las reprograma tras un reinicio o
+             una actualización de la app. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

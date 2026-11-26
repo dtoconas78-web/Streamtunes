@@ -1,19 +1,55 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:streamtunes_demo/plataforma/plataforma.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
-import 'package:streamtunes_demo/inyeccion.dart';
+import 'package:streamtunes_demo/inyeccion.dart' as inyeccion;
+import 'package:streamtunes_demo/viewmodels/configuracion_viewmodel.dart';
 import 'package:streamtunes_demo/views/widgets/tarjeta.dart';
 
 // Configuración del oyente: notificaciones, reproducción automática y
 // si el modo aleatorio queda activo por defecto al reproducir una cola.
+//
+// Las dependencias son opcionales (por defecto, las globales de
+// inyeccion.dart): los tests de widget inyectan un VM con dobles y
+// capacidades activas.
 class PantallaConfiguracion extends StatelessWidget {
-  const PantallaConfiguracion({super.key});
+  const PantallaConfiguracion({
+    super.key,
+    this.viewModel,
+    this.capacidades,
+    this.politicas,
+  });
+
+  final ConfiguracionViewModel? viewModel;
+  final Capacidades? capacidades;
+  final Politicas? politicas;
+
+  // Subtítulo del switch de notificaciones según capacidad y estado.
+  String _subtituloNotificaciones(
+    ConfiguracionViewModel vm,
+    Capacidades caps,
+    Politicas pols,
+  ) {
+    if (!caps.notificacionesDisponibles) {
+      return pols.avisoNotificacionesNoDisponibles;
+    }
+    if (vm.permisoDenegado) return pols.avisoPermisoNotificacionesDenegado;
+    if (vm.ultimoError != null) {
+      return 'No se pudo cambiar la preferencia. Probá de nuevo.';
+    }
+    return 'Recordatorios de tus conciertos y nuevos conciertos publicados';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final vm = viewModel ?? inyeccion.configuracionViewModel;
+    final caps = capacidades ?? inyeccion.capacidades;
+    final pols = politicas ?? inyeccion.politicas;
     return Scaffold(
       appBar: AppBar(title: const Text('Configuración')),
       body: ListenableBuilder(
-        listenable: configuracionViewModel,
+        listenable: vm,
         builder: (context, _) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -24,43 +60,39 @@ class PantallaConfiguracion extends StatelessWidget {
                     // El estado visual se deriva en la vista: capacidad AND
                     // preferencia. Sin capacidad el switch queda apagado y
                     // deshabilitado, con el aviso de políticas como subtítulo.
-                    value:
-                        capacidades.notificacionesDisponibles &&
-                        configuracionViewModel.notificaciones,
+                    // Mientras se pide el permiso también queda deshabilitado.
+                    value: caps.notificacionesDisponibles && vm.notificaciones,
                     activeThumbColor: colorAcento,
                     title: const Text('Notificaciones'),
                     subtitle: Text(
-                      capacidades.notificacionesDisponibles
-                          ? 'Nuevos conciertos de los artistas que seguís'
-                          : politicas.avisoNotificacionesNoDisponibles,
+                      _subtituloNotificaciones(vm, caps, pols),
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
-                    onChanged: capacidades.notificacionesDisponibles
-                        ? configuracionViewModel.setNotificaciones
+                    onChanged: caps.notificacionesDisponibles && !vm.cargando
+                        ? (v) => unawaited(vm.cambiarNotificaciones(v))
                         : null,
                   ),
                   const Divider(height: 1),
                   SwitchListTile(
-                    value: configuracionViewModel.reproduccionAutomatica,
+                    value: vm.reproduccionAutomatica,
                     activeThumbColor: colorAcento,
                     title: const Text('Reproducción automática'),
                     subtitle: const Text(
                       'Al terminar una cola, seguir con más música',
                       style: TextStyle(color: Colors.grey, fontSize: 12),
                     ),
-                    onChanged: configuracionViewModel.setReproduccionAutomatica,
+                    onChanged: vm.setReproduccionAutomatica,
                   ),
                   const Divider(height: 1),
                   SwitchListTile(
-                    value: configuracionViewModel.modoAleatorioPorDefecto,
+                    value: vm.modoAleatorioPorDefecto,
                     activeThumbColor: colorAcento,
                     title: const Text('Aleatoria por defecto'),
                     subtitle: const Text(
                       'Las playlists y álbumes arrancan en modo aleatorio',
                       style: TextStyle(color: Colors.grey, fontSize: 12),
                     ),
-                    onChanged:
-                        configuracionViewModel.setModoAleatorioPorDefecto,
+                    onChanged: vm.setModoAleatorioPorDefecto,
                   ),
                 ],
               ),

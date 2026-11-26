@@ -7,6 +7,7 @@ import 'package:streamtunes_demo/data/fuente_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_artistas.dart';
 import 'package:streamtunes_demo/data/repositorio_artistas_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo.dart';
+import 'package:streamtunes_demo/data/repositorio_configuracion.dart';
 import 'package:streamtunes_demo/data/repositorio_catalogo_firestore.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas.dart';
 import 'package:streamtunes_demo/data/repositorio_entradas_firestore.dart';
@@ -38,6 +39,9 @@ import 'package:streamtunes_demo/services/fuente_conectividad.dart';
 import 'package:streamtunes_demo/services/gestor_ciclo_vida.dart';
 import 'package:streamtunes_demo/services/servicio_conectividad.dart';
 import 'package:streamtunes_demo/services/servicio_notificaciones.dart';
+import 'package:streamtunes_demo/services/servicio_recordatorios.dart';
+import 'package:streamtunes_demo/services/tareas_segundo_plano.dart';
+import 'package:streamtunes_demo/services/tareas_segundo_plano_workmanager.dart';
 
 /// Raíz de composición de la app: acá se arma UNA SOLA VEZ qué
 /// implementaciones concretas reciben los servicios y ViewModels (inyección de
@@ -180,8 +184,15 @@ final Reloj reloj = RelojDelSistema();
 
 // Capacidades y políticas de la app (ver lib/plataforma/plataforma.dart):
 // un solo lugar para saber qué está implementado y qué se le explica al
-// usuario cuando algo no lo está.
-final Capacidades capacidades = Capacidades();
+// usuario cuando algo no lo está. Las de notificaciones y tareas se activan
+// solo si main() inicializó de verdad el plugin y workmanager (en los tests
+// main() no corre y quedan en false). Es lazy: se evalúa en el primer acceso,
+// que en la app ocurre después de esas inicializaciones.
+final Capacidades capacidades = Capacidades(
+  notificacionesDisponibles: _notificacionesListas,
+  notificacionesProgramadas: _notificacionesListas,
+  tareasSegundoPlano: _tareasListas,
+);
 final Politicas politicas = Politicas();
 
 /// Servicio reactivo de conectividad (online/offline). En la app la fuente es
@@ -209,11 +220,53 @@ void inicializarCicloVida() {
 /// Servicio de notificaciones locales (aviso de reproducción en pausa al ir
 /// a segundo plano). En la app es el plugin real; en los tests se inyecta uno
 /// falso. Hay que inicializarlo una vez al arrancar (ver main.dart).
-final ServicioNotificaciones servicioNotificaciones =
+final ServicioNotificacionesLocal _notificacionesLocal =
     ServicioNotificacionesLocal();
+final ServicioNotificaciones servicioNotificaciones = _notificacionesLocal;
 
-Future<void> inicializarNotificaciones() =>
-    servicioNotificaciones.inicializar();
+/// Permiso, recordatorios de conciertos y novedades (misma instancia real).
+final ServicioRecordatorios servicioRecordatorios = _notificacionesLocal;
+
+bool _notificacionesListas = false;
+
+/// Inicializa el plugin de notificaciones. Nunca lanza: si falla (p. ej.
+/// plataforma sin soporte), la app sigue sin notificaciones y la capacidad
+/// queda en false.
+Future<void> inicializarNotificaciones() async {
+  try {
+    await servicioNotificaciones.inicializar();
+    _notificacionesListas = true;
+  } catch (e) {
+    debugPrint('Notificaciones no disponibles: $e');
+  }
+}
+
+// --- Tareas en segundo plano (workmanager) ---
+final ServicioTareasWorkmanager _tareasWorkmanager =
+    ServicioTareasWorkmanager();
+bool _tareasListas = false;
+
+/// Servicio de tareas activo: workmanager si se inicializó; si no, uno vacío.
+/// Lazy: en la app se evalúa después de [inicializarTareasSegundoPlano].
+final ServicioTareasSegundoPlano servicioTareas = _tareasListas
+    ? _tareasWorkmanager
+    : const ServicioTareasNulo();
+
+/// Inicializa workmanager UNA vez al arrancar (después de las
+/// notificaciones). Si el usuario ya tenía las notificaciones activadas, se
+/// asegura de que la tarea periódica esté registrada (política update: no se
+/// duplica). Nunca lanza.
+Future<void> inicializarTareasSegundoPlano() async {
+  try {
+    await _tareasWorkmanager.inicializar();
+    _tareasListas = true;
+    if (configuracionViewModel.notificaciones) {
+      await servicioTareas.registrarVerificacionPeriodica();
+    }
+  } catch (e) {
+    debugPrint('Tareas en segundo plano no disponibles: $e');
+  }
+}
 
 GestorCicloVida _crearGestorCicloVida() {
   final gestor = GestorCicloVida();
@@ -273,6 +326,11 @@ final EntradasViewModel entradasViewModel = EntradasViewModel(
   repositorioMovimientos: repositorioMovimientos,
   reloj: reloj,
   uidActual: _uidSesionValida,
+  recordatorios: servicioRecordatorios,
+  // Se consulta en cada compra: capacidad real + preferencia del usuario.
+  recordatoriosActivos: () =>
+      capacidades.notificacionesProgramadas &&
+      configuracionViewModel.notificaciones,
 );
 final VentasViewModel ventasViewModel = VentasViewModel(
   repositorio: repositorioMovimientos,
@@ -282,7 +340,15 @@ final VentasViewModel ventasViewModel = VentasViewModel(
 final PlaylistsViewModel playlistsViewModel = PlaylistsViewModel(
   repositorio: repositorioPlaylists,
 );
-final ConfiguracionViewModel configuracionViewModel = ConfiguracionViewModel();
+// La preferencia de notificaciones se guarda en el celular si hay guardado
+// local; el permiso y los recordatorios solo se usan con el plugin listo.
+final ConfiguracionViewModel configuracionViewModel = ConfiguracionViewModel(
+  repositorio: preferenciasLocales == null
+      ? RepositorioConfiguracionMemoria()
+      : RepositorioConfiguracionPreferencias(prefs: preferenciasLocales!),
+  recordatorios: _notificacionesListas ? servicioRecordatorios : null,
+  tareas: servicioTareas,
+);
 
 // Identidad del artista de esta sesión: SIEMPRE sale del repositorio.
 // Si porId no lo encuentra, se falla con error explícito en vez de inventar
