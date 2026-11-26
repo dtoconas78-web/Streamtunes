@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/data/datos_ejemplo.dart';
 import 'package:streamtunes_demo/models/album.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/utils/formatos.dart';
+import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 
 // Pantalla Detalle de álbum: portada, datos y lista de canciones.
@@ -39,14 +41,14 @@ class PantallaAlbum extends StatelessWidget {
                 style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'Mateo Cabral',
+              Text(
+                perfil.nombre,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 2),
               Text(
-                '${album.anio}, ${album.indices.length} canciones',
+                '${album.anio}, ${etiquetaCanciones(album.indices.length)}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
@@ -64,7 +66,9 @@ class PantallaAlbum extends StatelessWidget {
                   ),
                   icon: const Icon(Icons.play_arrow),
                   label: const Text('Reproducir'),
-                  onPressed: () => reproductor.reproducir(album.indices.first),
+                  onPressed: album.indices.isEmpty
+                      ? null
+                      : () => reproductor.reproducir(album.indices.first),
                 ),
               ),
               const SizedBox(height: 16),

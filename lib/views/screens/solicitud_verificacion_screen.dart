@@ -88,7 +88,7 @@ class _PantallaSolicitudVerificacionState
                       width: 150,
                       child: DropdownButtonFormField<String>(
                         isExpanded: true,
-                        value: _tipoDoc,
+                        initialValue: _tipoDoc,
                         dropdownColor: colorTarjeta,
                         decoration: decoracionFormulario('Tipo'),
                         items: const [

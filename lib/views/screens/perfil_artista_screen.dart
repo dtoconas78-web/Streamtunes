@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/data/datos_ejemplo.dart';
+import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/utils/formatos.dart';
 import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/album_screen.dart';
 import 'package:streamtunes_demo/views/screens/editar_perfil_screen.dart';
 import 'package:streamtunes_demo/views/screens/estadisticas_cancion_screen.dart';
-import 'package:streamtunes_demo/views/screens/login_screen.dart';
 import 'package:streamtunes_demo/views/screens/subir_musica_screen.dart';
 import 'package:streamtunes_demo/views/screens/verificacion_screen.dart';
 import 'package:streamtunes_demo/views/screens/ventas_donaciones_screen.dart';
@@ -22,14 +23,6 @@ class PantallaA extends StatefulWidget {
 class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMixin {
   bool siguiendo = false;
   late TabController _tabController;
-
-  void _cerrarSesion() {
-    authViewModel.logout();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
-  }
 
   @override
   void initState() {
@@ -62,7 +55,7 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
           IconButton(
             icon: const Icon(Icons.logout, color: colorAcento),
             tooltip: 'Cerrar sesión',
-            onPressed: _cerrarSesion,
+            onPressed: cerrarSesion,
           ),
         ],
       ),
@@ -320,7 +313,7 @@ class _PantallaAState extends State<PantallaA> with SingleTickerProviderStateMix
                           ),
                           title: Text(album.titulo),
                           subtitle: Text(
-                            '${album.indices.length} canciones, ${album.anio}',
+                            '${etiquetaCanciones(album.indices.length)}, ${album.anio}',
                             style: const TextStyle(color: Colors.grey),
                           ),
                           trailing: const Icon(Icons.chevron_right, color: Colors.grey),

@@ -71,8 +71,18 @@ class ControladorReproduccion extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Corta la reproducción y olvida la canción actual (al cerrar sesión).
+  void detener() {
+    _timer?.cancel();
+    _timer = null;
+    indiceActual = null;
+    posicion = 0;
+    reproduciendo = false;
+    notifyListeners();
+  }
+
   void saltarA(int segundos) {
-    posicion = segundos;
+    posicion = segundos.clamp(0, total);
     notifyListeners();
   }
 

@@ -14,7 +14,6 @@ import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 import 'package:streamtunes_demo/views/screens/album_screen.dart';
 import 'package:streamtunes_demo/views/screens/comprar_entrada_screen.dart';
 import 'package:streamtunes_demo/views/screens/detalle_playlist.dart';
-import 'package:streamtunes_demo/views/screens/login_screen.dart';
 import 'package:streamtunes_demo/views/widgets/componentes.dart';
 
 class PantallaInicio extends StatelessWidget {
@@ -56,13 +55,7 @@ class PantallaInicio extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout, color: colorAcento),
             tooltip: 'Cerrar sesión',
-            onPressed: () {
-              authViewModel.logout();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
-            },
+            onPressed: cerrarSesion,
           ),
         ],
       ),

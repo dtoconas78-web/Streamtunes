@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:streamtunes_demo/viewmodels/auth_viewmodel.dart';
+import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/viewmodels/entradas_viewmodel.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
-import 'package:streamtunes_demo/views/screens/login_screen.dart';
 
 class EntradasScreen extends StatelessWidget {
   const EntradasScreen({super.key});
-
-  void _cerrarSesion(BuildContext context) {
-    authViewModel.logout();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +16,7 @@ class EntradasScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout, color: colorAcento),
             tooltip: 'Cerrar sesión',
-            onPressed: () => _cerrarSesion(context),
+            onPressed: cerrarSesion,
           ),
         ],
       ),

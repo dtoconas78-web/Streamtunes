@@ -32,8 +32,8 @@ class _PantallaBuscarState extends State<PantallaBuscar> {
 
   // Minúsculas y sin tildes, para que "senal" encuentre "Señal"... y "cordoba" a "Córdoba".
   String _normalizar(String texto) {
-    const origen = 'áàäâéèëêíìïîóòöôúùüû';
-    const destino = 'aaaaeeeeiiiioooouuuu';
+    const origen = 'áàäâéèëêíìïîóòöôúùüûñ';
+    const destino = 'aaaaeeeeiiiioooouuuun';
     var resultado = texto.toLowerCase();
     for (int i = 0; i < origen.length; i++) {
       resultado = resultado.replaceAll(origen[i], destino[i]);

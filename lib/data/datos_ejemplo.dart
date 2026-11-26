@@ -35,7 +35,7 @@ final List<Cancion> canciones = [
     lugar: 'Mendoza, AR',
     horarioPico: '12hs - 14hs',
     colorPortada: Color(0xFF00BFA5),
-    genero: 'Elctrónica'
+    genero: 'Electrónica'
   ),
   Cancion(
     titulo: 'Ruta 7',

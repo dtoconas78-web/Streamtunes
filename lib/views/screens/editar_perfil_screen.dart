@@ -119,7 +119,7 @@ class _PantallaEditarPerfilState extends State<PantallaEditarPerfil> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: paises.contains(_pais) ? _pais : null,
+                  initialValue: paises.contains(_pais) ? _pais : null,
                   dropdownColor: colorTarjeta,
                   decoration: _decoracion('País'),
                   items: [

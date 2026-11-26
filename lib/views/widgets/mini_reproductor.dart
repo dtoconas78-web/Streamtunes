@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/navigation/navegacion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
+import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 
 // Barra chica que acompaña en todas las pantallas mientras haya una canción
@@ -11,7 +12,7 @@ class MiniReproductor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: reproductor,
+      listenable: Listenable.merge([reproductor, perfil]),
       builder: (context, _) {
         final cancion = reproductor.cancion;
         // Se oculta si no hay canción o si ya está abierto el reproductor grande.
@@ -63,9 +64,11 @@ class MiniReproductor extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
-                              const Text(
-                                'Mateo Cabral',
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              Text(
+                                perfil.nombre,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
                               ),
                             ],
                           ),

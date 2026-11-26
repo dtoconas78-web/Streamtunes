@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/tiempo.dart';
+import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 import 'package:streamtunes_demo/viewmodels/reproductor_viewmodel.dart';
 
 // Pantalla Reproductor: portada, controles y barra de progreso.
@@ -16,7 +17,7 @@ class PantallaReproductor extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: reproductor,
+      listenable: Listenable.merge([reproductor, perfil]),
       builder: (context, _) {
         final cancion = reproductor.cancion;
         if (cancion == null) return const Scaffold();
@@ -77,9 +78,9 @@ class PantallaReproductor extends StatelessWidget {
                               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              'Mateo Cabral',
-                              style: TextStyle(fontSize: 14, color: Colors.grey),
+                            Text(
+                              perfil.nombre,
+                              style: const TextStyle(fontSize: 14, color: Colors.grey),
                             ),
                           ],
                         ),
@@ -173,7 +174,7 @@ class PantallaReproductor extends StatelessWidget {
                         ),
                       ),
                       icon: const Icon(Icons.volunteer_activism),
-                      label: const Text('Apoyar a Mateo Cabral'),
+                      label: Text('Apoyar a ${perfil.nombre}'),
                       onPressed: () => _avisar(context, 'Las donaciones llegan pronto'),
                     ),
                   ),

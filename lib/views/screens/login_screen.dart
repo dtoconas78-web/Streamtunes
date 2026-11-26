@@ -17,6 +17,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final passwordCtrl = TextEditingController();
   RolUsuario rolSeleccionado = RolUsuario.oyente;
 
+  @override
+  void dispose() {
+    emailCtrl.dispose();
+    passwordCtrl.dispose();
+    super.dispose();
+  }
+
   void ingresar() {
     final email = emailCtrl.text.trim();
     if (email.isEmpty) {
@@ -33,12 +40,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     authViewModel.login(usuario);
     if (rolSeleccionado == RolUsuario.artista) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const PantallaA()),
       );
     } else {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const PantallaPrincipal()),
       );

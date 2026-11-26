@@ -113,6 +113,10 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
       _progreso = 0;
     });
     _timer = Timer.periodic(const Duration(milliseconds: 120), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       setState(() => _progreso = min(1.0, _progreso + 0.05));
       if (_progreso >= 1) {
         timer.cancel();
@@ -428,7 +432,7 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       isExpanded: true,
-                      value: _genero,
+                      initialValue: _genero,
                       dropdownColor: colorTarjeta,
                       decoration: decoracionFormulario('Género'),
                       items: [
@@ -448,7 +452,7 @@ class _PantallaSubirMusicaState extends State<PantallaSubirMusica> {
                     ),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
-                      activeColor: colorAcento,
+                      activeThumbColor: colorAcento,
                       title: const Text('Pública'),
                       subtitle: Text(
                         _publica

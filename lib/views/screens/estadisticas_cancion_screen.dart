@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:streamtunes_demo/models/cancion.dart';
 import 'package:streamtunes_demo/theme/colores.dart';
 import 'package:streamtunes_demo/utils/formatos.dart';
+import 'package:streamtunes_demo/viewmodels/perfil_viewmodel.dart';
 // Pantalla B: estadísticas de la canción seleccionada.
 class PantallaB extends StatefulWidget {
   final Cancion cancion;
@@ -20,8 +21,9 @@ class _PantallaBState extends State<PantallaB> {
   @override
   void initState() {
     super.initState();
-    reproduccionesLive = int.parse(widget.cancion.reproducciones.replaceAll('.', ''));
+    reproduccionesLive = int.tryParse(widget.cancion.reproducciones.replaceAll('.', '')) ?? 0;
     _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!mounted) return;
       setState(() {
         reproduccionesLive += 7; // simulado
       });
@@ -82,19 +84,23 @@ class _PantallaBState extends State<PantallaB> {
                     child: const Icon(Icons.music_note, color: Colors.black),
                   ),
                   const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        cancion.titulo,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Mateo Cabral',
-                        style: TextStyle(fontSize: 13, color: Colors.grey),
-                      ),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          cancion.titulo,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          perfil.nombre,
+                          style: const TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
                 ),
