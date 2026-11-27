@@ -193,10 +193,14 @@ RepositorioArtistas _crearArtistas() {
 RepositorioEntradas _crearEntradas() {
   if (!firebaseInicializado) return RepositorioEntradasMemoria();
   _dispararSemilla();
-  return RepositorioEntradasFirestore(
+  final repo = RepositorioEntradasFirestore(
     fuente: fuenteFirestore,
     uidActual: _uidSesionValida,
   );
+  // Igual que movimientos: si se creó antes del login (o cambia el usuario),
+  // se refiltra sin esperar otro snapshot.
+  authViewModel.addListener(repo.actualizarSesion);
+  return repo;
 }
 
 RepositorioMovimientos _crearMovimientos() {
