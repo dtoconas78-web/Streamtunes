@@ -43,7 +43,10 @@ class _OyenteShellState extends State<OyenteShell> {
           // por encima de esa ruta, para no duplicarlo.
           ListenableBuilder(
             listenable: estadoNavegacion,
-            builder: (context, _) => estadoNavegacion.hayRutaSuperpuesta
+            // Con una hoja o un diálogo abierto no se muestra en ningún lado.
+            builder: (context, _) =>
+                estadoNavegacion.hayRutaSuperpuesta ||
+                    estadoNavegacion.hayModalAbierto
                 ? const SizedBox.shrink()
                 : const MiniReproductor(),
           ),

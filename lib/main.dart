@@ -60,6 +60,7 @@ class MiApp extends StatelessWidget {
             final miniVisible =
                 reproductor.hayCancion &&
                 !reproductor.pantallaCompletaAbierta &&
+                !estadoNavegacion.hayModalAbierto &&
                 !tecladoAbierto;
             // El oyente ve el mini-reproductor dentro del shell (encima de la
             // barra inferior) cuando está en el home; si hay una ruta apilada

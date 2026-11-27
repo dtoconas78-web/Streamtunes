@@ -22,7 +22,8 @@ import 'package:streamtunes_demo/models/movimiento.dart';
 ///
 /// Las entradas se filtran por `usuarioId` (uid de la sesión válida vía
 /// [uidActual], resuelto de forma diferida); sin sesión válida la lista
-/// queda vacía y nunca se exponen entradas de otros usuarios. La caché
+/// queda vacía y nunca se exponen entradas de otros usuarios. Al cambiar la
+/// sesión hay que llamar a [actualizarSesion] para refiltrar. La caché
 /// arranca vacía y se llena con el primer snapshot; ante error del stream se
 /// conserva la última caché válida y se registra en [ultimoError].
 class RepositorioEntradasFirestore extends RepositorioEntradas {
@@ -38,15 +39,34 @@ class RepositorioEntradasFirestore extends RepositorioEntradas {
     _susEntradas = _fuente
         .snapshotsColeccion('entradas')
         .map((docs) {
-          final uid = uidActual?.call();
-          if (uid == null || uid.isEmpty) return <Entrada>[];
-          return [
-            for (final d in docs)
-              if (d.datos['usuarioId'] == uid)
-                Entrada.fromMap(d.datos, id: d.id),
-          ];
+          _ultimasEntradas = docs;
+          return _filtrarEntradas(docs);
         })
         .listen(_alCambiarEntradas, onError: _alError);
+  }
+
+  // Últimos documentos de `entradas` recibidos: al cambiar la sesión se
+  // vuelven a filtrar sin esperar otro snapshot (el repo puede crearse antes
+  // del login, y el snapshot no se repite por un cambio de sesión).
+  List<DocumentoFirestore> _ultimasEntradas = const [];
+
+  List<Entrada> _filtrarEntradas(List<DocumentoFirestore> docs) {
+    final uid = uidActual?.call();
+    if (uid == null || uid.isEmpty) return <Entrada>[];
+    return [
+      for (final d in docs)
+        if (d.datos['usuarioId'] == uid) Entrada.fromMap(d.datos, id: d.id),
+    ];
+  }
+
+  /// La sesión cambió (login, logout, otro usuario): vuelve a filtrar las
+  /// últimas entradas recibidas.
+  void actualizarSesion() {
+    try {
+      _alCambiarEntradas(_filtrarEntradas(_ultimasEntradas));
+    } catch (e) {
+      _alError(e);
+    }
   }
 
   final FuenteFirestore _fuente;

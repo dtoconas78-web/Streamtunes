@@ -857,6 +857,49 @@ void main() {
       }
     });
 
+    test('entradas: al cambiar la sesión refiltra sin esperar otro '
+        'snapshot', () async {
+      final fuente = FakeFuenteFirestore();
+      await fuente.setDocumento(
+        'entradas',
+        'e1',
+        _entrada(usuarioId: 'uid-1').toMap(),
+      );
+      await fuente.setDocumento(
+        'entradas',
+        'e2',
+        _entrada(usuarioId: 'otro').toMap(),
+      );
+      String? uid;
+      final repo = RepositorioEntradasFirestore(
+        fuente: fuente,
+        uidActual: () => uid,
+      );
+      await pumpEventQueue();
+      expect(repo.entradasCompradas, isEmpty); // llegó antes del login
+
+      var notificaciones = 0;
+      repo.addListener(() => notificaciones++);
+      uid = 'uid-1';
+      repo.actualizarSesion();
+      expect(repo.entradasCompradas.single.id, 'e1');
+      expect(notificaciones, 1);
+
+      repo.actualizarSesion(); // misma sesión: no notifica de nuevo
+      expect(notificaciones, 1);
+
+      uid = 'otro';
+      repo.actualizarSesion();
+      expect(repo.entradasCompradas.single.id, 'e2');
+
+      uid = null;
+      repo.actualizarSesion();
+      expect(repo.entradasCompradas, isEmpty);
+
+      await repo.cerrar();
+      repo.dispose();
+    });
+
     test(
       'snapshots idénticos no producen notificaciones redundantes',
       () async {
