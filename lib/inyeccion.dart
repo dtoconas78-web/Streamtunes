@@ -26,6 +26,8 @@ import 'package:streamtunes_demo/data/repositorio_seguimiento_preferencias.dart'
 import 'package:streamtunes_demo/models/artista.dart';
 import 'package:streamtunes_demo/models/usuario.dart';
 import 'package:streamtunes_demo/plataforma/plataforma.dart';
+import 'package:streamtunes_demo/services/audio/motor_audio_service.dart';
+import 'package:streamtunes_demo/services/audio/sincronizador_audio.dart';
 import 'package:streamtunes_demo/services/almacen_fotos.dart';
 import 'package:streamtunes_demo/services/auth_service.dart';
 import 'package:streamtunes_demo/services/aviso_donaciones.dart';
@@ -431,23 +433,62 @@ void inicializarAvisoDonaciones() {
   if (_notificacionesListas) avisoDonaciones.iniciar();
 }
 
+// --- Audio real (just_audio + audio_service) ---
+// true cuando el servicio de reproducción arrancó: la música sigue sonando
+// en segundo plano (con su notificación y los controles de la pantalla
+// bloqueada). Si no arrancó (tests, web, error del plugin), la app funciona
+// como antes: sin sonido y pausando al ir a segundo plano.
+bool _audioEnSegundoPlano = false;
+SincronizadorAudio? _sincronizadorAudio;
+
+/// Arranca el audio real y lo conecta al reproductor. Va en main() antes de
+/// runApp. Nunca lanza: ante un error la app sigue sin sonido.
+Future<void> inicializarAudio() async {
+  final movil =
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+  if (!movil || _sincronizadorAudio != null) return;
+  try {
+    final motor = await crearMotorAudioService();
+    _sincronizadorAudio = SincronizadorAudio(
+      reproductor: reproductor,
+      motor: motor,
+      nombreArtista: () => perfil.artista.nombre,
+    );
+    _audioEnSegundoPlano = true;
+  } catch (e) {
+    debugPrint('Sin audio real (el reproductor sigue sin sonido): $e');
+  }
+}
+
 GestorCicloVida _crearGestorCicloVida() {
   final gestor = GestorCicloVida();
-  registrarReproduccionEnCicloVida(gestor, reproductor, servicioNotificaciones);
+  registrarReproduccionEnCicloVida(
+    gestor,
+    reproductor,
+    servicioNotificaciones,
+    sigueEnSegundoPlano: () => _audioEnSegundoPlano,
+  );
   return gestor;
 }
 
 /// Registra en el gestor de ciclo de vida el comportamiento de la
-/// reproducción: al ir a segundo plano se pausa y se muestra la notificación
-/// fija "en pausa"; al volver se reanuda y se oculta la notificación.
+/// reproducción al ir a segundo plano:
+/// - con audio real ([sigueEnSegundoPlano] true) la música sigue sonando y
+///   la notificación de reproducción la pone audio_service;
+/// - sin audio real se pausa y se muestra la notificación fija "en pausa";
+///   al volver se reanuda y se oculta la notificación.
 void registrarReproduccionEnCicloVida(
   GestorCicloVida gestor,
   ControladorReproduccion reproductor,
-  ServicioNotificaciones notificaciones,
-) {
+  ServicioNotificaciones notificaciones, {
+  bool Function()? sigueEnSegundoPlano,
+}) {
   var pausadaPorCiclo = false;
   gestor.registrar(
     alPausar: () {
+      if (sigueEnSegundoPlano?.call() ?? false) return;
       // Al ir a segundo plano se frena la reproducción si sonaba y se avisa
       // con la notificación fija para saber que quedó en pausa.
       if (reproductor.reproduciendo) {

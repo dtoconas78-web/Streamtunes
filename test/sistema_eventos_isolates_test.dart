@@ -196,6 +196,32 @@ void main() {
         expect(notificaciones.ocultadas, 0);
       },
     );
+    test('con audio real sigue sonando en segundo plano y no muestra el '
+        'aviso de pausa', () {
+      final catalogo = RepositorioCatalogoMemoria();
+      final reproductor = ControladorReproduccion(
+        repositorioCatalogo: catalogo,
+      );
+      final gestor = GestorCicloVida(listener: _ListenerFalso());
+      final notificaciones = _NotificacionesFalsas();
+      registrarReproduccionEnCicloVida(
+        gestor,
+        reproductor,
+        notificaciones,
+        sigueEnSegundoPlano: () => true,
+      );
+
+      reproductor.reproducir(0);
+      gestor.manejarEstado(AppLifecycleState.paused);
+      expect(reproductor.reproduciendo, isTrue);
+      expect(notificaciones.mostradas, isEmpty);
+
+      gestor.manejarEstado(AppLifecycleState.resumed);
+      expect(reproductor.reproduciendo, isTrue);
+      expect(notificaciones.ocultadas, 0);
+
+      reproductor.detener();
+    });
   });
 
   group('pantallas con tareas activas (subtarea 9.2)', () {

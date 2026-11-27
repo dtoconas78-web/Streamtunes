@@ -47,6 +47,9 @@ dependencies:
   path: ^1.9.1
   image_picker: ^1.2.4
   path_provider: ^2.1.6
+  just_audio: ^0.10.6
+  audio_service: ^0.18.19
+  audio_session: ^0.2.4
 
 dev_dependencies:
   flutter_test:
@@ -73,6 +76,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/streamtunes_logo.jpg
+    # Audios de demo (originales, ver tool/generar_audios_demo.py).
+    - assets/audio/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
