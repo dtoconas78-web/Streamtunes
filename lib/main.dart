@@ -35,6 +35,8 @@ Future<void> main() async {
   inicializarAvisoDonaciones();
   // Sube las reproducciones contadas a las métricas (ver inyeccion.dart).
   inicializarMetricas();
+  // Audio real: suena la música, también en segundo plano (ver inyeccion.dart).
+  await inicializarAudio();
   runApp(const MiApp());
 }
 

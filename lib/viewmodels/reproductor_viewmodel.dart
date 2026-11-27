@@ -17,7 +17,8 @@ const int segundosParaContar = 30;
 
 // Controlador de reproducción: guarda qué suena, en qué segundo y si está en pausa.
 // Vive fuera de las pantallas, por eso la música sigue al navegar.
-// Cuando se conecte audio real (just_audio), solo hay que tocar esta clase.
+// El sonido real lo pone services/audio/ (just_audio + audio_service), que
+// sigue a esta clase: acá no se sabe nada de plugins de audio.
 //
 // Estado encapsulado: los campos son privados y se leen por getters de solo
 // lectura; todo cambio pasa por los métodos de abajo (que notifican).

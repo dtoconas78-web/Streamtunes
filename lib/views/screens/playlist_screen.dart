@@ -230,7 +230,10 @@ class PantallaPlaylist extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       backgroundColor: colorAcento,
                       foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 22,
+                        vertical: 14,
+                      ),
                       shape: const StadiumBorder(),
                     ),
                     onPressed: indices.isEmpty

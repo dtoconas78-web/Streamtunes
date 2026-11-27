@@ -41,6 +41,17 @@ App móvil (Flutter) para escuchar música gratis, pensada para artistas "under"
     foto de perfil se recupera al iniciar sesión (`retrieveLostData`). Sin permisos
     nuevos: usa la cámara y el selector de fotos del sistema. `Capacidades.camara`
     solo en Android/iOS.
+- **Audio real** (`just_audio` + `audio_service`): las canciones suenan, también
+  con la app en segundo plano o la pantalla bloqueada, con la notificación de
+  reproducción (anterior, pausa, siguiente y barra). `ControladorReproduccion`
+  sigue siendo la fuente de verdad (cola, modos, posición, conteo de 30 s);
+  `services/audio/sincronizador_audio.dart` hace que el motor lo siga y devuelve
+  al reproductor las órdenes de la notificación, auriculares y llamadas. Cada
+  canción usa uno de los 6 audios de demo de `assets/audio/` (melodías originales
+  generadas con `tool/generar_audios_demo.py`, sin derechos de terceros), en loop
+  durante la duración de la canción del catálogo. Si el servicio de audio no
+  arranca (o en los tests), la app sigue sin sonido y pausa al ir a segundo plano,
+  como antes.
 - **Dos roles + invitado:**
   - **Artista:** sube música, ve estadísticas, publica conciertos, ve ventas/donaciones.
   - **Oyente registrado:** escucha, compra entradas, dona, guarda música, crea listas.

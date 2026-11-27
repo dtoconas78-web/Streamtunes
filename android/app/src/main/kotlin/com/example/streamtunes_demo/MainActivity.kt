@@ -1,5 +1,7 @@
 package com.example.streamtunes_demo
 
-import io.flutter.embedding.android.FlutterActivity
+import com.ryanheise.audioservice.AudioServiceActivity
 
-class MainActivity : FlutterActivity()
+// AudioServiceActivity (de audio_service) en vez de FlutterActivity: comparte
+// el motor de Flutter con el servicio de reproducción en segundo plano.
+class MainActivity : AudioServiceActivity()
